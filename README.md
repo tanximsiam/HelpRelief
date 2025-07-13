@@ -41,7 +41,7 @@ All changes should be merged into `dev` first, then into `prod` after testing.
 
 ---
 
-##⚙️ Tech Stack & Dependencies
+## ⚙️ Tech Stack & Dependencies
 
 Backend:
 
@@ -73,15 +73,15 @@ Dev Tools:
 
 ---
 
-##🚀 Getting Started
-###1. Clone the Repo
+## 🚀 Getting Started
+### 1. Clone the Repo
 
 ```bash
 git clone git@github.com:tanximsiam/HelpRelief.git
 cd HelpRelief
 ```
 
-###2. Backend Setup
+### 2. Backend Setup
 
 ```bash
 cd backend
@@ -93,7 +93,7 @@ php artisan migrate
 
 > _💡 Use SQLite for quick dev: set DB_CONNECTION=sqlite and define path in .env.
 
-###3. Frontend Setup
+### 3. Frontend Setup
 
 ```bash
 cd ../frontend
