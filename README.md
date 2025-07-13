@@ -2,7 +2,6 @@
 
 **HelpRelief** is a centralized disaster relief coordination platform built to streamline communication, resource allocation, and volunteer efforts among NGOs, volunteers, and service takers. Designed with a focus on real-time support and transparency, HelpRelief enables efficient response to natural or human-made disasters across Bangladesh.
 
----
 
 ## 🌟 Features
 - User Roles: NGO, Volunteer, Service Taker, and Admin
