@@ -5,7 +5,6 @@
 ---
 
 ## 🌟 Features
-
 - User Roles: NGO, Volunteer, Service Taker, and Admin
 - Task Assignment & Project Tracking
 - Budget and Resource Management (NGOs)
