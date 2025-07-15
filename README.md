@@ -44,6 +44,12 @@ All changes should be merged into `dev` first, then into `prod` after testing.
 ### Requirements
 * PHP
 
+  for windows
+    ```powershell
+    # Run as administrator...
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.4'))
+    ```
+
   for linux `/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"`
 
   for macOS `/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"`
