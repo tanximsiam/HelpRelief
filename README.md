@@ -97,10 +97,9 @@ npm install
 # Set Backend API
 cp .env.example .env
 # Set VITE_BACKEND_URI=http://127.0.0.1:8000/api or wherever your local backend is hosted
-# Or use https://super-employee-api.monerbondhu.com/api to use production
 
-# Start Ionic Vue dev server
-ionic serve
+# Start Vue dev server
+npm run serve
 ```
 
 ---
