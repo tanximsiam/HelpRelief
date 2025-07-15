@@ -99,7 +99,7 @@ cp .env.example .env
 # Set VITE_BACKEND_URI=http://127.0.0.1:8000/api or wherever your local backend is hosted
 
 # Start Vue dev server
-npm run serve
+npm run dev
 ```
 
 ---
