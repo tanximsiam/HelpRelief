@@ -41,33 +41,59 @@ All changes should be merged into `dev` first, then into `prod` after testing.
 
 ## ⚙️ Tech Stack & Dependencies
 
+### Requirements
+* PHP
+  for linux `/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"`
+  for macOS `/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"`
+* Node.js ≥ 18, npm ((NodeSource)[https://github.com/nodesource/distributions])
+* Laravel Installer `composer global require laravel/installer`
+* MySQL or SQLite (for local DB, Optional. Use SQLite if MySQL not configured)
+
+### Setups
+
 Backend:
+```bash
+cd backend
 
-    PHP 8.x, Laravel 10
+# Install PHP dependencies
+composer install
 
-    PostgreSQL / SQLite (dev)
+# Create environment file
+cp .env.example .env
 
-    Composer
+# SQLite (simplest for local dev):
+touch database/database.sqlite
+# Then update .env:
+# DB_CONNECTION=sqlite
+# DB_DATABASE=/absolute/path/to/database/database.sqlite
+
+# Or use MySQL by configuring .env accordingly
+
+# Generate Laravel app key
+php artisan key:generate
+
+# Run DB migrations
+php artisan migrate
+
+# Start local server
+php artisan serve
+```
 
 Frontend:
+```bash
+cd frontend-superemployee
 
-    Vue 3 + Vite
+# Install Node dependencies
+npm install
 
-    TailwindCSS
+# Set Backend API
+cp .env.example .env
+# Set VITE_BACKEND_URI=http://127.0.0.1:8000/api or wherever your local backend is hosted
+# Or use https://super-employee-api.monerbondhu.com/api to use production
 
-    Axios
-
-    Vue Router & Pinia
-
-Dev Tools:
-
-    Git
-
-    Node.js & npm
-
-    Laravel Artisan
-
-    dotenv
+# Start Ionic Vue dev server
+ionic serve
+```
 
 ---
 
