@@ -89,7 +89,7 @@ php artisan serve
 
 Frontend:
 ```bash
-cd frontend-superemployee
+cd frontend
 
 # Install Node dependencies
 npm install
