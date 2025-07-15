@@ -43,7 +43,9 @@ All changes should be merged into `dev` first, then into `prod` after testing.
 
 ### Requirements
 * PHP
+
   for linux `/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"`
+
   for macOS `/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"`
 * Node.js ≥ 18, npm ((NodeSource)[https://github.com/nodesource/distributions])
 * Laravel Installer `composer global require laravel/installer`
