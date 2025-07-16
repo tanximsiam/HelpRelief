@@ -57,6 +57,16 @@ All changes should be merged into `dev` first, then into `prod` after testing.
 * Laravel Installer `composer global require laravel/installer`
 * MySQL or SQLite (for local DB, Optional. Use SQLite if MySQL not configured)
 
+---
+
+## 🚀 Getting Started
+### Clone the Repo
+
+```bash
+git clone git@github.com:tanximsiam/HelpRelief.git
+cd HelpRelief
+```
+
 ### Setups
 
 Backend:
@@ -102,33 +112,4 @@ cp .env.example .env
 npm run dev
 ```
 
----
-
-## 🚀 Getting Started
-### 1. Clone the Repo
-
-```bash
-git clone git@github.com:tanximsiam/HelpRelief.git
-cd HelpRelief
-```
-
-### 2. Backend Setup
-
-```bash
-cd backend
-cp .env.example .env
-composer install
-php artisan key:generate
-php artisan migrate
-```
-
-> _💡 Use SQLite for quick dev: set DB_CONNECTION=sqlite and define path in .env.
-
-### 3. Frontend Setup
-
-```bash
-cd ../frontend
-npm install
-npm run dev.
-```
 
