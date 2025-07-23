@@ -54,8 +54,8 @@ All changes should be merged into `dev` first, then into `prod` after testing.
 
   for macOS `/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"`
 
-* Composer `sudo apt install composer`
 * Node.js ≥ 18, npm ((NodeSource)[https://github.com/nodesource/distributions])
+* Composer `sudo apt install composer`
 * Laravel Installer `composer global require laravel/installer`
 * MySQL or SQLite (for local DB, Optional. Use SQLite if MySQL not configured)
 
