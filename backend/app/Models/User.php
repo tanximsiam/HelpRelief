@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function ngo()
+    {
+        return $this->belongsTo(Ngo::class, 'ngo_id');
+    }
 }
