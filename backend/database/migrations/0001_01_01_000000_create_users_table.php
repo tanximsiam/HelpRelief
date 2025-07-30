@@ -15,11 +15,17 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('phone')->nullable();
             $table->string('password');
+            $table->enum('role', ['general', 'ngo', 'admin']);
+            $table->foreignId('ngo_id')->nullable()->constrained('ngos');
+            $table->string('designation')->nullable();
+            $table->enum('privilege_role', ['admin', 'campaign_manager', 'finance_handler'])->nullable();
+            $table->boolean('volunteer')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });
+
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

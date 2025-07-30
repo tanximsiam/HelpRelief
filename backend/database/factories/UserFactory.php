@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\Ngo;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -23,14 +24,21 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $role = $this->faker->randomElement(['general', 'ngo', 'admin']);
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'phone' => $this->faker->phoneNumber(),
+            'password' => Hash::make('password'), // or use Hash::make()
+            'role' => $role,
+            'ngo_id' => $role === 'ngo' ? Ngo::inRandomOrder()->value('id') : null,
+            'designation' => $role === 'ngo' ? $this->faker->jobTitle() : null,
+            'privilege_role' => null,
+            'volunteer' => $this->faker->boolean(30), // 30% chance true
             'remember_token' => Str::random(10),
-        ];
-    }
+            ];
+        }
 
     /**
      * Indicate that the model's email address should be unverified.
