@@ -5,22 +5,22 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use App\Models\User;
+use App\Models\Ngo;
 
-class UserApiTest extends TestCase
+class NgoControllerTest extends TestCase
 {
     /**
      * A basic feature test example.
      */
-
     use RefreshDatabase;
-    public function test_users_index_returns_users(): void
-    {
-        User::factory()->count(3)->create();
 
-        $response = $this->getJson('/api/users');
+    public function test_ngos_index_returns_ngos()
+    {
+        Ngo::factory()->count(2)->create();
+
+        $response = $this->getJson('/api/ngos');
 
         $response->assertStatus(200)
-                 ->assertJsonCount(3);
+                 ->assertJsonCount(2);
     }
 }
