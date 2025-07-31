@@ -6,6 +6,11 @@ use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Socialite\Facades\Socialite;
+use Mockery;
+use App\Models\Ngo;
+
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 class AuthControllerTest extends TestCase
 {
@@ -97,4 +102,50 @@ class AuthControllerTest extends TestCase
             'tokenable_id' => $user->id
         ]);
     }
+
+    public function test_socialite_login_creates_general_user()
+    {
+        $socialiteUser = Mockery::mock(SocialiteUser::class);
+        $socialiteUser->shouldReceive('getEmail')->andReturn('test@example.com');
+        $socialiteUser->shouldReceive('getName')->andReturn('General User');
+
+        Socialite::shouldReceive('driver->stateless->user')->andReturn($socialiteUser);
+
+        $response = $this->get('/auth/callback');
+
+        $response->assertRedirectContains('token=');
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+            'role' => 'general',
+        ]);
+    }
+
+    public function test_socialite_login_creates_ngo_user_when_domain_matches()
+    {
+        Ngo::create([
+            'name' => 'BRAC',
+            'rep_contact' => 'BRAC Rep',
+            'rep_designation' => 'Director',
+            'rep_email' => 'rep@brac.com',
+            'rep_phone' => '017xxxxxxx',
+            'description' => 'Test NGO',
+            'website' => 'https://brac.com',
+            'status' => 'approved',
+        ]);
+
+        $socialiteUser = Mockery::mock(SocialiteUser::class);
+        $socialiteUser->shouldReceive('getEmail')->andReturn('newuser@brac.com');
+        $socialiteUser->shouldReceive('getName')->andReturn('BRAC Staff');
+
+        Socialite::shouldReceive('driver->stateless->user')->andReturn($socialiteUser);
+
+        $response = $this->get('/auth/callback');
+
+        $response->assertRedirectContains('token=');
+        $this->assertDatabaseHas('users', [
+            'email' => 'newuser@brac.com',
+            'role' => 'ngo',
+        ]);
+    }
 }
+
