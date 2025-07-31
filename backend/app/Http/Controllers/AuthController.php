@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
-use App\Models\Ngo;
+use App\Models\NgoInviteLink;
+use App\Models\NgoStaff;
 
 class AuthController extends Controller
 {
@@ -22,18 +23,23 @@ class AuthController extends Controller
             'password' => 'required|string|confirmed',
         ]);
 
-        $user = User::create([
-            'name' => $fields['name'],
-            'email' => $fields['email'],
-            'phone' => $fields['phone'],
-            'password' => Hash::make($fields['password']),
-            'role' => 'general',
-        ]);
+        $user = $this->createUser($fields);
 
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user
         ], 201);
+    }
+
+    public function createUser(array $data, array $overrides = []): User
+    {
+        return User::create(array_merge([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'password' => Hash::make($data['password']),
+            'role' => 'general',
+        ], $overrides));
     }
 
     public function login(Request $request)
@@ -55,46 +61,84 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'token' => $token
+            'token' => $token,
+            'user' => $user,
         ]);
 
     }
 
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
-        return Socialite::driver('google')->redirect();
+        $token = $request->query('token');
+
+        // Optional: Validate token before redirecting
+        $invite = NgoInviteLink::where('token', $token)->where('active', true)->first();
+
+        if ($token && ($invite->usage_limit && $invite->used_count >= $invite->usage_limit)) {
+            return response()->json(['error' => 'Invalid or expired token'], 403);
+        }
+
+        // Token is valid → attach to state and redirect to Google
+        return Socialite::driver('google')
+            ->stateless()
+            ->with(['state' => $token])
+            ->redirect();
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         $googleUser = Socialite::driver('google')->stateless()->user();
 
-        $email = $googleUser->getEmail();
-        $domain = explode('@', $email)[1];
-        $isNgo = Ngo::where('rep_email', 'like', "%@$domain")
-            ->where('status', 'approved')
-            ->exists();
+        // dd([
+        //     'state' => $request->query('state'),
+        //     'code' => $request->query('code'),
+        //     'invite' => NgoInviteLink::where('token', $request->query('state'))->first(),
+        // ]);
 
-        $role = $isNgo ? 'ngo' : 'general';
+        $existing = User::where('email', $googleUser->email)->first();
 
-        $user = User::firstOrCreate(
-            ['email' => $googleUser->getEmail()],
-            [
-                'name' => $googleUser->getName(),
-                'password' => Hash::make(str()->random(16)),
-                'role' => $role,
-            ]
-        );
+        if ($existing) {
 
-        if (! $user->wasRecentlyCreated) {
-            $user->update(['name' => $googleUser->getName()]);
+            $token = $existing->createToken('google-token')->plainTextToken;
+
+            return redirect(config('app.frontend_url') . '/dashboard?token=' . $token);
         }
 
-        Auth::login($user);
-        $token = $user->createToken('socialite-token')->plainTextToken;
+        $token = $request->query('state');
 
-        return redirect(config('app.frontend_url') . "/socialite-token-receiver?token=$token");
+        if (!$token) {
 
+            $user = User::create([
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'password' => Hash::make(str()->random(16)),
+                'role' => 'general',
+            ]);
+
+        } else {
+
+            $invite = NgoInviteLink::where('token', $token)->first();
+
+            $user = User::create([
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'password' => Hash::make(str()->random(16)),
+                'role' => 'ngo_staff',
+                ]);
+
+            NgoStaff::create([
+                'user_id' => $user->id,
+                'ngo_id' => $invite->ngo_id,
+                'privilege_role' => $invite->privilege_role,
+            ]);
+
+            app(NgoInviteLinkController::class)->markInviteUsed($invite);
+
+        }
+
+        $token = $user->createToken('google-token')->plainTextToken;
+
+        return redirect(config('app.frontend_url') . '/dashboard?token=' . $token);
     }
 
     public function profile(Request $request)

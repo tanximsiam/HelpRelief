@@ -24,9 +24,6 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
-        'ngo_id',
-        'designation',
-        'privilege_role',
         'volunteer',
     ];
 
@@ -53,8 +50,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function ngo()
+
+    public function ngoStaff()
     {
-        return $this->belongsTo(Ngo::class, 'ngo_id');
+        return $this->hasOne(NgoStaff::class);
     }
 }
