@@ -17,12 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->string('password');
-            $table->enum('role', ['general', 'ngo', 'admin']);
-            $table->foreignId('ngo_id')->nullable()->constrained('ngos');
-            $table->string('designation')->nullable();
-            $table->enum('privilege_role', ['admin', 'campaign_manager', 'finance_handler'])->nullable();
+            $table->enum('role', ['general', 'ngo_staff', 'admin']);
             $table->boolean('volunteer')->default(false);
-            $table->rememberToken();
             $table->timestamps();
         });
 

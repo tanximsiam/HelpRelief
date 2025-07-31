@@ -14,13 +14,18 @@ return new class extends Migration
         Schema::create('ngos', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('rep_contact'); // Representative name
-            $table->string('rep_designation')->nullable(); // Rep's designation
-            $table->string('rep_email')->unique(); // Rep's email
-            $table->string('rep_phone')->nullable(); // Rep's phone number
             $table->text('description')->nullable();
             $table->string('website')->nullable();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->string('email');
+            $table->string('phone');
+            $table->string('based_in');
+            $table->string('registration_no')->nullable();
+            $table->year('established_year')->nullable();
+            $table->string('director_name')->nullable();
+            $table->string('director_phone')->nullable();
+            $table->integer('num_employees')->nullable();
+            $table->string('logo_url')->nullable();
+            $table->boolean('approved')->default(false);
             $table->timestamps();
         });
 

@@ -1,7 +1,7 @@
 # Auth API Documentation
 
 ## Overview
-Handles user registration, login, authenticated profile access, and logout.
+Authentication system including standard registration/login, Google OAuth onboarding with NGO invite token, and user profile/logout endpoints.
 
 ## Base URL
 ```
@@ -9,8 +9,8 @@ Handles user registration, login, authenticated profile access, and logout.
 ```
 
 ## Authentication
-- Sanctum token-based authentication
-- Google OAuth2 login via Laravel Socialite
+- Token-based via Laravel Sanctum
+- Google OAuth2 via Laravel Socialite
 
 ---
 
@@ -19,136 +19,113 @@ Handles user registration, login, authenticated profile access, and logout.
 ### 1. Register User
 **POST** `/api/register`
 
-Registers a new general user.
+Registers a general user.
 
 #### Request Body
-```json
+```
 {
-  "name": "Tanzim",
-  "email": "tanzim@example.com",
-  "phone": "017xxxxxxxx",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "phone": "01712345678",
   "password": "secret123",
   "password_confirmation": "secret123"
 }
 ```
 
-#### Success Response (201 Created)
-```json
+#### Response (201 Created)
+```
 {
   "message": "User registered successfully",
   "user": {
-    "name": "Tanzim",
-    "email": "tanzim@example.com",
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "01712345678",
     "role": "general",
-    "updated_at": "2025-07-30T20:19:17.000000Z",
-    "created_at": "2025-07-30T20:19:17.000000Z",
-    "id": 1
-  }
-}
-```
-
-#### Validation Error (422)
-```json
-{
-  "message": "Kindly fill all required fields.",
-  "errors": {
-    "email": ["An account with this email already exists."]
+    "created_at": "2025-08-01T00:00:00.000000Z",
+    "updated_at": "2025-08-01T00:00:00.000000Z"
   }
 }
 ```
 
 ---
 
-### 2. Login
+### 2. Login User
 **POST** `/api/login`
 
-Authenticates a user and returns a token.
+Authenticates user and returns token.
 
 #### Request Body
-```json
+```
 {
-  "email": "tanzim@example.com",
+  "email": "john@example.com",
   "password": "secret123"
 }
 ```
 
-#### Success Response (200 OK)
-```json
+#### Response
+```
 {
   "message": "Login successful",
-  "token": "Bearer 1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1..."
-}
-```
-
-#### Invalid Credentials (422)
-```json
-{
-  "message": "The given data was invalid.",
-  "errors": {
-    "email": ["Invalid credentials."]
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "01712345678",
+    "role": "general",
+    "created_at": "2025-08-01T00:00:00.000000Z",
+    "updated_at": "2025-08-01T00:00:00.000000Z"
   }
 }
 ```
 
 ---
 
-### 3. Login via Google (Redirect)
-**GET** `/auth/redirect`
+### 3. Google OAuth Redirect
+**GET** `/api/auth/google/redirect`
 
-Redirects user to Google OAuth login page.
+Redirects user to Google OAuth. Accepts optional token as `?token=XYZ`.
 
-#### Response
-302 Redirect to Google login
+#### Example
+```
+/api/auth/google/redirect?token=NGO123TOKEN
+```
 
 ---
 
 ### 4. Google OAuth Callback
-**GET** `/auth/callback`
+**GET** `/api/auth/google/callback`
 
-Handles the response from Google and issues an API token.
+Handles Google callback and registers/logs in user based on invite token.
 
-#### Redirects to:
-`<FRONTEND_URL>/socialite-token-receiver?token=<token>`
+- Without token → registers general user
+- With valid token → registers as `ngo_staff` and creates `NgoStaff` record
 
-#### Token Format
-`Bearer 3|eyJ0eXAiOiJKV1QiLCJh...`
+#### Example Redirection:
+```
+/dashboard?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
 
-User is auto-created if not found. Role is determined by domain:
-- If email domain matches an approved NGO, role is `ngo`
-- Otherwise, role is `general`
+
 
 ---
 
-### 5. Get Authenticated User (Profile)
+### 5. Get Authenticated User Profile
 **GET** `/api/profile`
 
-Requires Authorization header.
+Requires auth token.
 
-#### Headers
+#### Response
 ```
-Authorization: Bearer 3|eyJ0eXAiOiJKV1QiLCJh...
-```
-
-#### Success Response
-```json
 {
   "id": 1,
-  "name": "Tanzim",
-  "email": "tanzim@example.com",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "phone": "01712345678",
   "role": "general",
-  "ngo_id": null,
-  "designation": null,
-  "privilege_role": null,
-  "volunteer": 0,
-  "created_at": "2025-07-30T18:58:59.000000Z",
-  "updated_at": "2025-07-30T18:58:59.000000Z"
-}
-```
-
-#### Unauthorized (401)
-```json
-{
-  "message": "Unauthenticated."
+  "created_at": "2025-08-01T00:00:00.000000Z",
+  "updated_at": "2025-08-01T00:00:00.000000Z"
 }
 ```
 
@@ -157,15 +134,10 @@ Authorization: Bearer 3|eyJ0eXAiOiJKV1QiLCJh...
 ### 6. Logout
 **POST** `/api/logout`
 
-Revokes current access token.
+Revokes current token.
 
-#### Headers
+#### Response
 ```
-Authorization: Bearer 3|eyJ0eXAiOiJKV1QiLCJh...
-```
-
-#### Success Response
-```json
 {
   "message": "Logged out"
 }
@@ -174,7 +146,19 @@ Authorization: Bearer 3|eyJ0eXAiOiJKV1QiLCJh...
 ---
 
 ## Notes
-- Always include `Accept: application/json` in headers for API usage for POSTMAN
-- Tokens must be sent in `Authorization` header as `Bearer <token>`
-- All authenticated routes are protected via Sanctum middleware
-- Google login returns API token via frontend redirect
+- `NgoInviteLink` tokens support usage limits and role assignment.
+- `NgoStaff` records track `ngo_id` and `privilege_role`.
+- Google OAuth registrations without token are treated as general users.
+
+
+
+## Related Models
+- `User`
+- `NgoInviteLink`
+- `NgoStaff`
+
+## Middleware
+- Protected routes use `auth:sanctum`
+
+## Role-based Redirection (frontend)
+- All OAuth redirects send token via `?token=` to frontend.
