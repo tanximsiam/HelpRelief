@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\AuthController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome');
@@ -15,9 +15,9 @@ use App\Http\Controllers\SocialAuthController;
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 
-Route::get('/auth/redirect', [SocialAuthController::class, 'redirectToGoogle'])
+Route::get('/auth/redirect', [AuthController::class, 'redirectToGoogle'])
     ->name('auth.redirect');
-Route::get('/auth/callback', [SocialAuthController::class, 'handleGoogleCallback'])
+Route::get('/auth/callback', [AuthController::class, 'handleGoogleCallback'])
     ->name('auth.callback');
 
 Route::middleware('auth')->group(function () {

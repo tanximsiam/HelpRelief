@@ -10,6 +10,7 @@ Handles user registration, login, authenticated profile access, and logout.
 
 ## Authentication
 - Sanctum token-based authentication
+- Google OAuth2 login via Laravel Socialite
 
 ---
 
@@ -91,14 +92,41 @@ Authenticates a user and returns a token.
 
 ---
 
-### 3. Get Authenticated User (Profile)
+### 3. Login via Google (Redirect)
+**GET** `/auth/redirect`
+
+Redirects user to Google OAuth login page.
+
+#### Response
+302 Redirect to Google login
+
+---
+
+### 4. Google OAuth Callback
+**GET** `/auth/callback`
+
+Handles the response from Google and issues an API token.
+
+#### Redirects to:
+`<FRONTEND_URL>/socialite-token-receiver?token=<token>`
+
+#### Token Format
+`Bearer 3|eyJ0eXAiOiJKV1QiLCJh...`
+
+User is auto-created if not found. Role is determined by domain:
+- If email domain matches an approved NGO, role is `ngo`
+- Otherwise, role is `general`
+
+---
+
+### 5. Get Authenticated User (Profile)
 **GET** `/api/profile`
 
 Requires Authorization header.
 
 #### Headers
 ```
-Authorization: Bearer 1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1...
+Authorization: Bearer 3|eyJ0eXAiOiJKV1QiLCJh...
 ```
 
 #### Success Response
@@ -126,14 +154,14 @@ Authorization: Bearer 1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1...
 
 ---
 
-### 4. Logout
+### 6. Logout
 **POST** `/api/logout`
 
 Revokes current access token.
 
 #### Headers
 ```
-Authorization: Bearer 1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1...
+Authorization: Bearer 3|eyJ0eXAiOiJKV1QiLCJh...
 ```
 
 #### Success Response
@@ -149,3 +177,4 @@ Authorization: Bearer 1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1...
 - Always include `Accept: application/json` in headers for API usage for POSTMAN
 - Tokens must be sent in `Authorization` header as `Bearer <token>`
 - All authenticated routes are protected via Sanctum middleware
+- Google login returns API token via frontend redirect
