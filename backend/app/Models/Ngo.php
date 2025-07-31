@@ -11,16 +11,32 @@ class Ngo extends Model
     //
     protected $fillable = [
         'name',
-        'rep_contact',
-        'rep_designation',
-        'rep_email',
-        'rep_phone',
         'description',
         'website',
-        'status',
+        'email',
+        'phone',
+        'based_in',
+        'registration_no',
+        'established_year',
+        'director_name',
+        'director_phone',
+        'num_employees',
+        'logo_url',
+        'approved',
         ];
 
-    public function users()
-    {        return $this->hasMany(User::class, 'ngo_id');
+    public function staffs()
+    {
+        return $this->hasMany(NgoStaff::class);
+    }
+
+    public function domains()
+    {
+        return $this->hasMany(NgoEmailDomain::class);
+    }
+
+    public function causeFocuses()
+    {
+        return $this->belongsToMany(CauseFocus::class, 'ngo_cause_focuses');
     }
 }

@@ -6,13 +6,25 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NgoController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NgoApplicationController;
+use App\Http\Controllers\CauseFocusController;
+use App\Http\Controllers\NgoStaffController;
+use App\Http\Controllers\NgoInviteLinkController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// TEST ROUTES
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/ngos', [NgoController::class, 'index']);
+Route::get('/ngo-applications', [NgoApplicationController::class, 'index']);
+Route::get('/cause-focuses', [CauseFocusController::class, 'index']);
+Route::get('/ngo-invites/{ngo}', [NgoInviteLinkController::class, 'index']);
+Route::get('/ngo-staff', [NgoStaffController::class, 'index']);
+
+// Pre-Login Routes
+Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 
 // Route::get('/users', function () {
 //     return User.index();
@@ -22,10 +34,30 @@ Route::get('/ngos', [NgoController::class, 'index']);
 //     return Ngo::all();
 // });
 
+
+// Authenticated Routes
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
+    // Authenticated user profile
+
     Route::get('/profile', [AuthController::class, 'profile']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // NGO applications
+    Route::post('/ngo-applications/{id}/approve', [NgoApplicationController::class, 'approve']);
+    Route::post('/ngo-applications/{id}/reject', [NgoApplicationController::class, 'reject']);
+
+    // Cause Focuses (optional admin use)
+    Route::post('/cause-focuses', [CauseFocusController::class, 'store']);
+
+    // NGO Staff
+    Route::get('/ngo-staffs', [NgoStaffController::class, 'index']);
+    Route::delete('/ngo-staffs/{id}', [NgoStaffController::class, 'destroy']);
+
+    // Invite Accept (WIP)
+    Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
+    Route::post('/ngo-invites', [NgoInviteLinkController::class, 'store']);
 });
