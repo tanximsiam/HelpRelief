@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
+
+class VolunteerTaskLog extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'task_id',
+        'volunteer_id',
+        'disaster_id',
+        'status',
+        'check_in',
+        'check_out',
+        'expected_end',
+        'start_verified_by',
+        'end_verified_by',
+        'report',
+    ];
+
+    protected $casts = [
+        'check_in' => 'datetime',
+        'check_out' => 'datetime',
+        'expected_end' => 'datetime',
+    ];
+
+    // Relationships
+    public function task(): BelongsTo
+    {
+        return $this->belongsTo(Task::class);
+    }
+
+    public function volunteer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'volunteer_id');
+    }
+
+    public function disaster(): BelongsTo
+    {
+        return $this->belongsTo(Disaster::class);
+    }
+
+    public function startVerifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'start_verified_by');
+    }
+
+    public function endVerifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'end_verified_by');
+    }
+
+    // Auto-flagging methods
+    public function checkForNoShow()
+    {
+        if ($this->status === 'assigned' && $this->created_at->diffInDays(now()) >= 2 && is_null($this->check_in)) {
+            $this->update([
+                'status' => 'no_show',
+                'report' => 'no_show'
+            ]);
+        }
+    }
+
+    public function checkForAbandoned()
+    {
+        if ($this->status === 'started' && $this->expected_end &&
+            $this->expected_end->diffInDays(now()) >= 2 && is_null($this->check_out)) {
+            $this->update([
+                'status' => 'abandoned',
+                'report' => 'abandoned'
+            ]);
+        }
+    }
+
+    // Static method to run auto-flagging on all applicable records
+    public static function runAutoFlagging()
+    {
+        // Flag no_show tasks
+        self::where('status', 'assigned')
+            ->whereNull('check_in')
+            ->where('created_at', '<=', now()->subDays(2))
+            ->update([
+                'status' => 'no_show',
+                'report' => 'no_show'
+            ]);
+
+        // Flag abandoned tasks
+        self::where('status', 'started')
+            ->whereNull('check_out')
+            ->whereNotNull('expected_end')
+            ->where('expected_end', '<=', now()->subDays(2))
+            ->update([
+                'status' => 'abandoned',
+                'report' => 'abandoned'
+            ]);
+    }
+}
