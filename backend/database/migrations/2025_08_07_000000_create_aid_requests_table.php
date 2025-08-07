@@ -16,10 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('disaster_id')->nullable();
             $table->unsignedBigInteger('requester_id');
             $table->string('location');
-            $table->string('aid_type');
+            $table->enum('aid_type', ['financial', 'medical', 'resource']);
             $table->enum('urgency', ['low', 'medium', 'high', 'critical']);
             $table->text('description');
-            $table->enum('status', ['pending_assignment', 'assigned', 'in_progress', 'completed', 'cancelled'])->default('pending_assignment');
+            $table->enum('status', ['pending', 'assigned', 'rejected', 'completed'])->default('pending');
             $table->unsignedBigInteger('task_id')->nullable();
             $table->text('ngo_remarks')->nullable();
             $table->timestamps();
