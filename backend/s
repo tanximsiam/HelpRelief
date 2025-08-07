@@ -1,0 +1,14 @@
+[90m= [39m[34;4mApp\Models\Task[39;24m {#5449
+    [34mdisaster_id[39m: [35m2[39m,
+    [34mcreated_by[39m: [35m1[39m,
+    [34mtask_type[39m: "[32mresource_distribution[39m",
+    [34mlocation[39m: "[32mSylhet City[39m",
+    [34mstart_time[39m: "[32m2025-08-07 12:54:20[39m",
+    [34mend_time[39m: "[32m2025-08-07 16:54:20[39m",
+    [34mdescription[39m: "[32mDistribute medical supplies to affected families[39m",
+    [34mstatus[39m: "[32mpending[39m",
+    [34mupdated_at[39m: "[32m2025-08-07 12:54:20[39m",
+    [34mcreated_at[39m: "[32m2025-08-07 12:54:20[39m",
+    [34mid[39m: [35m2[39m,
+  }
+
