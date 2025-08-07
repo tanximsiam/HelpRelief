@@ -47,10 +47,7 @@ class VolunteerTaskLogController extends Controller
         }
     }
 
-    /**
-     * Admin check-out: End a task
-     * POST /api/task-log/checkout
-     */
+    //Admin check-out: End a task  POST /api/task-log/checkout
     public function checkOut(Request $request): JsonResponse
     {
         try {
