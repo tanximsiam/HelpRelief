@@ -10,6 +10,9 @@ use App\Http\Controllers\NgoApplicationController;
 use App\Http\Controllers\CauseFocusController;
 use App\Http\Controllers\NgoStaffController;
 use App\Http\Controllers\NgoInviteLinkController;
+use App\Http\Controllers\VolunteerTaskController;
+use App\Http\Controllers\VolunteerReportController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -60,4 +63,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // Invite Accept (WIP)
     Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
     Route::post('/ngo-invites', [NgoInviteLinkController::class, 'store']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
+    Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
+});
+
+Route::middleware(['auth:sanctum', 'role:ngo'])->prefix('reports/volunteers')->group(function () {
+    Route::get('/aggregate', [VolunteerReportController::class, 'aggregate']);
+    Route::get('/individual', [VolunteerReportController::class, 'individual']);
 });
