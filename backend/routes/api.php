@@ -10,6 +10,7 @@ use App\Http\Controllers\NgoApplicationController;
 use App\Http\Controllers\CauseFocusController;
 use App\Http\Controllers\NgoStaffController;
 use App\Http\Controllers\NgoInviteLinkController;
+use App\Http\Controllers\AidRequestController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -60,4 +61,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Invite Accept (WIP)
     Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
     Route::post('/ngo-invites', [NgoInviteLinkController::class, 'store']);
+
+    // Aid Requests
+    Route::get('/aid-requests', [AidRequestController::class, 'index']);
+    Route::post('/aid-requests', [AidRequestController::class, 'store']);
+
 });
