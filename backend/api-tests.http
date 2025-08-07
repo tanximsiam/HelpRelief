@@ -25,7 +25,7 @@ Content-Type: application/json
 ### 3. Create Aid Request (REPLACE "YOUR_TOKEN_HERE" with actual token from login response)
 POST http://localhost:8000/api/aid-requests
 Content-Type: application/json
-Authorization: Bearer YOUR_TOKEN_HERE
+Authorization: Bearer 9|0Q67a3rPfF0a1E5iUjvSNEcGWfiwF3mTXVGmEeWM0dcd0b4d
 
 {
   "disaster_id": 1,
@@ -35,24 +35,7 @@ Authorization: Bearer YOUR_TOKEN_HERE
   "description": "Field team lacks emergency kits"
 }
 
-### 4. Test validation (missing required fields)
-POST http://localhost:8000/api/aid-requests
-Content-Type: application/json
-Authorization: Bearer YOUR_TOKEN_HERE
 
-{
-  "aid_type": "medical"
-}
 
-### 5. Test invalid urgency level
-POST http://localhost:8000/api/aid-requests
-Content-Type: application/json
-Authorization: Bearer 2|lW9FpYsvnjRsadj4tH5AQkIERxXdv5DQ9UUt9Epbacd50bdf
 
-{
-  "disaster_id": 1,
-  "aid_type": "medical",
-  "urgency": "invalid_urgency",
-  "location": "Test Location",
-  "description": "Test description"
-}
+
