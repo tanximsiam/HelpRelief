@@ -10,10 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class VolunteerTaskLogController extends Controller
 {
-    /**
-     * Admin check-in: Start a task
-     * POST /api/task-log/checkin
-     */
+    //Admin check-in: Start a task
     public function checkIn(Request $request): JsonResponse
     {
         try {
