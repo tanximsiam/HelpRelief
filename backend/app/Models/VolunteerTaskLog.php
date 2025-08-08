@@ -20,5 +20,11 @@ class VolunteerTaskLog extends Model
     public function volunteer() {
         return $this->belongsTo(User::class, 'volunteer_id');
     }
+    
+    protected $casts = [
+    'check_in' => 'datetime',
+    'check_out' => 'datetime',
+];
+
 }
 

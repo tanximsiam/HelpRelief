@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class VolunteerReportController extends Controller
             ->whereNotNull('check_out')
             ->get()
             ->sum(function ($log) {
-                return round(($log->check_out->diffInSeconds($log->check_in)) / 3600, 2);
+                return round(($log->check_in->diffInSeconds($log->check_out)) / 3600, 2);
             });
 
         return response()->json([
@@ -52,7 +52,7 @@ class VolunteerReportController extends Controller
 
             $hours = $group->sum(function ($log) {
                 if ($log->check_in && $log->check_out) {
-                    return round(($log->check_out->diffInSeconds($log->check_in)) / 3600, 2);
+                    return round((($log->check_in)->diffInSeconds($log->check_out)) / 3600, 2);
                 }
                 return 0;
             });
