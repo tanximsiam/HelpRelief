@@ -14,25 +14,19 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('disaster_id')->constrained('disasters');
             $table->foreignId('assigned_to')->constrained('users'); // the volunteer
             $table->foreignId('created_by')->constrained('users');  // NGO or admin
-
             $table->enum('task_type', ['aid_request', 'delivery'])->default('aid_request');
             $table->unsignedBigInteger('aid_request_id')->nullable(); // if linked
             $table->string('location');
-
             $table->timestamp('start_time');
             $table->timestamp('end_time')->nullable();
-
             $table->enum('aid_type', ['financial', 'medical', 'resource']);
             $table->enum('urgency', ['low', 'medium', 'high', 'critical']);
             $table->text('description')->nullable();
-
             $table->enum('status', ['pending', 'assigned', 'rejected', 'completed'])->default('assigned');
             $table->text('ngo_remarks')->nullable();
-
             $table->timestamps();
         });
     }
