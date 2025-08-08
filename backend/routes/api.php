@@ -10,11 +10,16 @@ use App\Http\Controllers\NgoApplicationController;
 use App\Http\Controllers\CauseFocusController;
 use App\Http\Controllers\NgoStaffController;
 use App\Http\Controllers\NgoInviteLinkController;
+
+use App\Http\Controllers\AidSupportController;
+use App\Http\Controllers\VolunteerRegistrationController;
+use App\Models\AidSupport;
 use App\Http\Controllers\VolunteerTaskController;
 use App\Http\Controllers\VolunteerReportController;
 
 use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -66,6 +71,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
     Route::post('/ngo-invites', [NgoInviteLinkController::class, 'store']);
 
+
+    // Aid Support and Volunteer Registration
+    Route::post('/aid-supports', [AidSupportController::class, 'store']);
+    Route::post('/volunteer-registrations', [VolunteerRegistrationController::class, 'store']);
+    Route::get('/my-help-offers', [AidSupportController::class, 'myOffers']);
+
+}); // End of Authenticated Routes
+
+
     // Aid Requests
     Route::get('/aid-requests', [AidRequestController::class, 'index']);
     Route::post('/aid-requests', [AidRequestController::class, 'store']);
@@ -87,3 +101,4 @@ Route::middleware(['auth:sanctum', 'role:ngo'])->prefix('reports/volunteers')->g
     Route::get('/aggregate', [VolunteerReportController::class, 'aggregate']);
     Route::get('/individual', [VolunteerReportController::class, 'individual']);
 });
+
