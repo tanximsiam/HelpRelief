@@ -77,8 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/volunteer-registrations', [VolunteerRegistrationController::class, 'store']);
     Route::get('/my-help-offers', [AidSupportController::class, 'myOffers']);
 
-}); // End of Authenticated Routes
-
+ // End of Authenticated Routes
 
     // Aid Requests
     Route::get('/aid-requests', [AidRequestController::class, 'index']);
@@ -90,11 +89,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
 
 
-
-
-Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
     Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
+
+     // Assign a task to a volunteer (NGO action)
+    Route::post('/tasks/{id}/assign', [VolunteerTaskController::class, 'assignTask']);
+    
+    // Reject a task (NGO action with remarks)
+    Route::patch('/tasks/{id}/reject', [VolunteerTaskController::class, 'rejectTask']);
+    
+    // Create a standalone task (NGO action)
+    Route::post('/tasks/create', [VolunteerTaskController::class, 'createStandaloneTask']);
+
 });
 
 Route::middleware(['auth:sanctum', 'role:ngo'])->prefix('reports/volunteers')->group(function () {
