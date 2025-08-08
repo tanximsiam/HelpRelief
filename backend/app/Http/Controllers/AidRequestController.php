@@ -32,9 +32,9 @@ class AidRequestController extends Controller
         }
 
         // Order by urgency (critical first) and created_at
-        $aidRequests = $query->orderByRaw("FIELD(urgency, 'critical', 'high', 'medium', 'low')")
+        $aidRequests = $query->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
                             ->orderBy('created_at', 'desc')
-                            ->paginate(15);
+                            ->get();
 
         return response()->json($aidRequests);
     }
@@ -43,7 +43,7 @@ class AidRequestController extends Controller
     public function store(Request $request): JsonResponse
     {
         // Check if user is a verified volunteer
-        $user = auth()->user();
+        $user = $request->user();
         if (!$user || !$user->volunteer) {
             return response()->json([
                 'message' => 'Only volunteers can submit aid requests'
@@ -74,7 +74,8 @@ class AidRequestController extends Controller
             $aidRequest = AidRequest::create($validatedData);
 
             return response()->json([
-                'message' => 'Aid request submitted successfully.'
+                'message' => 'Aid request submitted successfully.',
+                'aid_request' => $aidRequest
             ], 201);
 
         } catch (ValidationException $e) {
@@ -88,4 +89,41 @@ class AidRequestController extends Controller
             ], 500);
         }
     }
+
+    public function myRequests(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user->volunteer) {
+            return response()->json(['message' => 'Only volunteers can view this'], 403);
+        }
+
+        $requests = AidRequest::where('requester_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($requests);
+    }
+
+    public function verifyByRequester(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+
+        // Find the aid request by route param
+        $aidRequest = AidRequest::findOrFail($id);
+
+        // Ensure the logged-in user is the requester
+        if ($aidRequest->requester_id !== $user->id) {
+            return response()->json(['message' => 'You can only verify your own requests'], 403);
+        }
+
+        // Update status
+        $aidRequest->status = 'completed';
+        $aidRequest->save();
+
+        return response()->json([
+            'message' => 'Aid request verified successfully',
+            'aid_request' => $aidRequest
+        ]);
+    }
+
 }

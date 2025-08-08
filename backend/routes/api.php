@@ -32,76 +32,78 @@ Route::get('/ngo-applications', [NgoApplicationController::class, 'index']);
 Route::get('/cause-focuses', [CauseFocusController::class, 'index']);
 Route::get('/ngo-invites/{ngo}', [NgoInviteLinkController::class, 'index']);
 Route::get('/ngo-staff', [NgoStaffController::class, 'index']);
-
+Route::get('/aid-supports', [AidSupportController::class, 'index']);
+Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
 // Pre-Login Routes
 Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 
 // Route::get('/users', function () {
-//     return User.index();
-// });
+    //     return User.index();
+    // });
 
-// Route::get('/ngos', function () {
-//     return Ngo::all();
-// });
-
-
-// Authenticated Routes
-
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    // Authenticated user profile
-
-    Route::get('/profile', [AuthController::class, 'profile']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-
-    // NGO applications
-    Route::post('/ngo-applications/{id}/approve', [NgoApplicationController::class, 'approve']);
-    Route::post('/ngo-applications/{id}/reject', [NgoApplicationController::class, 'reject']);
-
-    // Cause Focuses (optional admin use)
-    Route::post('/cause-focuses', [CauseFocusController::class, 'store']);
-
-    // NGO Staff
-    Route::get('/ngo-staffs', [NgoStaffController::class, 'index']);
-    Route::delete('/ngo-staffs/{id}', [NgoStaffController::class, 'destroy']);
-
-    // Invite Accept (WIP)
-    Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
-    Route::post('/ngo-invites', [NgoInviteLinkController::class, 'store']);
+    // Route::get('/ngos', function () {
+        //     return Ngo::all();
+        // });
 
 
-    // Aid Support and Volunteer Registration
-    Route::post('/aid-supports', [AidSupportController::class, 'store']);
-    Route::post('/volunteer-registrations', [VolunteerRegistrationController::class, 'store']);
-    Route::get('/my-help-offers', [AidSupportController::class, 'myOffers']);
+        // Authenticated Routes
 
- // End of Authenticated Routes
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login']);
 
-    // Aid Requests
-    Route::get('/aid-requests', [AidRequestController::class, 'index']);
-    Route::post('/aid-requests', [AidRequestController::class, 'store']);
+        Route::middleware('auth:sanctum')->group(function () {
+            // Authenticated user profile
 
-    // Volunteer Task Logs
-    Route::post('/task-log/checkin', [VolunteerTaskLogController::class, 'checkIn']);
-    Route::post('/task-log/checkout', [VolunteerTaskLogController::class, 'checkOut']);
-    Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
+            Route::get('/profile', [AuthController::class, 'profile']);
+            Route::post('/logout', [AuthController::class, 'logout']);
+
+            // NGO applications
+            Route::post('/ngo-applications/{id}/approve', [NgoApplicationController::class, 'approve']);
+            Route::post('/ngo-applications/{id}/reject', [NgoApplicationController::class, 'reject']);
+
+            // Cause Focuses (optional admin use)
+            Route::post('/cause-focuses', [CauseFocusController::class, 'store']);
+
+            // NGO Staff
+            Route::get('/ngo-staffs', [NgoStaffController::class, 'index']);
+            Route::delete('/ngo-staffs/{id}', [NgoStaffController::class, 'destroy']);
+
+            // Invite Accept (WIP)
+            Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
+            Route::post('/ngo-invites', [NgoInviteLinkController::class, 'store']);
 
 
-    Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
-    Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
+            // Aid Support and Volunteer Registration
+            Route::post('/aid-supports', [AidSupportController::class, 'store']);
+            Route::post('/volunteer-registrations', [VolunteerRegistrationController::class, 'store']);
+            Route::get('/my-help-offers', [AidSupportController::class, 'myOffers']);
 
-     // Assign a task to a volunteer (NGO action)
-    Route::post('/tasks/{id}/assign', [VolunteerTaskController::class, 'assignTask']);
-    
-    // Reject a task (NGO action with remarks)
-    Route::patch('/tasks/{id}/reject', [VolunteerTaskController::class, 'rejectTask']);
-    
-    // Create a standalone task (NGO action)
-    Route::post('/tasks/create', [VolunteerTaskController::class, 'createStandaloneTask']);
+            // End of Authenticated Routes
 
-});
+            // Aid Requests
+            Route::get('/aid-requests', [AidRequestController::class, 'index']);
+            Route::post('/submit-aid-requests', [AidRequestController::class, 'store']);
+            Route::post('/aid-requests/{aid_request}/verify', [AidRequestController::class, 'verifyByRequester']);
+
+            // Volunteer Task Logs
+            Route::post('/task-log/checkin', [VolunteerTaskLogController::class, 'checkIn']);
+            Route::post('/task-log/checkout', [VolunteerTaskLogController::class, 'checkOut']);
+            Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
+
+
+            Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
+            Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
+
+            // Assign a task to a volunteer (NGO action)
+            Route::post('/tasks/{id}/assign', [VolunteerTaskController::class, 'assignTask']);
+
+            // Reject a task (NGO action with remarks)
+            Route::patch('/tasks/{id}/reject', [VolunteerTaskController::class, 'rejectTask']);
+
+            // Create a standalone task (NGO action)
+            Route::post('/tasks/create', [VolunteerTaskController::class, 'createStandaloneTask']);
+
+        });
 
 Route::middleware(['auth:sanctum', 'role:ngo'])->prefix('reports/volunteers')->group(function () {
     Route::get('/aggregate', [VolunteerReportController::class, 'aggregate']);
