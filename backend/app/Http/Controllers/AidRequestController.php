@@ -7,7 +7,6 @@ use App\Models\AidRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class AidRequestController extends Controller
 {
@@ -45,9 +44,9 @@ class AidRequestController extends Controller
     {
         // Check if user is a verified volunteer
         $user = auth()->user();
-        if (!$user || !$user->volunteer || $user->email_verified_at === null) {
+        if (!$user || !$user->volunteer) {
             return response()->json([
-                'message' => 'Only verified volunteers can submit aid requests'
+                'message' => 'Only volunteers can submit aid requests'
             ], 403);
         }
 
