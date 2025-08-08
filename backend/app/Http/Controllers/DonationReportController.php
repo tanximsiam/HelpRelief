@@ -43,7 +43,7 @@ class DonationReportController extends Controller
         ], 201);
     }
 
-    public function userReportForDisaster(Request $request, int $disasterId)
+    public function userReportForDisaster(Request $request, $disasterId)
     {
         $userId = $request->user()->id;
 
