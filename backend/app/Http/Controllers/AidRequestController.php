@@ -43,7 +43,7 @@ class AidRequestController extends Controller
     public function store(Request $request): JsonResponse
     {
         // Check if user is a verified volunteer
-        $user = auth()->user();
+        $user = $request->user();
         if (!$user || !$user->volunteer) {
             return response()->json([
                 'message' => 'Only volunteers can submit aid requests'
