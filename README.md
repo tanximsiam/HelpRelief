@@ -31,9 +31,9 @@ helprelief/
 
 `dev` – latest stable development
 
-`feature/<feature-name>` – new features
+`FEATURE_<feature_name>` – new features
 
-`bugfix/<bug-name>` – patches and fixes
+`BUGFIX_<bugfix_name>` – patches and fixes
 
 All changes should be merged into `dev` first, then into `prod` after testing.
 

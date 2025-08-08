@@ -13,9 +13,9 @@ class AidSupportSeeder extends Seeder
     public function run(): void
     {
        AidSupport::create([
-            'user_id' => 1, // Assuming user_id 1
-            'disaster_id' => 1, // Assuming disaster_id 1
-            'ngo_id' => 1, // Assuming ngo_id 1
+            'user_id' => 1, 
+            'disaster_id' => 1, 
+            'ngo_id' => 1, 
             'aid_type' => 'financial',
             'quantity' => 1000,
             'description' => 'Financial aid for disaster relief.',
@@ -24,9 +24,9 @@ class AidSupportSeeder extends Seeder
         ]);
 
         AidSupport::create([
-            'user_id' => 2, // Assuming user_id 2
-            'disaster_id' => 2, // Assuming disaster_id 2
-            'ngo_id' => 2, // Assuming ngo_id 2
+            'user_id' => 3, 
+            'disaster_id' => 2, 
+            'ngo_id' => 2, 
             'aid_type' => 'medical',
             'quantity' => 50,
             'description' => 'Medical supplies for disaster area.',
