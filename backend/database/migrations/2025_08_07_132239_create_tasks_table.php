@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('assigned_to')->constrained('users'); // the volunteer
             $table->foreignId('created_by')->constrained('users');  // NGO or admin
             $table->enum('task_type', ['aid_request', 'delivery'])->default('aid_request');
-            $table->unsignedBigInteger('aid_request_id')->nullable(); // if linked
+            $table->foreignId('aid_request_id')->nullable(); // if linked
             $table->string('location');
             $table->timestamp('start_time');
             $table->timestamp('end_time')->nullable();
