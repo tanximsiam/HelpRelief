@@ -14,9 +14,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        #Ngo::factory(5)->create();
-        #User::factory(10)->create();
-        
+
         $this->call([
             NgoSeeder::class,
             UserSeeder::class,

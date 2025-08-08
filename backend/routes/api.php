@@ -14,8 +14,11 @@ use App\Http\Controllers\NgoInviteLinkController;
 use App\Http\Controllers\AidSupportController;
 use App\Http\Controllers\VolunteerRegistrationController;
 use App\Models\AidSupport;
+use App\Http\Controllers\VolunteerTaskController;
+use App\Http\Controllers\VolunteerReportController;
 
 use App\Http\Controllers\AidRequestController;
+use App\Http\Controllers\VolunteerTaskLogController;
 
 
 Route::get('/user', function (Request $request) {
@@ -81,5 +84,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/aid-requests', [AidRequestController::class, 'index']);
     Route::post('/aid-requests', [AidRequestController::class, 'store']);
 
+    // Volunteer Task Logs
+    Route::post('/task-log/checkin', [VolunteerTaskLogController::class, 'checkIn']);
+    Route::post('/task-log/checkout', [VolunteerTaskLogController::class, 'checkOut']);
+    Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
+
+
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
+    Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
+});
+
+Route::middleware(['auth:sanctum', 'role:ngo'])->prefix('reports/volunteers')->group(function () {
+    Route::get('/aggregate', [VolunteerReportController::class, 'aggregate']);
+    Route::get('/individual', [VolunteerReportController::class, 'individual']);
 });
 
