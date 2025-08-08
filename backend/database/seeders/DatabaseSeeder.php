@@ -16,11 +16,17 @@ class DatabaseSeeder extends Seeder
     {
 
         $this->call([
-            NgoSeeder::class,
             UserSeeder::class,
+            NgoApplicationSeeder::class,
+            NgoSeeder::class,
+            NgoStaffSeeder::class,
+            NgoEmailDomainSeeder::class,
             DisasterSeeder::class,
+            AidRequestSeeder::class,
+            TaskSeeder::class,
             AidSupportSeeder::class,
             VolunteerSeeder::class,
+            VolunteerTaskLogsSeeder::class,
         ]);
 
         // User::factory()->create([
