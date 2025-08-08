@@ -1,0 +1,41 @@
+### API Tests for Aid Requests
+
+### 1. First, register a new user (if needed)
+POST http://localhost:8000/api/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "phone": "01234567890",
+  "volunteer": true
+}
+
+### 2. Login to get authentication token
+POST http://localhost:8000/api/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 3. Create Aid Request (REPLACE "YOUR_TOKEN_HERE" with actual token from login response)
+POST http://localhost:8000/api/aid-requests
+Content-Type: application/json
+Authorization: Bearer 9|0Q67a3rPfF0a1E5iUjvSNEcGWfiwF3mTXVGmEeWM0dcd0b4d
+
+{
+  "disaster_id": 1,
+  "aid_type": "medical",
+  "urgency": "high",
+  "location": "Shibpur, Narsingdi",
+  "description": "Field team lacks emergency kits"
+}
+
+
+
+
+
