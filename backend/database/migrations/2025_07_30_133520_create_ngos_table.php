@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('director_phone')->nullable();
             $table->integer('num_employees')->nullable();
             $table->string('logo_url')->nullable();
-            $table->boolean('approved')->default(false);
+            $table->boolean('approved')->default(true);
             $table->timestamps();
         });
 

@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('aid_requests', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('disaster_id')->nullable();
-            $table->unsignedBigInteger('requester_id');
+            $table->foreignId('disaster_id')->nullable()->constrained('disasters')->onDelete('set null');
+            $table->foreignId('requester_id')->constrained('users')->onDelete('cascade');
             $table->string('location');
             $table->enum('aid_type', ['financial', 'medical', 'resource']);
             $table->enum('urgency', ['low', 'medium', 'high', 'critical']);
             $table->text('description');
             $table->enum('status', ['pending', 'assigned', 'rejected', 'completed'])->default('pending');
-            $table->unsignedBigInteger('task_id')->nullable();
+            $table->foreignId('task_id')->nullable();
             $table->text('ngo_remarks')->nullable();
             $table->timestamps();
 
