@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Task;
+use App\Models\VolunteerTaskLog;
+use App\Models\User;
 
 class Disaster extends Model
 {
@@ -35,5 +38,10 @@ class Disaster extends Model
     public function volunteerTaskLogs(): HasMany
     {
         return $this->hasMany(VolunteerTaskLog::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

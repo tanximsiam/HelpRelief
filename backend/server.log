@@ -1,8 +1,0 @@
-nohup: ignoring input
-
-   INFO  Server running on [http://127.0.0.1:8000].  
-
-  Press Ctrl+C to stop the server
-
-  2025-08-07 19:12:49 /api/task-log/checkin ...................... ~ 500.49ms
-  2025-08-07 19:12:49 /api/task-log/status ......................... ~ 0.06ms

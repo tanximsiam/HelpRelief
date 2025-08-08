@@ -15,8 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Ngo::factory(5)->create();
-        User::factory(10)->create();
+        // Ngo::factory(5)->create();
+        // User::factory(10)->create();
 
         // User::factory()->create([
         //     'name' => 'Test User',
