@@ -16,7 +16,7 @@ class DisasterSeeder extends Seeder
             'start_date' => '2025-08-01',
             'status' => 'active',
             'description' => 'A severe tropical storm hit the coastal areas.',
-            'created_by' => 1, // Assuming admin/NGO user_id is 1
+            'created_by' => 1, 
         ]);
 
         Disaster::create([
@@ -27,7 +27,7 @@ class DisasterSeeder extends Seeder
             'start_date' => '2025-07-20',
             'status' => 'active',
             'description' => 'Floodwaters have inundated large parts of the Sylhet district.',
-            'created_by' => 2, // Assuming NGO user_id is 2
+            'created_by' => 2, 
         ]);
 
         Disaster::create([
@@ -38,7 +38,7 @@ class DisasterSeeder extends Seeder
             'start_date' => '2025-06-10',
             'status' => 'closed',
             'description' => 'An earthquake of magnitude 6.5 struck Dhaka city.',
-            'created_by' => 1, // Assuming admin/NGO user_id is 1
+            'created_by' => 3, 
         ]);
     }
 }
