@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('disaster_id')->constrained('disasters');
-            $table->foreignId('ngo_id')->constrained('users'); // NGO
+            $table->foreignId('ngo_id')->constrained('ngos'); // NGO
             $table->enum('status', ['pending', 'approved', 'rejected', 'active', 'inactive', 'completed'])->default('pending');
             $table->timestamp('registered_at')->nullable();
             $table->string('availability')->nullable();
