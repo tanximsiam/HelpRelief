@@ -39,7 +39,7 @@ class VolunteerTaskController extends Controller
             'status' => 'required|in:accepted,ended'
         ]);
 
-        
+
         $volunteerId = $request->user()->id;
 
         // Fetch log entry for this volunteer's task
@@ -77,7 +77,7 @@ class VolunteerTaskController extends Controller
 
         return response()->json(['message' => 'Status updated']);
     }
-    
+
     // Assign a task to a volunteer by NGO
     public function assignTask(Request $request, $id)
     {
@@ -117,7 +117,7 @@ class VolunteerTaskController extends Controller
     // Create a standalone task (independent of aid requests)
     public function createStandaloneTask(Request $request)
     {
-        
+
         $request->validate([
             'disaster_id' => 'required|exists:disasters,id',
             'volunteer_id' => 'required|exists:users,id',
@@ -131,11 +131,11 @@ class VolunteerTaskController extends Controller
         ]);
 
         $user = $request->user();
-        $ngo_id = $user->ngostaff->ngo_id;
+        $ngo_id = $user->ngoStaff->ngo_id;
         $task = Task::create([
             'disaster_id' => $request->disaster_id,
             'assigned_to' => $request->volunteer_id,
-            'created_by' => $ngo_id, 
+            'created_by' => $ngo_id,
             'task_type' => $request->task_type,
             'location' => $request->location,
             'start_time' => $request->start_time,
@@ -143,7 +143,7 @@ class VolunteerTaskController extends Controller
             'aid_type' => $request->aid_type,
             'urgency' => $request->urgency,
             'description' => $request->description,
-            'status' => 'pending', 
+            'status' => 'pending',
         ]);
 
         return response()->json([
