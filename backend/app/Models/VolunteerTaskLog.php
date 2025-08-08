@@ -40,6 +40,15 @@ class VolunteerTaskLog extends Model
         return $this->belongsTo(User::class, 'volunteer_id');
     }
 
+    
+    protected $casts = [
+    'check_in' => 'datetime',
+    'check_out' => 'datetime',
+];
+
+}
+
+
     public function disaster(): BelongsTo
     {
         return $this->belongsTo(Disaster::class);
