@@ -90,7 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
 
 
-});
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
