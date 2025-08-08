@@ -77,5 +77,78 @@ class VolunteerTaskController extends Controller
 
         return response()->json(['message' => 'Status updated']);
     }
+    
+    // Assign a task to a volunteer by NGO
+    public function assignTask(Request $request, $id)
+    {
+        $request->validate([
+            'volunteer_id' => 'required|exists:users,id',
+        ]);
 
+        $task = Task::findOrFail($id);
+
+        if ($task->status === 'assigned') {
+            return response()->json(['error' => 'Task is already assigned'], 400);
+        }
+
+        $task->assigned_to = $request->volunteer_id;
+        $task->status = 'assigned';
+        $task->save();
+
+        return response()->json(['message' => 'Task assigned successfully!', 'task' => $task]);
+    }
+
+    // Reject a task with remarks by NGO
+    public function rejectTask(Request $request, $id)
+    {
+        $request->validate([
+            'remarks' => 'required|string',
+        ]);
+
+        $task = Task::findOrFail($id);
+
+        $task->status = 'rejected';
+        $task->ngo_remarks = $request->remarks;
+        $task->save();
+
+        return response()->json(['message' => 'Task rejected successfully!', 'task' => $task]);
+    }
+
+    // Create a standalone task (independent of aid requests)
+    public function createStandaloneTask(Request $request)
+    {
+        
+        $request->validate([
+            'disaster_id' => 'required|exists:disasters,id',
+            'volunteer_id' => 'required|exists:users,id',
+            'task_type' => 'required|in:aid_request,delivery', // Can be aid request or delivery
+            'location' => 'required|string',
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
+            'aid_type' => 'required|in:financial,medical,resource',
+            'urgency' => 'required|in:low,medium,high,critical',
+            'description' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        $ngo_id = $user->ngostaff->ngo_id;
+        $task = Task::create([
+            'disaster_id' => $request->disaster_id,
+            'assigned_to' => $request->volunteer_id,
+            'created_by' => $ngo_id, 
+            'task_type' => $request->task_type,
+            'location' => $request->location,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'aid_type' => $request->aid_type,
+            'urgency' => $request->urgency,
+            'description' => $request->description,
+            'status' => 'pending', 
+        ]);
+
+        return response()->json([
+            'message' => 'Standalone task created successfully!',
+            'task' => $task,
+        ]);
+    }
 }
