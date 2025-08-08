@@ -25,11 +25,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
-        'ngo_id',
-        'designation',
-        'privilege_role',
         'volunteer',
-        'remember_token',   
     ];
 
     /**
