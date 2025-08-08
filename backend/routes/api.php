@@ -10,6 +10,9 @@ use App\Http\Controllers\NgoApplicationController;
 use App\Http\Controllers\CauseFocusController;
 use App\Http\Controllers\NgoStaffController;
 use App\Http\Controllers\NgoInviteLinkController;
+use App\Http\Controllers\VolunteerTaskController;
+use App\Http\Controllers\VolunteerReportController;
+
 use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
 
@@ -73,4 +76,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
 
 
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
+    Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
+});
+
+Route::middleware(['auth:sanctum', 'role:ngo'])->prefix('reports/volunteers')->group(function () {
+    Route::get('/aggregate', [VolunteerReportController::class, 'aggregate']);
+    Route::get('/individual', [VolunteerReportController::class, 'individual']);
 });
