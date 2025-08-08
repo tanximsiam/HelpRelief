@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/task-log/checkout', [VolunteerTaskLogController::class, 'checkOut']);
     Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
 
+
     Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
     Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
 
