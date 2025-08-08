@@ -1,0 +1,77 @@
+### API Tests for Aid Requests
+
+### 1. Register a New User
+POST http://localhost:8000/api/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password"
+}
+
+### 2. Login to get authentication token
+POST http://localhost:8000/api/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password"
+}
+
+
+### 3. Create Aid Request (REPLACE "YOUR_TOKEN_HERE" with actual token from login response)
+POST http://localhost:8000/api/aid-requests
+Content-Type: application/json
+Authorization: Bearer 21|RaMV3hv4prNXiE3UfkF7cv78uh6KJn9HEbWZmaEue8ad738c
+
+{
+  "disaster_id": 1,
+  "aid_type": "medical",
+  "urgency": "high",
+  "location": "Shibpur, Narsingdi",
+  "description": "Field team lacks emergency kits"
+}
+
+### 4. Admin Check-in (Create log entry first)
+POST http://localhost:8000/api/task-log/checkin
+Content-Type: application/json
+Authorization: Bearer 4|81IM2hU8uQvaObbT87FGcypnFnP6QPPDXeppbQOiab8364a1
+
+{
+  "task_id": 2
+}
+
+### 5. Volunteer Accept Task (after log entry exists)
+PATCH http://localhost:8000/api/task-log/status
+Content-Type: application/json
+Authorization: Bearer 4|81IM2hU8uQvaObbT87FGcypnFnP6QPPDXeppbQOiab8364a1
+
+{
+  "task_id": 2,
+  "status": "accepted"
+}
+
+### 6. Admin Check-out (End task)
+POST http://localhost:8000/api/task-log/checkout
+Content-Type: application/json
+Authorization: Bearer 4|81IM2hU8uQvaObbT87FGcypnFnP6QPPDXeppbQOiab8364a1
+
+{
+  "task_id": 2,
+  "report": "normal"
+}
+
+### 7. Volunteer Mark Task as Ended
+PATCH http://localhost:8000/api/task-log/status
+Content-Type: application/json
+Authorization: Bearer 4|81IM2hU8uQvaObbT87FGcypnFnP6QPPDXeppbQOiab8364a1
+
+{
+  "task_id": 1,
+  "status": "ended"
+}
+
+
+
+
+
