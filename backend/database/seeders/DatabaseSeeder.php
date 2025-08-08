@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\DonationReport;
 use Illuminate\Database\Seeder;
 use Nette\Utils\Random;
 
@@ -27,6 +29,7 @@ class DatabaseSeeder extends Seeder
             AidSupportSeeder::class,
             VolunteerSeeder::class,
             VolunteerTaskLogsSeeder::class,
+            DonationReportSeeder::class,
         ]);
 
         // User::factory()->create([
