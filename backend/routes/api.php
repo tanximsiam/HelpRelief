@@ -53,7 +53,7 @@ Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(middleware: 'auth:sanctum')->group(function () {
     // Authenticated user profile
 
     Route::get('/profile', [AuthController::class, 'profile']);
