@@ -16,6 +16,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
+
+
+
         <!-- Left: Logo -->
         <div class="flex items-center gap-2">
           <button @click="$router.push('/')" class="flex items-center gap-2">
@@ -25,36 +28,16 @@
 
         <div class="flex items-center gap-8">
           <!-- Center: Links (desktop) -->
-          <ul class="hidden md:flex items-center gap-6 text-2xl font-medium">
-            <li v-for="l in links" :key="l.to">
-              <RouterLink
-                :to="l.to"
-                class="opacity-90 hover:opacity-100 hover:underline underline-offset-4"
-                >{{ l.label }}</RouterLink>
-            </li>
-          </ul>
+          <NavBarButtons
+            v-for="l in links"
+            :key="l.to"
+            :label="l.label"
+            :to="l.to"
+          />
 
           <!-- Right: Login pill OR Username -->
-          <div class="hidden md:flex items-center">
-            <button
-              v-if="!isAuthed"
-              @click="$emit('login')"
-              class="rounded-lg bg-white px-3 py-1 text-2xl font-semibold text-blue-600 hover:bg-white/80"
-            >
-              Login
-            </button>
-
-            <span
-              v-else
-              class="rounded-full bg-white/15 px-3 py-1 text-sm font-semibold flex items-center gap-2"
-              title="Account"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/>
-              </svg>
-              {{ userName }}
-            </span>
-          </div>
+          <LoginButton v-if="!auth.isAuthenticated" variant="primary"/>
+          <ProfileButton v-else :userName="auth.user?.name || 'Account'" />
         </div>
       </div>
     </nav>
@@ -83,7 +66,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+// import { RouterLink } from 'vue-router'
+import NavBarButtons from './NavBarButtons.vue'
+import LoginButton from './LoginButton.vue';
+import ProfileButton from './ProfileButton.vue';
+import { useAuth } from '@/stores/auth';
+
+
+
 type Link = { label: string; to: string }
 
 const props = defineProps<{
@@ -92,7 +83,7 @@ const props = defineProps<{
   links?: Link[]
 }>()
 
-defineEmits<{ (e: 'login'): void }>()
+const auth = useAuth()
 
 const open = ref(false)
 
@@ -101,4 +92,8 @@ const links = props.links ?? [
   { label: 'About Us', to: '/about' },
   { label: 'Our partners', to: '/partners' },
 ]
+
+onMounted(() => { if (auth.token && !auth.user) auth.fetchUser() })
+
+defineEmits<{ (e: 'login'): void }>()
 </script>
