@@ -17,7 +17,6 @@ class VolunteerTaskLog extends Model
         'status',
         'check_in',
         'check_out',
-        'expected_end',
         'start_verified_by',
         'end_verified_by',
         'report',
@@ -26,7 +25,6 @@ class VolunteerTaskLog extends Model
     protected $casts = [
         'check_in' => 'datetime',
         'check_out' => 'datetime',
-        'expected_end' => 'datetime',
     ];
 
     // Relationships
