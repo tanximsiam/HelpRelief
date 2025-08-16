@@ -25,7 +25,7 @@ async function onSubmit() {
     await auth.register({
       name: name.value,
       email: email.value,
-      phone: phone.value || undefined,
+      phone: phone.value,
       password: password.value,
       password_confirmation: passwordConfirmation.value,
     })
@@ -59,7 +59,7 @@ const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
 
 <template>
   <div class="flex gap-6 bg-white rounded-xl p-6 shadow justify-self-center">
-    <img src="https://placehold.co/300x400" alt="Signup Image" class="rounded-xl">
+    <img src="https://placehold.co/500x650" alt="Signup Image" class="rounded-xl">
     <div class="flex flex-col justify-center w-full">
       <form @submit.prevent="onSubmit" class="w-full max-w-md">
         <h1 class="text-2xl font-bold mb-2">Create your HelpRelief account</h1>
@@ -68,7 +68,7 @@ const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
         <div class="space-y-4 mb-4">
           <InputField v-model="name" label="Full Name" type="text" autocomplete="name" required />
           <InputField v-model="email" label="Email" type="email" autocomplete="email" required />
-          <InputField v-model="phone" label="Phone (optional)" type="tel" autocomplete="tel" />
+          <InputField v-model="phone" label="Phone" type="tel" autocomplete="tel" required/>
           <InputField v-model="password" label="Password" type="password" autocomplete="new-password" required />
           <InputField v-model="passwordConfirmation" label="Confirm Password" type="password" autocomplete="new-password" required />
         </div>

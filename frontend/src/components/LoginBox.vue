@@ -97,7 +97,7 @@ const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
         <span>Login with Google</span>
       </button>
       <div class="text-center mt-4">
-        <span class="text-sm text-slate-600">New here?</span>
+        <span class="text-sm text-slate-600">New here? </span>
         <AppLink to="#" variant="secondary"
           @click.prevent="emit('switch','signup')">
           Sign up now

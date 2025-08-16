@@ -38,7 +38,7 @@ class AuthController extends Controller
         return User::create(array_merge([
             'name' => $data['name'],
             'email' => $data['email'],
-            'phone' => $data['phone'],
+            'phone' => $data['phone'] ?? null,
             'password' => isset($data['password'])
             ? Hash::make($data['password'])
             : Hash::make(Str::random(16)),
