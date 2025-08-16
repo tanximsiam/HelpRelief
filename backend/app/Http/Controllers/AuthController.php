@@ -141,7 +141,7 @@ class AuthController extends Controller
         return redirect(config('app.frontend_url') . '/dashboard?token=' . $token);
     }
 
-    public function profile(Request $request)
+    public function user(Request $request)
     {
         return response()->json($request->user());
     }

@@ -23,9 +23,9 @@ use App\Http\Controllers\VolunteerTaskLogController;
 use App\Http\Controllers\DonationReportController;
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
 
 // TEST ROUTES
 Route::get('/users', [UserController::class, 'index']);
@@ -53,10 +53,10 @@ Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware(middleware: 'auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     // Authenticated user profile
 
-    Route::get('/profile', [AuthController::class, 'profile']);
+    Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // NGO applications

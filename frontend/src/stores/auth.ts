@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "@/lib/api";
+import router from "@/router";
 
 type User = {
   id: number;
@@ -46,6 +47,7 @@ export const useAuth = defineStore("auth", {
       this.token = "";
       this.user = null;
       localStorage.removeItem("hr_token");
+      router.replace({ name: 'home' })
     },
   },
 });
