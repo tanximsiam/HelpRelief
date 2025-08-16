@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+<<<<<<< HEAD
 
 import UserDashboard from '../views/UserDashboard.vue' // legacy / shared if needed
 import GeneralUserDashboard from '../views/GeneralUserDashboard.vue'
@@ -13,6 +14,13 @@ import StateDetails from '@/views/StateDetails.vue'
 
 
 
+=======
+<<<<<<< HEAD
+import UserDashboard from '../views/UserDashboard.vue'
+=======
+import OathHandler from '../views/OathHandler.vue'
+>>>>>>> 7428c91 (Polished Frontend Redirect)
+>>>>>>> f79510d (Polished Frontend Redirect)
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -79,6 +87,7 @@ const router = createRouter({
       path: '/aid-support',
       name: 'AidSupport',
       component: () => import('../views/AidSupport.vue'),
+
     },
       // remove duplicate dashboard route (handled above)
     {
