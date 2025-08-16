@@ -47,6 +47,11 @@ const router = createRouter({
       component: OathHandler,
 >>>>>>> 7428c91 (Polished Frontend Redirect)
     },
+    {
+      path: '/aid-support',
+      name: 'AidSupport',
+      component: () => import('../views/AidSupport.vue'),
+    },
 
   ],
 })
