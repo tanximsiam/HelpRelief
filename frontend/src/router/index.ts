@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/auth.ts'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+<<<<<<< HEAD
 
 import UserDashboard from '../views/UserDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
@@ -12,6 +13,13 @@ import DonationReportsView from '@/views/DonationReportsView.vue'
 import MyRequestsView from '@/views/MyRequestsView.vue'
 
 
+=======
+<<<<<<< HEAD
+import UserDashboard from '../views/UserDashboard.vue'
+=======
+import OathHandler from '../views/OathHandler.vue'
+>>>>>>> 7428c91 (Polished Frontend Redirect)
+>>>>>>> f79510d (Polished Frontend Redirect)
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,6 +68,24 @@ const router = createRouter({
       path: '/aid-support',
       name: 'AidSupport',
       component: () => import('../views/AidSupport.vue'),
+<<<<<<< HEAD
+=======
+=======
+        {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: UserDashboard,
+<<<<<<< HEAD
+>>>>>>> 19af55d (Added a simple userdashboard and made AidReqform)
+=======
+=======
+    {
+      path: '/oauth/callback',
+      name: 'OauthCallback',
+      component: OathHandler,
+>>>>>>> 7428c91 (Polished Frontend Redirect)
+>>>>>>> 9a33270 (Polished Frontend Redirect)
+>>>>>>> f79510d (Polished Frontend Redirect)
     },
     {
       path: '/tasks',
