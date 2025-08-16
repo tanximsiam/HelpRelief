@@ -4,7 +4,7 @@
     <nav class="mx-auto px-4 sm:px-6 lg:px-8 w-[1440px]">
       <div class="flex h-36 items-center justify-between">
         <!-- Mobile menu button -->
-        <button
+        <!-- <button
           class="md:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-white/10 focus:outline-none"
           @click="open = !open" aria-label="Toggle navigation">
           <svg v-if="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
@@ -15,7 +15,7 @@
                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
-        </button>
+        </button> -->
 
 
 
@@ -37,7 +37,12 @@
 
           <!-- Right: Login pill OR Username -->
           <LoginButton v-if="!auth.isAuthenticated" variant="primary"/>
-          <ProfileButton v-else :userName="auth.user?.name || 'Account'" />
+          <ProfileButton
+            v-else
+            :userName="auth.user?.name || 'User'"
+            @profile="router.push('/profile')"
+            @logout="auth.logout()"
+          />
         </div>
       </div>
     </nav>
@@ -66,13 +71,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 // import { RouterLink } from 'vue-router'
 import NavBarButtons from './NavBarButtons.vue'
 import LoginButton from './LoginButton.vue';
 import ProfileButton from './ProfileButton.vue';
 import { useAuth } from '@/stores/auth';
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 
 
 type Link = { label: string; to: string }
@@ -85,7 +92,7 @@ const props = defineProps<{
 
 const auth = useAuth()
 
-const open = ref(false)
+// const open = ref(false)
 
 const links = props.links ?? [
   { label: 'For Users', to: '/for-users' },

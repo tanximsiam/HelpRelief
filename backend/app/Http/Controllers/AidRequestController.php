@@ -7,6 +7,7 @@ use App\Models\AidRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use App\Models\Disaster; // added
 
 class AidRequestController extends Controller
 {
@@ -52,24 +53,17 @@ class AidRequestController extends Controller
 
         try {
             $validatedData = $request->validate([
-                'disaster_id' => 'required|integer', // TODO: Add |exists:disasters,id when disasters table is ready
-                'location' => 'required|string|max:255',
-                'aid_type' => 'required|in:financial,medical,resource', // Fixed to match enum values
+                'disaster_id' => 'required|exists:disasters,id',
+                // location removed; will be auto-populated from disaster
+                'aid_type' => 'required|in:financial,medical,resource',
                 'urgency' => 'required|in:low,medium,high,critical',
                 'description' => 'required|string|max:1000',
             ]);
 
-            // TODO: Uncomment when disasters table is ready
-            // $disaster = \DB::table('disasters')->where('id', $validatedData['disaster_id'])->first();
-            // if (!$disaster || !$disaster->active) {
-            //     return response()->json([
-            //         'message' => 'Only active disasters can be selected'
-            //     ], 400);
-            // }
-
-            // Set automatically by controller
+            $disaster = Disaster::find($validatedData['disaster_id']);
+            $validatedData['location'] = $disaster?->location ?? '';
             $validatedData['requester_id'] = $user->id;
-            $validatedData['status'] = 'pending'; // Default status as per migration
+            $validatedData['status'] = 'pending';
 
             $aidRequest = AidRequest::create($validatedData);
 
