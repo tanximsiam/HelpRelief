@@ -21,11 +21,12 @@ use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
+use App\Http\Controllers\DisasterController; // added
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
 
 // TEST ROUTES
 Route::get('/users', [UserController::class, 'index']);
@@ -36,6 +37,8 @@ Route::get('/ngo-invites/{ngo}', [NgoInviteLinkController::class, 'index']);
 Route::get('/ngo-staff', [NgoStaffController::class, 'index']);
 Route::get('/aid-supports', [AidSupportController::class, 'index']);
 Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
+// Active disasters route (public for selection)
+Route::get('/disasters/active', [DisasterController::class, 'active']);
 // Pre-Login Routes
 Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 
@@ -53,10 +56,10 @@ Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware(middleware: 'auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     // Authenticated user profile
 
-    Route::get('/profile', [AuthController::class, 'profile']);
+    Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // NGO applications
