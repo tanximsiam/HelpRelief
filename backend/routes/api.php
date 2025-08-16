@@ -21,6 +21,7 @@ use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
+use App\Http\Controllers\DisasterController; // added
 
 
 // Route::get('/user', function (Request $request) {
@@ -36,6 +37,8 @@ Route::get('/ngo-invites/{ngo}', [NgoInviteLinkController::class, 'index']);
 Route::get('/ngo-staff', [NgoStaffController::class, 'index']);
 Route::get('/aid-supports', [AidSupportController::class, 'index']);
 Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
+// Active disasters route (public for selection)
+Route::get('/disasters/active', [DisasterController::class, 'active']);
 // Pre-Login Routes
 Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 
