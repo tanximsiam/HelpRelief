@@ -37,7 +37,7 @@ function onGoogleLogin() {
   const encoded = encodeURIComponent(currentPath as string)
   const base = import.meta.env.VITE_API_BASE
 
-  window.location.href = `${base}/auth/google?redirect=${encoded}`
+  window.location.href = `${base}/auth/redirect?redirect=${encoded}`
 }
 </script>
 
