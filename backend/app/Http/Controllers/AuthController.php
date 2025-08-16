@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\NgoInviteLink;
 use App\Models\NgoStaff;
 use App\Http\Controllers\NgoInviteLinkController;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -38,7 +39,9 @@ class AuthController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
-            'password' => Hash::make($data['password']),
+            'password' => isset($data['password'])
+            ? Hash::make($data['password'])
+            : Hash::make(Str::random(16)),
             'role' => 'general',
         ], $overrides));
     }
@@ -140,12 +143,15 @@ class AuthController extends Controller
         }
 
         // 3) Create user (role depends on valid invite)
-        $user = User::create([
-            'name'     => $googleUser->name,
-            'email'    => $googleUser->email,
-            'password' => Hash::make(str()->random(16)),
-            'role'     => $invite ? 'ngo_staff' : 'general',
-        ]);
+        $user = $this->createUser(
+            [
+                'name'  => $googleUser->name,
+                'email' => $googleUser->email,
+            ],
+            [
+                'role' => $invite ? 'ngo_staff' : 'general',
+            ]
+        );
 
         // 4) If valid invite → attach NGO staff + mark invite used
         if ($invite) {
