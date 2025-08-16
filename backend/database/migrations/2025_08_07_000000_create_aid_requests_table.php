@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('disaster_id')->nullable()->constrained('disasters')->onDelete('set null');
             $table->foreignId('requester_id')->constrained('users')->onDelete('cascade');
             $table->string('location');
-            $table->enum('aid_type', ['financial', 'medical', 'resource']);
+            $table->enum('aid_type', ['financial', 'medical', 'physical', 'food']);
             $table->enum('urgency', ['low', 'medium', 'high', 'critical']);
             $table->text('description');
             $table->enum('status', ['pending', 'assigned', 'rejected', 'completed'])->default('pending');
