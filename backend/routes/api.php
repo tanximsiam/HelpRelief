@@ -22,10 +22,9 @@ use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
 
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
 
 // TEST ROUTES
 Route::get('/users', [UserController::class, 'index']);
@@ -112,11 +111,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Donation Reports
     Route::get('/disasters/{disasterId}/user-report', [DonationReportController::class, 'userReportForDisaster']);
 
-});
+    // Volunteer Reports
+    Route::get('/reports/volunteers/aggregate', [VolunteerReportController::class, 'aggregate']);
+    Route::get('/reports/volunteers/individual', [VolunteerReportController::class, 'individual']);
 
-
-Route::middleware(['auth:sanctum', 'role:ngo'])->prefix('reports/volunteers')->group(function () {
-    Route::get('/aggregate', [VolunteerReportController::class, 'aggregate']);
-    Route::get('/individual', [VolunteerReportController::class, 'individual']);
+    // NGO Profile Update
+    Route::patch('/ngo/{ngoId}', [NgoController::class, 'updateNgo']);
+    // User Profile Update
+    Route::patch('/profile/update', [UserController::class, 'update']);
 });
 
