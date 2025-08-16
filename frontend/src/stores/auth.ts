@@ -14,7 +14,7 @@ type User = {
 type RegisterPayload = {
   name: string
   email: string
-  phone?: string
+  phone: string
   password: string
   password_confirmation: string
 }
