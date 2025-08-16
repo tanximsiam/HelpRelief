@@ -22,6 +22,7 @@ use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
+use App\Http\Controllers\DisasterController; // added
 
 Route::get('/user', function (Request $request) {
     return $request->user();
