@@ -19,7 +19,7 @@ async function onSubmit() {
   errorMsg.value = ''
   try {
     await auth.login({ email: email.value, password: password.value })
-    const next = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    const next = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
     await router.replace(next)
   } catch (err: unknown) {
     if (isAxiosError(err)) {
