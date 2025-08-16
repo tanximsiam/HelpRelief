@@ -37,6 +37,11 @@ export const useAuth = defineStore("auth", {
         this.loading = false;
       }
     },
+    async setToken(token: string) {
+      this.token = token
+      localStorage.setItem('hr_token', token)
+      await this.fetchUser()
+    },
     async fetchUser() {
       if (!this.token) return;
       const { data } = await api.get("/user");

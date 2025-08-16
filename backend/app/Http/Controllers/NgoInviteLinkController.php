@@ -35,7 +35,7 @@ class NgoInviteLinkController extends Controller
 
         return response()->json([
             'message' => 'Invite link created',
-            'link' => url('/register?token=' . $link->token)
+            'link' => url(path: '/register?token=' . $link->token)
         ]);
     }
 

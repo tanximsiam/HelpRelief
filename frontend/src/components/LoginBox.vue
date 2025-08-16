@@ -31,45 +31,73 @@ async function onSubmit() {
     }
   }
 }
+
+function onGoogleLogin() {
+  const currentPath = route.query.redirect || window.location.pathname
+  const encoded = encodeURIComponent(currentPath as string)
+  const base = import.meta.env.VITE_API_BASE
+
+  window.location.href = `${base}/auth/google?redirect=${encoded}`
+}
 </script>
 
 <template>
   <div class="flex gap-6 bg-white rounded-xl p-6 shadow justify-self-center">
     <img src="https://placehold.co/300x400" alt="Login Image" class="rounded-xl">
+    <div class="flex flex-col justify-center w-full">
+      <form @submit.prevent="onSubmit" class="w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-2">Welcome to HelpRelief</h1>
+        <p class="text-lg font-medium text-slate-600 mb-6">Please enter your email and password to login.</p>
 
-    <form @submit.prevent="onSubmit" class="w-full max-w-md">
-      <h1 class="text-2xl font-bold mb-2">Welcome to HelpRelief</h1>
-      <p class="text-lg font-medium text-slate-600 mb-6">Please enter your email and password to login.</p>
+        <div class="space-y-4 mb-4">
+          <InputField
+            v-model="email"
+            label="Email"
+            type="email"
+            autocomplete="email"
+            required
+          />
+          <InputField
+            v-model="password"
+            label="Password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
 
-      <div class="space-y-4 mb-4">
-        <InputField
-          v-model="email"
-          label="Email"
-          type="email"
-          autocomplete="email"
-          required
-        />
-        <InputField
-          v-model="password"
-          label="Password"
-          type="password"
-          autocomplete="current-password"
-          required
-        />
+        <p v-if="errorMsg" class="text-red-600 text-sm mb-3">{{ errorMsg }}</p>
+
+        <PrimaryButton
+          class="w-full py-2 text-lg"
+          variant="primary"
+          type="button"
+          :disabled="auth.loading || !email || !password"
+          @click="onSubmit"
+        >
+          {{ auth.loading ? 'Signing in…' : 'Login' }}
+        </PrimaryButton>
+      </form>
+      <div class="flex items-center my-6">
+        <div class="flex-grow border-t border-gray-300"></div>
+        <span class="px-3 text-gray-500 text-sm">or</span>
+        <div class="flex-grow border-t border-gray-300"></div>
       </div>
 
-      <p v-if="errorMsg" class="text-red-600 text-sm mb-3">{{ errorMsg }}</p>
-
-      <PrimaryButton
-        class="w-full py-2 text-lg"
-        variant="primary"
+      <button
         type="button"
-        :disabled="auth.loading || !email || !password"
-        @click="onSubmit"
+        class="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg shadow-sm  text-white
+              bg-slate-400 font-medium
+              hover:bg-slate-500 active:bg-slate-600 transition-colors"
+        @click="onGoogleLogin"
       >
-        {{ auth.loading ? 'Signing in…' : 'Login' }}
-      </PrimaryButton>
-    </form>
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5" />
+        <span>Login with Google</span>
+      </button>
+    </div>
+
+
+
 
   </div>
 </template>
