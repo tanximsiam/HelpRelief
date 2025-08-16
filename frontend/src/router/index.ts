@@ -3,6 +3,7 @@ import { useAuth } from '../stores/auth.ts'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import OathHandler from '../views/OathHandler.vue'
+import UserDashboard from '../views/UserDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,6 +32,11 @@ const router = createRouter({
       path: '/oauth/callback',
       name: 'OauthCallback',
       component: OathHandler,
+    },
+        {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: UserDashboard,
     },
 
   ],
