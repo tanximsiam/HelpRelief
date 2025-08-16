@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\Disaster;
 use Illuminate\Http\JsonResponse;
 
@@ -14,6 +15,18 @@ class DisasterController extends Controller
             ->orderBy('occurred_at', 'desc')
             ->get(['id','name','type','location','severity','status']);
         return response()->json($disasters);
+=======
+use Illuminate\Http\Request;
+use App\Models\Disaster;
+
+class DisasterController extends Controller
+{
+    // Show active disasters
+    public function index()
+    {
+        $activeDisasters = Disaster::where('status', 'active')->get();
+        return response()->json($activeDisasters);
+>>>>>>> dd67fd3 (FrontEnd for AidSupport)
     }
 
   
