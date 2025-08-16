@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue'
 
 import UserDashboard from '../views/UserDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
+import UserDashboard from '../views/UserDashboard.vue'
 import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
 import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
 import DonationReportsView from '@/views/DonationReportsView.vue'
@@ -52,6 +53,7 @@ const router = createRouter({
       component: OathHandler,
 
     },
+<<<<<<< HEAD
     {
 
       path: '/aid-support',
