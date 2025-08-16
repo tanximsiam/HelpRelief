@@ -65,7 +65,7 @@ class NgoApplicationController extends Controller
         return response()->json([
             'message' => 'NGO Application approved and NGO created',
             'ngo_id' => $ngo->id,
-            'invite_link' => url('/auth/redirect?token=' . $invite->token)
+            'invite_link' => url('api/auth/redirect?token=' . $invite->token)
         ]);
     }
 
