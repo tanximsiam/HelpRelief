@@ -13,12 +13,13 @@ class CreateDisastersTable extends Migration
             $table->enum('disaster_type', ['flood', 'earthquake', 'storm', 'wildfire', 'drought', 'other']);
             $table->string('location');
             $table->date('start_date');
+            $table->enum('severity', ['low', 'medium', 'high']); 
             $table->enum('status', ['pending_verification', 'active', 'closed']);
             $table->text('description')->nullable();
             $table->foreignId('created_by')->constrained('ngo_staff');
             $table->timestamps();
         });
-    }
+    }     
 
     public function down()
     {
