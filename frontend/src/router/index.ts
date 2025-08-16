@@ -2,8 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/auth.ts'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
-import OathHandler from '../views/OathHandler.vue'
+<<<<<<< HEAD
 import UserDashboard from '../views/UserDashboard.vue'
+=======
+import OathHandler from '../views/OathHandler.vue'
+>>>>>>> 7428c91 (Polished Frontend Redirect)
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +40,12 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: UserDashboard,
+=======
+    {
+      path: '/oauth/callback',
+      name: 'OauthCallback',
+      component: OathHandler,
+>>>>>>> 7428c91 (Polished Frontend Redirect)
     },
 
   ],
