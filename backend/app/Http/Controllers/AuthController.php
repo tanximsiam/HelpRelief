@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\NgoInviteLink;
 use App\Models\NgoStaff;
+use App\Http\Controllers\NgoInviteLinkController;
 
 class AuthController extends Controller
 {
@@ -70,6 +71,11 @@ class AuthController extends Controller
     public function redirectToGoogle(Request $request)
     {
         $token = $request->query('token');
+        $redirect = $request->query('redirect', '/dashboard');
+        $state = json_encode([
+            'token' => $token,
+            'redirect' => $redirect,
+        ]);
 
         // Optional: Validate token before redirecting
         $invite = NgoInviteLink::where('token', $token)->where('active', true)->first();
@@ -81,64 +87,79 @@ class AuthController extends Controller
         // Token is valid → attach to state and redirect to Google
         return Socialite::driver('google')
             ->stateless()
-            ->with(['state' => $token])
+            ->with(['state' => $state])
             ->redirect();
     }
 
     public function handleGoogleCallback(Request $request)
     {
+        try {
+            $state = json_decode($request->query('state', ''), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            abort(403, 'Invalid OAuth state');
+        }
         $googleUser = Socialite::driver('google')->stateless()->user();
+        $redirectPath = $state['redirect'] ?? '/dashboard';
 
-        // dd([
-        //     'state' => $request->query('state'),
-        //     'code' => $request->query('code'),
-        //     'invite' => NgoInviteLink::where('token', $request->query('state'))->first(),
-        // ]);
-
-        $existing = User::where('email', $googleUser->email)->first();
-
-        if ($existing) {
-
+        // 1) If user exists → issue token + redirect
+        if ($existing = User::where('email', $googleUser->email)->first()) {
             $token = $existing->createToken('google-token')->plainTextToken;
+            return redirect(rtrim(config('app.frontend_url'), '/') . '/oauth/callback?token=' . urlencode($token) . '&redirect=' . urlencode($redirectPath));
 
-            return redirect(config('app.frontend_url') . '/dashboard?token=' . $token);
         }
 
-        $token = $request->query('state');
+        // 2) Read invite from OAuth state (optional) and validate
+        $inviteToken = $state['token'] ?? '';
+        $invite = null;
 
-        if (!$token) {
+        if ($inviteToken !== '') {
+            $invite = NgoInviteLink::with('ngo')->where('token', $inviteToken)->first();
 
-            $user = User::create([
-                'name' => $googleUser->name,
-                'email' => $googleUser->email,
-                'password' => Hash::make(str()->random(16)),
-                'role' => 'general',
-            ]);
+            if (!$invite) {
+                $invite = null; // invalid token
+            } else {
+                // active flag (if exists)
+                if (isset($invite->active) && !$invite->active) {
+                    $invite = null;
+                }
+                // usage limit (if exists)
+                if (isset($invite->usage_limit, $invite->used_count)
+                    && !is_null($invite->usage_limit)
+                    && $invite->used_count >= $invite->usage_limit) {
+                    $invite = null;
+                }
+                // NGO email-domain match (if NGO has an email)
+                if ($invite && $invite->ngo && $invite->ngo->email) {
+                    $expectedDomain = substr(strrchr($invite->ngo->email, '@'), 1) ?: '';
+                    $userDomain     = substr(strrchr($googleUser->email, '@'), 1) ?: '';
+                    if ($expectedDomain && $userDomain && strcasecmp($expectedDomain, $userDomain) !== 0) {
+                        abort(403, 'Unauthorized email domain for this NGO');
+                    }
+                }
+            }
+        }
 
-        } else {
+        // 3) Create user (role depends on valid invite)
+        $user = User::create([
+            'name'     => $googleUser->name,
+            'email'    => $googleUser->email,
+            'password' => Hash::make(str()->random(16)),
+            'role'     => $invite ? 'ngo_staff' : 'general',
+        ]);
 
-            $invite = NgoInviteLink::where('token', $token)->first();
-
-            $user = User::create([
-                'name' => $googleUser->name,
-                'email' => $googleUser->email,
-                'password' => Hash::make(str()->random(16)),
-                'role' => 'ngo_staff',
-                ]);
-
-            NgoStaff::create([
-                'user_id' => $user->id,
-                'ngo_id' => $invite->ngo_id,
-                'privilege_role' => $invite->privilege_role,
-            ]);
-
+        // 4) If valid invite → attach NGO staff + mark invite used
+        if ($invite) {
+            NgoStaff::firstOrCreate(
+                ['user_id' => $user->id, 'ngo_id' => $invite->ngo_id],
+                ['privilege_role' => $invite->privilege_role]
+            );
             app(NgoInviteLinkController::class)->markInviteUsed($invite);
-
         }
 
+        // 5) Issue token + redirect (safe URL)
         $token = $user->createToken('google-token')->plainTextToken;
+        return redirect(rtrim(config('app.frontend_url'), '/') . '/oauth/callback?token=' . urlencode($token) . '&redirect=' . urlencode($redirectPath));
 
-        return redirect(config('app.frontend_url') . '/dashboard?token=' . $token);
     }
 
     public function user(Request $request)

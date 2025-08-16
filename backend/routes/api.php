@@ -53,6 +53,10 @@ Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+
+Route::get('/auth/redirect', [AuthController::class, 'redirectToGoogle']);
+Route::get('/auth/callback', [AuthController::class, 'handleGoogleCallback']);
+
 Route::middleware('auth:sanctum')->group(function () {
     // Authenticated user profile
 
