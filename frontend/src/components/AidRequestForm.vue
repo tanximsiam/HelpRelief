@@ -8,11 +8,12 @@ import { api } from '@/lib/api'
 interface Disaster { id: number; name: string; location: string }
 interface FormState { disaster_id: string; aid_type: string | null; urgency: string | null; description: string }
 
-// ---- Static option sets (must match backend enums) ----
+// ---- Static option sets 
 const aidTypeOptions = [
   { label: 'Financial', value: 'financial' },
   { label: 'Medical', value: 'medical' },
-  { label: 'Resources / Supplies', value: 'resource' },
+  { label: 'Physical', value: 'physical' },
+  { label: 'Food', value: 'food' }
 ]
 const urgencyOptions = [
   { label: 'Low', value: 'low' },

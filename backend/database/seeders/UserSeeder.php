@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'role' => 'general',
             'volunteer' => true,
         ]);
-        
+
         User::create([
             'name' => 'ngostaff1',
             'email' => 'ngostaff1@example.com',

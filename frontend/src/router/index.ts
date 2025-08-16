@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import UserDashboard from '../views/UserDashboard.vue'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -32,6 +33,11 @@ const router = createRouter({
       name: 'dashboard',
       component: UserDashboard,
     },
+    {
+      path: '/tasktest',
+      name: 'tasktest',
+      component: () => import('../views/TaskLogTestView.vue'),
+    }
 
   ],
 })
