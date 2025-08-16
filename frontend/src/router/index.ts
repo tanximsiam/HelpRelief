@@ -32,6 +32,11 @@ const router = createRouter({
       name: 'OauthCallback',
       component: OathHandler,
     },
+    {
+      path: '/aid-support',
+      name: 'AidSupport',
+      component: () => import('../views/AidSupport.vue'),
+    },
 
   ],
 })
