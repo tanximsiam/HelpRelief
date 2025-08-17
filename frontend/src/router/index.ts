@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '../stores/auth.ts'
+import { useAuth } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 
@@ -34,12 +34,6 @@ const router = createRouter({
       component: LoginView,
       // meta: { guestOnly: true },
     },
-
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: UserDashboard,
-    },
     {
       path: '/dashboard',
       name: 'dashboard',
@@ -52,6 +46,7 @@ const router = createRouter({
       component: OathHandler,
 
     },
+
     {
       path: '/aid-support',
       name: 'AidSupport',
