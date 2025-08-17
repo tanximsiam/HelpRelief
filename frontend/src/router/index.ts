@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '@/stores/auth'
+import { useAuth } from '../stores/auth.ts'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
-import UserDashboard from '../views/UserDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
+import UserDashboard from '../views/UserDashboard.vue'
 import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
 import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
 
