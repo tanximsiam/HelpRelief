@@ -119,8 +119,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/volunteers/individual', [VolunteerReportController::class, 'individual']);
 
     // NGO Profile Update
+    Route::get('/ngo/{ngoId}', [NgoController::class, 'show']);
     Route::patch('/ngo/{ngoId}', [NgoController::class, 'updateNgo']);
     // User Profile Update
-    Route::patch('/profile/update', [UserController::class, 'update']);
+    Route::get('/user', [UserController::class, 'show']);
+    Route::patch('/user', [UserController::class, 'update']);
+
 });
 
