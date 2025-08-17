@@ -24,7 +24,7 @@ class NgoController extends Controller
             ->where('ngo_id', $ngoId)
             // ->where('priviledged_role', 'admin')
             ->first();
-            
+
         if (! $staff) {
             return response()->json([
                 'error' => 'Unauthorized - only NGO staffs can update NGO profile'
@@ -65,6 +65,30 @@ class NgoController extends Controller
         return response()->json([
             'message'     => 'NGO profile updated successfully',
             'ngo_profile' => $ngoProfile->fresh(),
+        ]);
+    }
+
+    public function show($ngoId)
+    {
+        $ngo = Ngo::findOrFail($ngoId);
+
+        // Additional authorization check (e.g., only NGO staff for their NGO)
+        // Example: if (auth()->user()->ngo_id !== $ngoId) { abort(403); }
+
+        return response()->json([
+            'id' => $ngo->id,
+            'name' => $ngo->name,
+            'description' => $ngo->description,
+            'phone' => $ngo->phone,
+            'based_in' => $ngo->based_in,
+            'cause_focus' => $ngo->cause_focus,
+            'website' => $ngo->website,
+            'registration_no' => $ngo->registration_no,
+            'established_year' => $ngo->established_year,
+            'director_name' => $ngo->director_name,
+            'director_phone' => $ngo->director_phone,
+            'num_employees' => $ngo->num_employees,
+            'logo_url' => $ngo->logo_url,
         ]);
     }
 }
