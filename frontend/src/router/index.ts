@@ -1,12 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '../stores/auth.ts'
+import { useAuth } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
-<<<<<<< HEAD
 import UserDashboard from '../views/UserDashboard.vue'
-=======
 import OathHandler from '../views/OathHandler.vue'
->>>>>>> 7428c91 (Polished Frontend Redirect)
+import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
+import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,26 +31,31 @@ const router = createRouter({
       // meta: { guestOnly: true },
     },
     {
-      path: '/oauth/callback',
-      name: 'OauthCallback',
-      component: OathHandler,
-    },
-        {
       path: '/dashboard',
       name: 'dashboard',
       component: UserDashboard,
-=======
+    },
+
     {
       path: '/oauth/callback',
       name: 'OauthCallback',
       component: OathHandler,
->>>>>>> 7428c91 (Polished Frontend Redirect)
+    },
+
+    {
+      path: '/profile/update',
+      name: 'profile',
+      component: UserProfileUpdate,
+      meta: { requiresAuth: true },
     },
     {
-      path: '/aid-support',
-      name: 'AidSupport',
-      component: () => import('../views/AidSupport.vue'),
-    },
+      path: '/profile/ngo/update/:ngoId',
+      name: 'NgoProfileUpdate',
+      component: NgoProfileUpdate,
+      props: true,
+      meta: { requiresAuth: true },
+    }
+
 
   ],
 })
