@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Volunteer_registrations extends Model
+class VolunteerRegistration extends Model
 {
     protected $table = 'volunteer_registrations';
 
@@ -18,5 +18,12 @@ class Volunteer_registrations extends Model
         'skills', 
         'notes'
     ];
-
+    public function ngo()
+    {
+        return $this->belongsTo(Ngo::class, 'ngo_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Volunteer_registrations;
+use App\Models\VolunteerRegistration;
 
 class VolunteerSeeder extends Seeder
 {
@@ -13,24 +13,24 @@ class VolunteerSeeder extends Seeder
      */
     public function run(): void
     {
-        Volunteer_registrations::create([
+        VolunteerRegistration::create([
             'user_id' => 1, 
             'disaster_id' => 1, 
             'ngo_id' => 1, 
             'status' => 'approved',
             'registered_at' => now(),
-            'availability' => 'full-time',
+            'availability' => true,
             'skills' => 'First aid, logistics coordination',
             'notes' => 'Ready to assist with disaster relief.',
         ]);
 
-        Volunteer_registrations::create([
+        VolunteerRegistration::create([
             'user_id' => 3, 
             'disaster_id' => 2, 
             'ngo_id' => 2, 
             'status' => 'approved',
             'registered_at' => now(),
-            'availability' => 'part-time',
+            'availability' => true,
             'skills' => 'Medical treatment, counseling',
             'notes' => 'Experienced in handling disaster situations.',
         ]);
