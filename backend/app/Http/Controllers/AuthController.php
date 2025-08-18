@@ -143,15 +143,12 @@ class AuthController extends Controller
         }
 
         // 3) Create user (role depends on valid invite)
-        $user = $this->createUser(
-            [
-                'name'  => $googleUser->name,
-                'email' => $googleUser->email,
-            ],
-            [
-                'role' => $invite ? 'ngo_staff' : 'general',
-            ]
-        );
+        $user = User::create([
+            'name'     => $googleUser->name,
+            'email'    => $googleUser->email,
+            'password' => Hash::make(str()->random(16)),
+            'role'     => $invite ? 'ngo_staff' : 'general',
+        ]);
 
         // 4) If valid invite → attach NGO staff + mark invite used
         if ($invite) {
