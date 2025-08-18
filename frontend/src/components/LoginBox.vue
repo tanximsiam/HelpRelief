@@ -38,15 +38,24 @@ function onGoogleLogin() {
   const encoded = encodeURIComponent(currentPath as string)
   const base = import.meta.env.VITE_API_BASE
 
+<<<<<<< HEAD
   window.location.href = `${base}/auth/redirect?redirect=${encoded}`
 }
 
 const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
+=======
+  window.location.href = `${base}/auth/google?redirect=${encoded}`
+}
+>>>>>>> d66f5aa (Polished Frontend Redirect)
 </script>
 
 <template>
   <div class="flex gap-6 bg-white rounded-xl p-6 shadow justify-self-center">
+<<<<<<< HEAD
     <img src="https://placehold.co/300x430" alt="Login Image" class="rounded-xl">
+=======
+    <img src="https://placehold.co/300x400" alt="Login Image" class="rounded-xl">
+>>>>>>> d66f5aa (Polished Frontend Redirect)
     <div class="flex flex-col justify-center w-full">
       <form @submit.prevent="onSubmit" class="w-full max-w-md">
         <h1 class="text-2xl font-bold mb-2">Welcome to HelpRelief</h1>
@@ -74,8 +83,14 @@ const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
         <PrimaryButton
           class="w-full py-2 text-lg"
           variant="primary"
+<<<<<<< HEAD
           type="submit"
           :disabled="auth.loading || !email || !password"
+=======
+          type="button"
+          :disabled="auth.loading || !email || !password"
+          @click="onSubmit"
+>>>>>>> d66f5aa (Polished Frontend Redirect)
         >
           {{ auth.loading ? 'Signing in…' : 'Login' }}
         </PrimaryButton>
@@ -96,6 +111,7 @@ const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5" />
         <span>Login with Google</span>
       </button>
+<<<<<<< HEAD
       <div class="text-center mt-4">
         <span class="text-sm text-slate-600">New here? </span>
         <AppLink to="#" variant="secondary"
@@ -103,6 +119,8 @@ const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
           Sign up now
         </AppLink>
       </div>
+=======
+>>>>>>> d66f5aa (Polished Frontend Redirect)
     </div>
 
 

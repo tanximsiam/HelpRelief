@@ -2,12 +2,19 @@
 
 namespace App\Http\Controllers;
 
+
+use Illuminate\Http\Request;
 use App\Models\Disaster;
-use Illuminate\Http\JsonResponse;
 
 class DisasterController extends Controller
 {
-    // Return currently active disasters (status = 'active'). For now keep it simple.
+    // Show active disasters
+    public function index()
+    {
+        $activeDisasters = Disaster::where('status', 'active')->get();
+        return response()->json($activeDisasters);
+    }
+  
     public function active(): JsonResponse
     {
         $disasters = Disaster::where('status', 'active')
