@@ -11,6 +11,14 @@ type User = {
   ngo_id?: number | null;
 };
 
+type RegisterPayload = {
+  name: string
+  email: string
+  phone: string
+  password: string
+  password_confirmation: string
+}
+
 export const useAuth = defineStore("auth", {
   state: () => ({
     user: null as User | null,
@@ -25,6 +33,16 @@ export const useAuth = defineStore("auth", {
     isGeneral(): boolean { return this.user?.role === "general"; },
   },
   actions: {
+    async register(payload: RegisterPayload) {
+      this.loading = true
+      try {
+        await api.post('/register', payload)
+        // backend doesn't return a token on /register, so auto-login:
+        await this.login({ email: payload.email, password: payload.password })
+      } finally {
+        this.loading = false
+      }
+    },
     async login(payload: { email: string; password: string }) {
       this.loading = true;
       try {
@@ -36,6 +54,11 @@ export const useAuth = defineStore("auth", {
       } finally {
         this.loading = false;
       }
+    },
+    async setToken(token: string) {
+      this.token = token
+      localStorage.setItem('hr_token', token)
+      await this.fetchUser()
     },
     async fetchUser() {
       if (!this.token) return;

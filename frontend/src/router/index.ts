@@ -2,7 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/auth.ts'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+
 import UserDashboard from '../views/UserDashboard.vue'
+import OathHandler from '../views/OathHandler.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,10 +29,17 @@ const router = createRouter({
       component: LoginView,
       // meta: { guestOnly: true },
     },
+
         {
       path: '/dashboard',
       name: 'dashboard',
       component: UserDashboard,
+
+    {
+      path: '/oauth/callback',
+      name: 'OauthCallback',
+      component: OathHandler,
+
     },
 
   ],
