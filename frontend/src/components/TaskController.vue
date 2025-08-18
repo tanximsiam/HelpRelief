@@ -123,7 +123,9 @@ const submitTask = async () => {
         volunteer_id: payload.volunteer_id,
         start_time: payload.start_time,
         end_time: payload.end_time,
-        location: payload.location
+        location: payload.location,
+        disaster_id: payload.disaster_id,
+        task_type: payload.task_type
       })
 
       alert('Task created and aid request assigned successfully!')
