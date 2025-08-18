@@ -6,6 +6,7 @@ import LoginView from '../views/LoginView.vue'
 import UserDashboard from '../views/UserDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -41,6 +42,11 @@ const router = createRouter({
       component: OathHandler,
 
     },
+    {
+      path: '/tasktest',
+      name: 'tasktest',
+      component: () => import('../views/TaskLogTestView.vue'),
+    }
 
   ],
 })
