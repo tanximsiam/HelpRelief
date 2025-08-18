@@ -88,11 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-help-offers', [AidSupportController::class, 'myOffers']);
     Route::get('/volunteers', [VolunteerRegistrationController::class, 'index']);
 
-    // End of Authenticated Routes
-
     // Aid Requests
     Route::get('/aid-requests', [AidRequestController::class, 'index']);
     Route::post('/submit-aid-requests', [AidRequestController::class, 'store']);
+    Route::get('/my-requests', [AidRequestController::class, 'myRequests']);
     Route::post('/aid-requests/{aid_request}/verify', [AidRequestController::class, 'verifyByRequester']);
 
     // Volunteer Task Logs

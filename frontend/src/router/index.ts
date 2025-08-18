@@ -8,6 +8,7 @@ import OathHandler from '../views/OathHandler.vue'
 import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
 import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
 import DonationReportsView from '@/views/DonationReportsView.vue'
+import MyRequestsView from '@/views/MyRequestsView.vue'
 
 
 
@@ -89,10 +90,16 @@ const router = createRouter({
     },
     {
       path: '/donation-reports',
-    name: 'DonationReports',
-    component: DonationReportsView,
-    meta: { requiresAuth: true } // remove if not gated
-      }
+      name: 'DonationReports',
+      component: DonationReportsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/my-requests',
+      name: 'MyRequests',
+      component: MyRequestsView,
+      meta: { requiresAuth: true }
+    },
 
 
   ],
