@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/aid-supports', [AidSupportController::class, 'store']);
     Route::post('/volunteer-registrations', [VolunteerRegistrationController::class, 'store']);
     Route::get('/my-help-offers', [AidSupportController::class, 'myOffers']);
+    Route::get('/volunteers', [VolunteerRegistrationController::class, 'index']);
 
     // End of Authenticated Routes
 
@@ -103,21 +104,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
     Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
 
-    // Assign a task to a volunteer (NGO action)
-    Route::post('/tasks/{id}/assign', [VolunteerTaskController::class, 'assignTask']);
+    // Assign an aid request (handles both financial + non-financial cases)
+    Route::post('/aid-requests/{id}/assign', [VolunteerTaskController::class, 'assignAidRequest']);
 
-    // Reject a task (NGO action with remarks)
-    Route::patch('/tasks/{id}/reject', [VolunteerTaskController::class, 'rejectTask']);
+    // Reject an aid request with remarks
+    Route::post('/aid-requests/{id}/reject', [VolunteerTaskController::class, 'rejectAidRequest']);
 
-    // Create a standalone task (NGO action)
-    Route::post('/tasks/create', [VolunteerTaskController::class, 'createStandaloneTask']);
-
+    // Create a standalone task (independent of aid requests)
+    Route::post('/tasks/standalone', [VolunteerTaskController::class, 'createStandaloneTask']);
+    
     // Donation Reports
     Route::get('/disasters/{disasterId}/user-report', [DonationReportController::class, 'userReportForDisaster']);
+
+
+    Route::get('/active-disasters', [DisasterController::class, 'index']);
 
     // Volunteer Reports
     Route::get('/reports/volunteers/aggregate', [VolunteerReportController::class, 'aggregate']);
     Route::get('/reports/volunteers/individual', [VolunteerReportController::class, 'individual']);
+
 
     // NGO Profile Update
     Route::get('/ngo/{ngoId}', [NgoController::class, 'show']);

@@ -15,30 +15,41 @@ class AidRequestController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = AidRequest::with('requester');
+        $user = $request->user();
 
-        // Filter by status if provided
+        // Ensure the user is an NGO staff
+        $ngoId = $user->ngoStaff->ngo_id ?? null;
+        if (!$ngoId) {
+            return response()->json(['message' => 'You are not authorized to view aid requests'], 403);
+        }
+
+        // Start query with related requester + volunteerRegistration + ngo
+        $query = AidRequest::with('requester.volunteerRegistration.ngo')
+            ->whereHas('requester.volunteerRegistration', function ($q) use ($ngoId) {
+                $q->where('ngo_id', $ngoId);
+            });
+
+        // Optional filters
         if ($request->has('status')) {
             $query->byStatus($request->status);
         }
 
-        // Filter by urgency if provided
         if ($request->has('urgency')) {
             $query->byUrgency($request->urgency);
         }
 
-        // Filter by disaster_id if provided
         if ($request->has('disaster_id')) {
             $query->where('disaster_id', $request->disaster_id);
         }
 
-        // Order by urgency (critical first) and created_at
-        $aidRequests = $query->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
-                            ->orderBy('created_at', 'desc')
-                            ->get();
+        $aidRequests = $query
+            ->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json($aidRequests);
     }
+
 
     // Store a newly created aid request.
     public function store(Request $request): JsonResponse

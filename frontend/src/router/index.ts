@@ -10,6 +10,7 @@ import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
 import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
 
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -52,6 +53,22 @@ const router = createRouter({
 
     },
     {
+
+      path: '/aid-support',
+      name: 'AidSupport',
+      component: () => import('../views/AidSupport.vue'),
+    },
+    {
+      path: '/tasks',
+      name: 'TaskController',
+      component: () => import('../views/TaskCont.vue'),
+    },
+    {
+      path: '/tasks/create',
+      name: 'TaskCreate',
+      component: () => import('../components/TaskController.vue'),
+    }
+
       path: '/tasktest',
       name: 'tasktest',
       component: () => import('../views/TaskLogTestView.vue'),

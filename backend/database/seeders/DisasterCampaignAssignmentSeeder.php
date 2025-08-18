@@ -22,7 +22,8 @@ class DisasterCampaignAssignmentSeeder extends Seeder
             'disaster_id' => 2,
             'ngo_id' => 6,
             'assigned_by' => 1,
-            'status' => 'pending',
+
+            'status' => 'active',
             'help_needed' => 'medium',
             'updated_by' => 1,
         ]);
@@ -31,8 +32,9 @@ class DisasterCampaignAssignmentSeeder extends Seeder
             'disaster_id' => 3,
             'ngo_id' => 7,
             'assigned_by' => 1,
-            'status' => 'inactive',
-            'help_needed' => 'low',
+
+            'status' => 'active',
+            'help_needed' => 'medium',
             'updated_by' => 1,
         ]);
     }
