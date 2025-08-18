@@ -5,6 +5,9 @@ import LoginView from '../views/LoginView.vue'
 
 import UserDashboard from '../views/UserDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
+import UserDashboard from '../views/UserDashboard.vue'
+import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
+import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
 
 
 const router = createRouter({
@@ -37,6 +40,12 @@ const router = createRouter({
       component: UserDashboard,
 
     {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: UserDashboard,
+    },
+
+    {
       path: '/oauth/callback',
       name: 'OauthCallback',
       component: OathHandler,
@@ -47,6 +56,21 @@ const router = createRouter({
       name: 'tasktest',
       component: () => import('../views/TaskLogTestView.vue'),
     }
+
+    {
+      path: '/profile/update',
+      name: 'profile',
+      component: UserProfileUpdate,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/profile/ngo/update/:ngoId',
+      name: 'NgoProfileUpdate',
+      component: NgoProfileUpdate,
+      props: true,
+      meta: { requiresAuth: true },
+    }
+
 
   ],
 })
