@@ -26,13 +26,16 @@
               {{ ngo.campaign_title || ngo.description || 'Relief mission' }}
             </template>
           </BaseRowButton>
+
         </li>
       </ul>
 
       <div class="pt-3 flex justify-end gap-2">
         <button
           type="button"
+
           class="rounded-lg border px-4 py-2 text-sm transition hover:opacity-80 disabled:opacity-50"
+
           :disabled="!store.canSubmit || store.loading"
           @click="confirm"
         >
@@ -53,6 +56,7 @@
 
 <script setup lang="ts">
 import { useAidSupportStore, type Ngo } from '@/stores/AidSupport'
+
 import BaseRowButton from './BaseRowButton.vue'
 
 const store = useAidSupportStore()
@@ -60,6 +64,8 @@ const store = useAidSupportStore()
 function select(n: Ngo) {
   store.setNgo(n)
 }
+
+
 
 async function confirm() {
   if (!store.canSubmit) {
@@ -70,8 +76,10 @@ async function confirm() {
     return
   }
 
+
   try {
     await store.submitAidSupport()
   } catch {}
+
 }
 </script>
