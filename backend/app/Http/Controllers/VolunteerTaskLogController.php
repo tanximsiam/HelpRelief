@@ -10,7 +10,30 @@ use Illuminate\Validation\ValidationException;
 
 class VolunteerTaskLogController extends Controller
 {
-    //Admin check-in: Start a task
+    // List task logs (with optional filtering) GET /api/task-logs
+    public function index(Request $request): JsonResponse
+    {
+        $query = VolunteerTaskLog::with([
+            'task:id,disaster_id,task_type,location',
+            'volunteer:id,name',
+            'startVerifiedBy:id,name',
+            'endVerifiedBy:id,name'
+        ])->orderByDesc('check_in');
+
+        if ($request->filled('task_id')) {
+            $query->where('task_id', $request->integer('task_id'));
+        }
+        if ($request->filled('volunteer_id')) {
+            $query->where('volunteer_id', $request->integer('volunteer_id'));
+        }
+        if ($request->filled('disaster_id')) {
+            $query->where('disaster_id', $request->integer('disaster_id'));
+        }
+
+    $logs = $query->limit(200)->get();
+    return response()->json($logs);
+    }
+    // Check-in (start) a task: creates or updates a volunteer task log
     public function checkIn(Request $request): JsonResponse
     {
         try {
@@ -19,25 +42,31 @@ class VolunteerTaskLogController extends Controller
             ]);
 
             $task = Task::findOrFail($validated['task_id']);
-            $adminUser = auth()->user();
-
-            // Create new task log entry with default 'assigned' status and only check-in info
-            $taskLog = VolunteerTaskLog::create([
-                'task_id' => $validated['task_id'],
-                'volunteer_id' => null,
-                'disaster_id' => $task->disaster_id,
-                'status' => 'assigned',
-                'check_in' => now(),
-                'check_out' => null,
-                'expected_end' => null,
-                'start_verified_by' => $adminUser->id,
-                'end_verified_by' => null,
-                'report' => 'normal',
-            ]);
-
-            return response()->json([
-                'message' => 'Task checked in successfully',
-            ], 200);
+            $user = auth()->user();
+            $assignedVolunteerId = $task->assigned_to ?? $user->id;
+            $taskLog = VolunteerTaskLog::where('task_id', $validated['task_id'])->first();
+            if (!$taskLog) {
+                $taskLog = VolunteerTaskLog::create([
+                    'task_id' => $validated['task_id'],
+                    'volunteer_id' => $assignedVolunteerId,
+                    'disaster_id' => $task->disaster_id,
+                    'status' => 'assigned',
+                    'check_in' => now(),
+                    'check_out' => null,
+                    'start_verified_by' => $user->id,
+                    'end_verified_by' => null,
+                    'report' => 'normal',
+                ]);
+            } elseif (!$taskLog->check_in) {
+                $taskLog->update([
+                    'volunteer_id' => $assignedVolunteerId = $task->assigned_to ?? $user->id,
+                    'status' => 'started',
+                    'check_in' => now(),
+                    'start_verified_by' => $user->id,
+                ]);
+            }
+            $taskLog->load(['task:id,disaster_id,task_type,location','volunteer:id,name','startVerifiedBy:id,name','endVerifiedBy:id,name']);
+            return response()->json(['log' => $taskLog], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -47,7 +76,7 @@ class VolunteerTaskLogController extends Controller
         }
     }
 
-    //Admin check-out: End a task  POST /api/task-log/checkout
+    // Check-out: End a task  POST /api/task-log/checkout
     public function checkOut(Request $request): JsonResponse
     {
         try {
@@ -57,78 +86,17 @@ class VolunteerTaskLogController extends Controller
             ]);
 
             $taskLog = VolunteerTaskLog::where('task_id', $validated['task_id'])->firstOrFail();
-
-            // Perform check-out
             $adminUser = auth()->user();
-            $taskLog->update([
-                'status' => 'ended',
-                'check_out' => now(),
-                'end_verified_by' => $adminUser->id,
-                'report' => $validated['report'] ?? 'normal'
-            ]);
-
-            return response()->json([
-                'message' => 'Task checked out successfully',
-            ], 200);
-
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-        }
-    }
-
-    /**
-     * Volunteer status update: Accept or mark as ended
-     * PATCH /api/task-log/status
-     */
-    public function updateStatus(Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'task_id' => 'required|exists:tasks,id',
-                'status' => 'required|in:accepted,ended',
-            ]);
-
-            $volunteer = auth()->user();
-            // Volunteer accepting the task
-            if ($validated['status'] === 'accepted') {
-                $taskLog = VolunteerTaskLog::where('task_id', $validated['task_id'])
-                    ->where('status', 'assigned')
-                    ->whereNull('volunteer_id')
-                    ->firstOrFail();
-                // Volunteer assignment recorded in VolunteerTaskLog
-                // Update log status and set volunteer_id
+            if (!$taskLog->check_out) {
                 $taskLog->update([
-                    'status' => 'accepted',
-                    'volunteer_id' => $volunteer->id
+                    'status' => 'ended',
+                    'check_out' => now(),
+                    'end_verified_by' => $adminUser->id,
+                    'report' => $validated['report'] ?? 'normal'
                 ]);
-                return response()->json([
-                    'message' => 'Task accepted successfully',
-                ], 200);
             }
-
-            // Volunteer ending the task
-            $taskLog = VolunteerTaskLog::where([
-                'task_id' => $validated['task_id'],
-                'volunteer_id' => $volunteer->id
-            ])->firstOrFail();
-
-            // Validate status transitions
-            if ($validated['status'] === 'ended' && !in_array($taskLog->status, ['accepted', 'started'])) {
-                return response()->json([
-                    'message' => 'Task can only be marked as ended if it is accepted or started',
-                    'current_status' => $taskLog->status
-                ], 400);
-            }
-
-            // Update status
-            $taskLog->update(['status' => 'ended']);
-
-            return response()->json([
-                'message' => 'Task status updated successfully',
-            ], 200);
+            $taskLog->load(['task:id,disaster_id,task_type,location','volunteer:id,name','startVerifiedBy:id,name','endVerifiedBy:id,name']);
+            return response()->json(['log' => $taskLog], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -137,4 +105,5 @@ class VolunteerTaskLogController extends Controller
             ], 422);
         }
     }
+
 }
