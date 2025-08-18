@@ -22,6 +22,7 @@ use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
+use App\Http\Controllers\DisasterController; // added
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -94,9 +95,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/aid-requests/{aid_request}/verify', [AidRequestController::class, 'verifyByRequester']);
 
     // Volunteer Task Logs
+    Route::get('/task-logs', [VolunteerTaskLogController::class, 'index']);
     Route::post('/task-log/checkin', [VolunteerTaskLogController::class, 'checkIn']);
     Route::post('/task-log/checkout', [VolunteerTaskLogController::class, 'checkOut']);
-    Route::patch('/task-log/status', [VolunteerTaskLogController::class, 'updateStatus']);
 
 
     Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);

@@ -2,10 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/auth.ts'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+
+import UserDashboard from '../views/UserDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
 import UserDashboard from '../views/UserDashboard.vue'
 import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
 import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +33,12 @@ const router = createRouter({
       component: LoginView,
       // meta: { guestOnly: true },
     },
+
+        {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: UserDashboard,
+
     {
       path: '/dashboard',
       name: 'dashboard',
@@ -40,7 +49,13 @@ const router = createRouter({
       path: '/oauth/callback',
       name: 'OauthCallback',
       component: OathHandler,
+
     },
+    {
+      path: '/tasktest',
+      name: 'tasktest',
+      component: () => import('../views/TaskLogTestView.vue'),
+    }
 
     {
       path: '/profile/update',
