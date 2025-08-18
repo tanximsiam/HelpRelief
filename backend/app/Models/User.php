@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(NgoStaff::class);
     }
+    public function volunteerRegistration()
+    {
+        return $this->hasOne(VolunteerRegistration::class, 'user_id');
+    }
+
 }

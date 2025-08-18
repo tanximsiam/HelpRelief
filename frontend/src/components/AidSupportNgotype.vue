@@ -12,33 +12,27 @@
 
       <ul v-else class="divide-y rounded-xl border">
         <li v-for="ngo in store.ngos" :key="ngo.id">
-          <button
-            type="button"
-            class="w-full flex items-start justify-between gap-3 px-4 py-3 rounded-xl border transition
-                   hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/5"
-            :class="[store.ngo?.id === ngo.id ? 'bg-gray-50 border-gray-200' : 'border-transparent']"
+          <BaseRowButton
+            :selected="store.ngo?.id === ngo.id"
             @click="select(ngo)"
+            chevron
           >
-            <div class="flex items-start gap-3 min-w-0">
-              <div v-if="ngo.logoUrl" class="shrink-0">
-                <img :src="ngo.logoUrl" alt="" class="h-8 w-8 rounded-md object-cover" />
-              </div>
-              <div class="min-w-0">
-                <div class="text-sm font-medium truncate">{{ ngo.name }}</div>
-                <div class="text-xs text-gray-500 truncate">
-                  {{ ngo.campaign_title || ngo.description || 'Relief mission' }}
-                </div>
-              </div>
-            </div>
-            <div class="shrink-0">›</div>
-          </button>
+            <template #leading v-if="ngo.logoUrl">
+              <img :src="ngo.logoUrl" alt="" class="h-8 w-8 rounded-md object-cover" />
+            </template>
+
+            {{ ngo.name }}
+            <template #sub>
+              {{ ngo.campaign_title || ngo.description || 'Relief mission' }}
+            </template>
+          </BaseRowButton>
         </li>
       </ul>
 
       <div class="pt-3 flex justify-end gap-2">
         <button
           type="button"
-          class="rounded-lg border px-4 py-2 text-sm disabled:opacity-50"
+          class="rounded-lg border px-4 py-2 text-sm transition hover:opacity-80 disabled:opacity-50"
           :disabled="!store.canSubmit || store.loading"
           @click="confirm"
         >
@@ -59,9 +53,13 @@
 
 <script setup lang="ts">
 import { useAidSupportStore, type Ngo } from '@/stores/AidSupport'
+import BaseRowButton from './BaseRowButton.vue'
+
 const store = useAidSupportStore()
 
-function select(n: Ngo) { store.setNgo(n) }
+function select(n: Ngo) {
+  store.setNgo(n)
+}
 
 async function confirm() {
   if (!store.canSubmit) {
@@ -71,6 +69,9 @@ async function confirm() {
       : 'Please enter the quantity before confirming.'
     return
   }
-  try { await store.submitAidSupport() } catch {}
+
+  try {
+    await store.submitAidSupport()
+  } catch {}
 }
 </script>

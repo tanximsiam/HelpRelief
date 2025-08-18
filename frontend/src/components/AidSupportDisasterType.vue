@@ -35,8 +35,7 @@ import BaseRowButton from './BaseRowButton.vue'
 import { useAidSupportStore, type Disaster } from '@/stores/AidSupport'
 
 const store = useAidSupportStore()
-
-onMounted(() => { store.fetchDisasters() })
+onMounted(() => store.fetchDisasters())
 
 function badgeClass(sev?: Disaster['severity']) {
   return sev === 'major'

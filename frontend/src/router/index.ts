@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import OathHandler from '../views/OathHandler.vue'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -37,6 +38,16 @@ const router = createRouter({
       name: 'AidSupport',
       component: () => import('../views/AidSupport.vue'),
     },
+    {
+      path: '/tasks',
+      name: 'TaskController',
+      component: () => import('../views/TaskCont.vue'),
+    },
+    {
+      path: '/tasks/create',
+      name: 'TaskCreate',
+      component: () => import('../components/TaskController.vue'),
+    }
 
   ],
 })

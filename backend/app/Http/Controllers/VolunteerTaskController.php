@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\VolunteerTaskLog;
+use App\Models\AidRequest;
 
 
 class VolunteerTaskController extends Controller
@@ -79,40 +80,83 @@ class VolunteerTaskController extends Controller
     }
 
     // Assign a task to a volunteer by NGO
-    public function assignTask(Request $request, $id)
+    public function assignAidRequest(Request $request, $id)
     {
-        $request->validate([
-            'volunteer_id' => 'required|exists:users,id',
-        ]);
+        // Find aid request first
+        $aidRequest = AidRequest::findOrFail($id);
 
-        $task = Task::findOrFail($id);
-
-        if ($task->status === 'assigned') {
-            return response()->json(['error' => 'Task is already assigned'], 400);
+        if ($aidRequest->status !== 'pending') {
+            return response()->json(['error' => 'This aid request is not available for assignment'], 400);
         }
 
-        $task->assigned_to = $request->volunteer_id;
-        $task->status = 'assigned';
-        $task->save();
+        // Check aid type
+        if ($aidRequest->aid_type === 'financial') {
+            // For financial aid, no task creation — directly accept
+            $aidRequest->status = 'assigned';
+            $aidRequest->save();
 
-        return response()->json(['message' => 'Task assigned successfully!', 'task' => $task]);
+            return response()->json([
+                'message' => 'Financial aid request accepted successfully!',
+                'aid_request' => $aidRequest
+            ]);
+        }
+
+        // For other aid types -> validate volunteer & task inputs
+        $request->validate([
+            'volunteer_id' => 'required|exists:users,id',
+            'start_time'   => 'required|date',
+            'end_time'     => 'required|date|after:start_time',
+            'location'     => 'required|string',
+        ]);
+
+        if ($aidRequest->status === 'assigned') {
+            return response()->json(['error' => 'Aid request already assigned'], 400);
+        }
+
+        // Create a new Task from the aid request
+        $user = $request->user();
+        $ngo_id = $user->ngoStaff->ngo_id;
+        $task = Task::create([
+            'aid_request_id' => $aidRequest->id,
+            'assigned_to'    => $request->volunteer_id,
+            'created_by'     => $ngo_id, // NGO user
+            'task_type'      => $aidRequest->aid_type,
+            'location'       => $request->location,
+            'start_time'     => $request->start_time,
+            'end_time'       => $request->end_time,
+            'urgency'        => $aidRequest->urgency,
+            'description'    => $aidRequest->description,
+            'status'         => 'assigned',
+        ]);
+
+        // Update aid request status
+        $aidRequest->status = 'assigned';
+        $aidRequest->save();
+
+        return response()->json([
+            'message' => 'Aid request assigned and task created successfully!',
+            'task' => $task,
+            'aid_request' => $aidRequest
+        ]);
     }
 
-    // Reject a task with remarks by NGO
-    public function rejectTask(Request $request, $id)
+
+    // Reject an aid request with remarks by NGO
+    public function rejectAidRequest(Request $request, $id)
     {
         $request->validate([
             'remarks' => 'required|string',
         ]);
 
-        $task = Task::findOrFail($id);
+        $aidRequest = AidRequest::findOrFail($id);
 
-        $task->status = 'rejected';
-        $task->ngo_remarks = $request->remarks;
-        $task->save();
+        $aidRequest->status = 'rejected';
+        $aidRequest->ngo_remarks = $request->remarks;
+        $aidRequest->save();
 
-        return response()->json(['message' => 'Task rejected successfully!', 'task' => $task]);
+        return response()->json(['message' => 'Aid request rejected successfully!', 'aid_request' => $aidRequest]);
     }
+
 
     // Create a standalone task (independent of aid requests)
     public function createStandaloneTask(Request $request)

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('ngo_id')->constrained('ngos'); // NGO
             $table->enum('status', ['pending', 'approved', 'rejected', 'active', 'inactive', 'completed'])->default('pending');
             $table->timestamp('registered_at')->nullable();
-            $table->string('availability')->nullable();
+            $table->boolean('availability')->default(true);
             $table->text('skills')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
