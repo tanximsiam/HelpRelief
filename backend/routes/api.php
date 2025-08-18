@@ -22,7 +22,7 @@ use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
- // added
+use App\Http\Controllers\CampaignController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -37,8 +37,6 @@ Route::get('/ngo-invites/{ngo}', [NgoInviteLinkController::class, 'index']);
 Route::get('/ngo-staff', [NgoStaffController::class, 'index']);
 Route::get('/aid-supports', [AidSupportController::class, 'index']);
 Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
-// Active disasters route (public for selection)
-Route::get('/disasters/active', [DisasterController::class, 'active']);
 // Pre-Login Routes
 Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 
@@ -131,6 +129,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // User Profile Update
     Route::get('/user', [UserController::class, 'show']);
     Route::patch('/user', [UserController::class, 'update']);
+
+    // New Campaign routes
+    Route::get('/campaigns', [CampaignController::class, 'index']);
+    Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
 
 });
 

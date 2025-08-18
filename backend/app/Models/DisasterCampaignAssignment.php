@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Disaster;
+use App\Models\Ngo;
+use App\Models\User;
 
 class DisasterCampaignAssignment extends Model
 {
@@ -26,7 +29,7 @@ class DisasterCampaignAssignment extends Model
 
     public function ngo()
     {
-        return $this->belongsTo(User::class, 'ngo_id');
+        return $this->belongsTo(Ngo::class, 'ngo_id');
     }
 
     public function assignedBy()

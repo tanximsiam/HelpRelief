@@ -74,8 +74,9 @@ const emit = defineEmits<{ (e: 'switch', to: 'login' | 'signup'): void }>()
         <PrimaryButton
           class="w-full py-2 text-lg"
           variant="primary"
-          type="submit"
+          type="button"
           :disabled="auth.loading || !email || !password"
+          @click="onSubmit"
         >
           {{ auth.loading ? 'Signing in…' : 'Login' }}
         </PrimaryButton>
