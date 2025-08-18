@@ -45,36 +45,41 @@ class DonationReportController extends Controller
 
     public function userReportForDisaster(Request $request, $disasterId)
     {
-        $userId = $request->user()->id;
-
-        // Check if NGO has published report for the disaster
-        $reports = DonationReport::where('disaster_id', $disasterId)
+        $reports = DonationReport::with('disaster')
+            ->where('disaster_id', $disasterId)
             ->where('confirmed', true)
             ->get();
 
         if ($reports->isEmpty()) {
-            // No final report — send user's donation list only
-            $myDonations = AidSupport::where('user_id', $userId)
-                ->where('disaster_id', $disasterId)
-                ->get();
-
             return response()->json([
-                'message' => 'Final report not published yet.',
-                'reports' => 'No reports available.',
-                'donations' => $myDonations
+                'message' => 'No confirmed reports available for this disaster.',
+                'reports' => [],
             ]);
         }
 
-        // Final report exists — join with user's donations
-        $myDonations = AidSupport::where('user_id', $userId)
-            ->where('disaster_id', $disasterId)
-            ->get();
-
         return response()->json([
             'message' => 'Report available.',
-
-            'donations' => $myDonations
+            'reports' => $reports,
         ]);
     }
+
+    public function allDonationReports()
+    {
+        $reports = DonationReport::with('disaster')
+            ->where('confirmed', true)
+            ->get()
+            ->groupBy('disaster_id')
+            ->map(function ($group) {
+                return [
+                    'disaster' => $group[0]->disaster,
+                    'reports' => $group->values(),
+                ];
+            })
+            ->values(); // reset keys
+
+        return response()->json($reports);
+    }
+
+
 
 }

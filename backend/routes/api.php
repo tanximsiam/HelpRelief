@@ -112,9 +112,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Create a standalone task (independent of aid requests)
     Route::post('/tasks/standalone', [VolunteerTaskController::class, 'createStandaloneTask']);
-    
+
     // Donation Reports
     Route::get('/disasters/{disasterId}/user-report', [DonationReportController::class, 'userReportForDisaster']);
+    Route::get('/donation-reports/disasters', [DonationReportController::class, 'allDonationReports']);
+
 
 
     Route::get('/active-disasters', [DisasterController::class, 'index']);
