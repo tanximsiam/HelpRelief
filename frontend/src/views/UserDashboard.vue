@@ -144,5 +144,56 @@ function handleAidRequestSubmit() {
     >
       <AidRequestForm @submit="handleAidRequestSubmit" />
     </Modal>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Live Disaster Feed -->
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Live Disaster Feed</h3>
+        <ul class="space-y-2">
+          <li v-for="disaster in disasters" :key="disaster.id" class="p-2 border-b">
+            <div class="flex justify-between">
+              <span>{{ disaster.name }} ({{ disaster.type }} in {{ disaster.location }})</span>
+              <span :class="getStatusColor(disaster.severity)" class="px-2 py-1 rounded">
+                {{ (disaster.severity?.charAt(0).toUpperCase() || 'Urgent') + (disaster.severity?.slice(1) || '') }} help required
+              </span>
+            </div>
+          </li>
+        </ul>
+        <a href="#" class="text-blue-500 mt-2 inline-block">View More</a>
+      </div>
+
+      <!-- Ongoing Campaigns -->
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Ongoing Campaigns</h3>
+        <div v-if="isLoading" class="text-center text-gray-500">Loading campaigns...</div>
+        <div v-else-if="errorMessage" class="text-center text-red-500">{{ errorMessage }}</div>
+        <ul class="space-y-2" v-else-if="campaigns.length">
+          <li v-for="campaign in campaigns" :key="campaign.id" class="p-2 border-b">
+            <div class="flex justify-between">
+              <span>{{ campaign.name }} (by {{ campaign.ngo_name || 'Unknown NGO' }})</span>
+              <span v-if="isNgoStaff" class="text-blue-500 cursor-pointer" @click="viewReports(campaign.disaster_id)"> > </span>
+              <span v-else class="text-blue-500"> > </span>
+            </div>
+          </li>
+        </ul>
+        <p v-else class="text-gray-500">No ongoing campaigns found.</p>
+        <a href="#" class="text-blue-500 mt-2 inline-block">View More</a>
+      </div>
+    </div>
+
+    <!-- Volunteer Reports (Only for NGO Staff) -->
+    <VolunteerReportView
+        v-if="isNgoStaff"
+        :is-ngo-staff="isNgoStaff"
+        :campaigns="campaigns"
+        @update:errorMessage="errorMessage = $event"
+    />
+    <!-- Success/Error Messages -->
+    <div v-if="successMessage" class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mt-4">
+      {{ successMessage }}
+    </div>
+    <div v-if="errorMessage" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-4">
+      {{ errorMessage }}
+    </div>
   </div>
 </template>

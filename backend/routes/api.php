@@ -24,7 +24,11 @@ use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
 use App\Http\Controllers\CampaignController;
+<<<<<<< HEAD
 use App\Http\Controllers\TaskController;
+=======
+<<<<<<< HEAD
+>>>>>>> 7302a74 (incomplete dashboard)
 
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\DisasterAlertController;
@@ -32,6 +36,8 @@ use App\Http\Controllers\DisasterAlertController;
 use App\Http\Controllers\AidNeedController;
 use App\Http\Controllers\ReportController;
 
+=======
+>>>>>>> 3835553 (incomplete dashboard)
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -146,6 +152,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/user', [UserController::class, 'show']);
     Route::patch('/user', [UserController::class, 'update']);
 
+<<<<<<< HEAD
     // Campaign routes
     Route::get('/campaigns', [CampaignController::class, 'index']);
     Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
@@ -176,6 +183,11 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
 
     Route::get('/map/aid-need', [MapController::class, 'getAidNeedByState']);
         Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
+=======
+    // New Campaign routes
+    Route::get('/campaigns', [CampaignController::class, 'index']);
+    Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
+>>>>>>> 3835553 (incomplete dashboard)
 
 });
 
