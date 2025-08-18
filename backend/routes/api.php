@@ -22,6 +22,7 @@ use App\Http\Controllers\AidRequestController;
 use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
+use App\Http\Controllers\CampaignController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -128,6 +129,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // User Profile Update
     Route::get('/user', [UserController::class, 'show']);
     Route::patch('/user', [UserController::class, 'update']);
+
+    // New Campaign routes
+    Route::get('/campaigns', [CampaignController::class, 'index']);
+    Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
 
 });
 

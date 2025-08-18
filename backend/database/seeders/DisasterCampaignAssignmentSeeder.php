@@ -11,7 +11,7 @@ class DisasterCampaignAssignmentSeeder extends Seeder
     {
         DisasterCampaignAssignment::create([
             'disaster_id' => 1,
-            'ngo_id' => 6,
+            'ngo_id' => 1,
             'assigned_by' => 1,
             'status' => 'active',
             'help_needed' => 'high',
@@ -20,7 +20,7 @@ class DisasterCampaignAssignmentSeeder extends Seeder
 
         DisasterCampaignAssignment::create([
             'disaster_id' => 2,
-            'ngo_id' => 6,
+            'ngo_id' => 1,
             'assigned_by' => 1,
 
             'status' => 'active',
@@ -30,7 +30,7 @@ class DisasterCampaignAssignmentSeeder extends Seeder
 
         DisasterCampaignAssignment::create([
             'disaster_id' => 3,
-            'ngo_id' => 7,
+            'ngo_id' => 1,
             'assigned_by' => 1,
 
             'status' => 'active',

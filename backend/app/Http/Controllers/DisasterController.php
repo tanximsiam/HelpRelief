@@ -26,7 +26,7 @@ class DisasterController extends Controller
     {
         $activeDisasters = Disaster::where('status', 'active')->get();
         return response()->json($activeDisasters);
->>>>>>> dd67fd3 (FrontEnd for AidSupport)
+
     }
 
   
