@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { reactive, computed } from 'vue'
-import InputField from '@/components/InputField.vue'
 import PrimaryButton from '@/components/PrimaryButton.vue'
 import RadioGroup from '@/components/RadioGroup.vue'
 import { api } from '@/lib/api'
@@ -10,13 +8,11 @@ import { api } from '@/lib/api'
 interface Disaster { id: number; name: string; location: string }
 interface FormState { disaster_id: string; aid_type: string | null; urgency: string | null; description: string }
 
-
 // ---- Static option sets (must match backend enums) ----
 const aidTypeOptions = [
   { label: 'Financial', value: 'financial' },
   { label: 'Medical', value: 'medical' },
   { label: 'Resources / Supplies', value: 'resource' },
-
 ]
 const urgencyOptions = [
   { label: 'Low', value: 'low' },
@@ -74,75 +70,6 @@ async function submit() {
     form.aid_type = null
     form.urgency = null
     form.description = ''
-// ---- Types ----
-interface Disaster { id: number; name: string; location: string }
-interface FormState { disaster_id: string; aid_type: string | null; urgency: string | null; description: string }
-
-// ---- Static option sets (must match backend enums) ----
-const aidTypeOptions = [
-  { label: 'Financial', value: 'financial' },
-  { label: 'Medical', value: 'medical' },
-  { label: 'Resources / Supplies', value: 'resource' },
-]
-const urgencyOptions = [
-  { label: 'Low', value: 'low' },
-  { label: 'Medium', value: 'medium' },
-  { label: 'High', value: 'high' },
-  { label: 'Critical', value: 'critical' },
-]
-
-// ---- Reactive state ----
-const form = reactive<FormState>({ disaster_id: '', aid_type: null, urgency: null, description: '' })
-const disasters = ref<Disaster[]>([])
-const loadingDisasters = ref(false)
-const submitting = ref(false)
-const errors = reactive<Record<string,string>>({})
-const successMessage = ref<string | null>(null)
-
-const emit = defineEmits<{ (e: 'submit', payload: any): void }>()
-
-// ---- Data loading ----
-async function loadActiveDisasters() {
-  loadingDisasters.value = true
-  try {
-    const { data } = await api.get('/disasters/active')
-    disasters.value = data
-    if (!form.disaster_id && disasters.value.length) form.disaster_id = String(disasters.value[0].id)
-  } catch {
-    errors.root = 'Failed to load active disasters'
-  } finally {
-    loadingDisasters.value = false
-  }
-}
-
-onMounted(loadActiveDisasters)
-
-// ---- Validation ----
-function validate(): boolean {
-  successMessage.value = null
-  for (const k of Object.keys(errors)) delete errors[k]
-  if (!form.disaster_id) errors.disaster_id = 'Select a disaster'
-  if (!form.aid_type) errors.aid_type = 'Select an aid type'
-  if (!form.urgency) errors.urgency = 'Select urgency'
-  if (!form.description) errors.description = 'Provide description'
-  return Object.keys(errors).length === 0
-}
-
-// ---- Submit ----
-async function submit() {
-  if (!validate()) return
-  submitting.value = true
-  try {
-    const payload = { ...form, disaster_id: Number(form.disaster_id) }
-    const { data } = await api.post('/submit-aid-requests', payload)
-    emit('submitted', data.aid_request)
-    emit('submit', data.aid_request) // keep for compatibility with parent usage
-    // reset
-    state.disaster_id = ''
-    state.location = ''
-    state.aid_type = null
-    state.urgency = null
-    state.description = ''
   } catch (e: any) {
     if (e.response?.status === 422) {
       const srv = e.response.data.errors || {}
@@ -182,12 +109,7 @@ async function submit() {
       <div>
         <p class="mb-2 text-lg font-semibold text-slate-800">Type of Aid</p>
         <div class="rounded-lg border border-slate-400 p-4">
-          <RadioGroup v-model="state.aid_type" :options="[
-            { label: 'Food', value: 'food' },
-            { label: 'Financial', value: 'financial' },
-            { label: 'Medical', value: 'medical' },
-            { label: 'Physical', value: 'physical' }
-          ]" />
+          <RadioGroup v-model="form.aid_type" :options="aidTypeOptions" />
           <p v-if="errors.aid_type" class="mt-2 text-sm text-red-600">{{ errors.aid_type }}</p>
         </div>
       </div>
@@ -196,33 +118,22 @@ async function submit() {
       <div>
         <p class="mb-2 text-lg font-semibold text-slate-800">Urgency</p>
         <div class="rounded-lg border border-slate-400 p-4">
-          <RadioGroup inline v-model="state.urgency" :options="[
-            { label: 'Low', value: 'low' },
-            { label: 'Medium', value: 'medium' },
-            { label: 'High', value: 'high' },
-            { label: 'Critical', value: 'critical' }
-          ]" />
+          <RadioGroup inline v-model="form.urgency" :options="urgencyOptions" />
           <p v-if="errors.urgency" class="mt-2 text-sm text-red-600">{{ errors.urgency }}</p>
         </div>
       </div>
 
       <!-- Description -->
       <div class="md:col-span-2">
-        <label class="mb-2 block text-lg font-semibold text-slate-800" for="description">Description</label>
-        <textarea
-          id="description"
-          v-model="state.description"
-          rows="4"
-          placeholder="Provide request details"
-          class="w-full rounded-md border border-slate-400 p-4 text-base font-medium text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
-        />
+        <label for="description" class="mb-2 block text-lg font-semibold text-slate-800">Description</label>
+        <textarea id="description" v-model="form.description" rows="4" placeholder="Provide request details" class="w-full rounded-md border border-slate-400 p-4 text-base font-medium text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20" />
         <p v-if="errors.description" class="mt-2 text-sm text-red-600">{{ errors.description }}</p>
       </div>
     </div>
 
     <div class="flex justify-end">
-      <PrimaryButton type="submit" :disabled="!canSubmit" variant="primary" class="px-8 py-3 text-lg min-w-[8rem]" >
-        <span v-if="!loading.submit">Submit</span>
+      <PrimaryButton type="submit" :disabled="submitting || !form.disaster_id" variant="primary" class="px-8 py-3 text-lg min-w-[8rem]">
+        <span v-if="!submitting">Submit</span>
         <span v-else>Submitting...</span>
       </PrimaryButton>
     </div>
