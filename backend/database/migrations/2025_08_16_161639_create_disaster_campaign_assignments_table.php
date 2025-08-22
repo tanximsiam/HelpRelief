@@ -11,7 +11,7 @@ class CreateDisasterCampaignAssignmentsTable extends Migration
         Schema::create('disaster_campaign_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('disaster_id')->constrained('disasters')->onDelete('cascade');
-            $table->foreignId('ngo_id')->constrained('users')->onDelete('cascade'); // NGO role user
+            $table->foreignId('ngo_id')->constrained('ngos')->onDelete('cascade'); // NGO organization
             $table->foreignId('assigned_by')->constrained('users')->onDelete('cascade'); // Admin
             $table->enum('status', ['active', 'inactive', 'pending'])->default('pending');
             $table->enum('help_needed', ['low', 'medium', 'high'])->default('medium');

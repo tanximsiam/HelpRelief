@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ngo;
 use App\Models\NgoStaff;
-use App\Models\NgoStaff;
 
 
 class NgoController extends Controller
