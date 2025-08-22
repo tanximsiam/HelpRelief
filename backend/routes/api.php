@@ -146,6 +146,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']);
     Route::get('/map/state/{stateName}', [MapController::class, 'getStateDetails']);
     Route::get('/map/aid-request-density', [MapController::class, 'getAidRequestDensityByState']);
+    Route::get('/map/aid-requests/state/{stateName}', [MapController::class, 'getAidRequestsForState']);
 
 });
 

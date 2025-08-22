@@ -28,32 +28,66 @@
     <!-- Modal for Interactive Map -->
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4"
       @click="closeModal"
     >
       <div
-        class="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] w-full mx-4 overflow-auto"
+        class="relative w-full rounded-xl bg-white shadow-xl ring-1 ring-black/5 max-w-5xl max-h-[90vh] overflow-auto"
         @click.stop
       >
+        <button
+          type="button"
+          class="absolute right-3.5 top-3.5 inline-flex h-5 w-5 items-center justify-center rounded-full border border-blue-600 text-blue-600 text-[15px] leading-none font-semibold transition hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
+          @click="closeModal"
+          aria-label="Close"
+        >
+          <span class="-mt-[1px]">×</span>
+        </button>
+        <div class="p-8">
+
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold">Interactive {{ mode === 'campaigns' ? 'Campaign Map' : 'Aid Request Heatmap' }}</h2>
-          <button
-            @click="closeModal"
-            class="text-gray-500 hover:text-gray-700 text-2xl"
-          >
-            ×
-          </button>
         </div>
 
-        <div class="h-96 w-full rounded border flex items-center justify-center bg-gray-50 mb-4">
+        <div class="h-96 w-full rounded border flex items-center justify-center bg-gray-50 mb-4 relative overflow-hidden" ref="mapContainer">
           <SvgMap
             :map="bangladeshMap"
             :location-class="getLocationClass"
             class="max-w-full max-h-full cursor-pointer"
             @click="handleLocationClick"
             @mouseover="handleLocationHover"
+            @mousemove="handleMouseMove"
             @mouseout="clearHover"
           />
+          <!-- Trigger button to show Aid Requests overlay (appears after selecting a state in aid mode) -->
+          <button
+            v-if="mode==='aid' && selectedDensity && !showAidOverlay"
+            @click="showAidOverlay = true"
+            class="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-3 py-1.5 text-sm font-medium rounded shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            See Aid Requests
+          </button>
+          <!-- Aid Requests inline overlay over heatmap -->
+          <AidRequestsOverlay
+            :show="showAidOverlay && mode==='aid'"
+            :state-name="selectedDensity?.name || null"
+            @close="showAidOverlay=false"
+          />
+          <!-- Hover tooltip -->
+          <div
+            v-if="hoveredDistrict"
+            :style="{ left: hoverX + 'px', top: hoverY + 'px' }"
+            class="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-full whitespace-nowrap"
+          >
+            <div class="rounded bg-gray-900/90 text-white text-[11px] px-2 py-1 shadow-lg ring-1 ring-black/40">
+              <template v-if="mode==='campaigns'">
+                <strong>{{ hoveredDistrict }}:</strong> {{ getDistrictByName(hoveredDistrict)?.campaign_count || 0 }} active campaigns
+              </template>
+              <template v-else>
+                <strong>{{ hoveredDistrict }}:</strong> {{ getDensityByName(hoveredDistrict)?.request_count || 0 }} aid requests
+              </template>
+            </div>
+          </div>
         </div>
 
         <!-- Legend -->
@@ -114,10 +148,7 @@
           </div>
         </div>
 
-        <!-- Hover info -->
-        <div v-if="hoveredDistrict" class="mt-4 p-2 bg-gray-100 rounded">
-          <p v-if="mode==='campaigns'" class="text-sm"><strong>{{ hoveredDistrict }}:</strong> {{ getDistrictByName(hoveredDistrict)?.campaign_count || 0 }} active campaigns</p>
-          <p v-else class="text-sm"><strong>{{ hoveredDistrict }}:</strong> {{ getDensityByName(hoveredDistrict)?.request_count || 0 }} aid requests</p>
+  <!-- Removed static hover info panel; replaced with floating tooltip -->
         </div>
       </div>
     </div>
@@ -131,6 +162,7 @@ import "vue3-svg-map/style.css"
 import { ref, onMounted, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
+import AidRequestsOverlay from '@/components/AidRequestsOverlay.vue'
 
 // Interfaces
 interface DistrictData { name: string; campaign_count: number; intensity: number }
@@ -153,10 +185,14 @@ const showModal = ref(false)
 const selectedDistrict = ref<DistrictData | null>(null)
 const selectedDensity = ref<DensityData | null>(null)
 const hoveredDistrict = ref<string | null>(null)
+const hoverX = ref(0)
+const hoverY = ref(0)
+const mapContainer = ref<HTMLElement | null>(null)
 const districtData = ref<DistrictData[]>([])
 const densityData = ref<DensityData[]>([])
 const campaignData = ref<CampaignData | null>(null)
 const mode = ref<'campaigns' | 'aid'>('campaigns')
+const showAidOverlay = ref(false)
 
 // Fetch campaign intensity data
 const fetchMapData = async () => {
@@ -244,14 +280,19 @@ const handleLocationClick = (event: Event) => {
   if (mode.value === 'campaigns') {
     const district = getDistrictByName(districtName)
     if (district) selectedDistrict.value = district
+    showAidOverlay.value = false
   } else {
     const density = getDensityByName(districtName)
-    if (density) selectedDensity.value = density
+    if (density) {
+      selectedDensity.value = density
+  // Don't open overlay immediately; show trigger button instead
+  showAidOverlay.value = false
+    }
   }
 }
 
 // Handle location hover
-const handleLocationHover = (event: Event) => {
+const handleLocationHover = (event: MouseEvent) => {
   const target = event.target as SVGElement
   const locationId = target.id
 
@@ -266,6 +307,19 @@ const handleLocationHover = (event: Event) => {
   }
 
   hoveredDistrict.value = districtMap[locationId] || null
+  if (hoveredDistrict.value) updateHoverPosition(event)
+}
+
+const handleMouseMove = (event: MouseEvent) => {
+  if (!hoveredDistrict.value) return
+  updateHoverPosition(event)
+}
+
+function updateHoverPosition(event: MouseEvent){
+  if (!mapContainer.value) return
+  const rect = mapContainer.value.getBoundingClientRect()
+  hoverX.value = event.clientX - rect.left
+  hoverY.value = event.clientY - rect.top - 6 // slight offset above cursor
 }
 
 // Clear hover
@@ -275,10 +329,9 @@ const clearHover = () => {
 
 const toggleMode = async () => {
   mode.value = mode.value === 'campaigns' ? 'aid' : 'campaigns'
-  // Clear selections
   selectedDistrict.value = null
   selectedDensity.value = null
-  // Fetch data if switching to aid mode first time
+  showAidOverlay.value = false
   if (mode.value === 'aid' && densityData.value.length === 0) {
     await fetchDensityData()
   }

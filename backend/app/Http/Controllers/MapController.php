@@ -235,4 +235,51 @@ class MapController extends Controller
             'mapped' => true,
         ]);
     }
+
+    /**
+     * Detailed aid requests for a specific division/state (used by inline overlay)
+     */
+    public function getAidRequestsForState(Request $request, $stateName)
+    {
+        $user = $request->user();
+        $staff = \App\Models\NgoStaff::where('user_id', $user->id)->first();
+        if (!$staff) {
+            return response()->json(['error' => 'Unauthorized - NGO staff only'], 403);
+        }
+        $ngoId = $staff->ngo_id;
+
+        $allowed = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur'];
+        $match = null;
+        foreach ($allowed as $a) { if (strcasecmp($a, $stateName) === 0) { $match = $a; break; } }
+        if (!$match) {
+            return response()->json(['error' => 'Invalid state name'], 422);
+        }
+
+        $requests = AidRequest::with(['requester:id,name'])
+            ->join('users', 'aid_requests.requester_id', '=', 'users.id')
+            ->join('volunteer_registrations', 'users.id', '=', 'volunteer_registrations.user_id')
+            ->where('volunteer_registrations.ngo_id', $ngoId)
+            ->where('aid_requests.location', $match)
+            ->select('aid_requests.*')
+            ->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
+            ->orderBy('aid_requests.created_at','desc')
+            ->limit(200)
+            ->get()
+            ->map(function($r){ return [
+                'id' => $r->id,
+                'disaster_id' => $r->disaster_id,
+                'requester' => [ 'id' => $r->requester?->id, 'name' => $r->requester?->name ],
+                'aid_type' => $r->aid_type,
+                'urgency' => $r->urgency,
+                'status' => $r->status,
+                'description' => $r->description,
+                'created_at' => $r->created_at?->toIso8601String(),
+            ];});
+
+        return response()->json([
+            'state' => $match,
+            'count' => $requests->count(),
+            'requests' => $requests,
+        ]);
+    }
 }

@@ -19,7 +19,7 @@ const emit = defineEmits<{
 
 // Constants
 const DIVISIONS = Object.freeze([
-  'Dhaka','Chattogram','Rajshahi','Khulna','Barishal','Sylhet','Rangpur','Mymensingh'
+  'Dhaka','Chattogram','Rajshahi','Khulna','Barishal','Sylhet','Rangpur'
 ])
 const DISASTER_TYPES = Object.freeze(['flood','earthquake','storm','wildfire','drought','other'])
 const SEVERITIES = Object.freeze(['low','medium','high'])
