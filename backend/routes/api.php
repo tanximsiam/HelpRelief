@@ -44,7 +44,6 @@ Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
 // Pre-Login Routes
 Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
 
-Route::get('/alerts', [DisasterAlertController::class, 'index']);
 
 
 // Route::get('/users', function () {
@@ -153,5 +152,14 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/map/aid-request-density', [MapController::class, 'getAidRequestDensityByState']);
     Route::get('/map/aid-requests/state/{stateName}', [MapController::class, 'getAidRequestsForState']);
 
+    // Disaster Alert controller
+    Route::post('/alerts/{id}/reject', [DisasterAlertController::class, 'reject']);
+    Route::post('/alerts/{id}/confirm', [DisasterAlertController::class, 'confirm']);
+
 });
 
+
+Route::get('/alerts', [DisasterAlertController::class, 'new']);
+
+
+Route::get('/alerts-all', [DisasterAlertController::class, 'index']);

@@ -122,7 +122,7 @@ class FetchReliefWebDisasters extends Command
                     'disaster_type' => $type,
                     'status' => $status,
                     'description' => $fields['url'] ?? '',
-                    'divisions' => json_encode($divisions),
+                    'divisions' => array_keys($info['divisions']),
                     'confirmed' => 'pending',
                 ]
             );
