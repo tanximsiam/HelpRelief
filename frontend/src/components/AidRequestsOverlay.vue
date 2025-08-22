@@ -81,10 +81,10 @@ function format(ts?:string){
         </div>
         <div v-else class="flex-1 overflow-auto space-y-3 pr-1">
           <div v-if="!requests.length" class="text-sm text-gray-500">No aid requests.</div>
-          <div v-for="r in requests" :key="r.id" class="bg-white/70 ring-1 ring-black/5 rounded p-3 shadow-sm">
+      <div v-for="(r, idx) in requests" :key="r.id" class="bg-white/70 ring-1 ring-black/5 rounded p-3 shadow-sm">
             <div class="flex justify-between items-start gap-3">
               <div class="min-w-0">
-                <p class="text-sm font-medium truncate">#{{ r.id }} • <span class="capitalize">{{ r.aid_type }}</span></p>
+                <p class="text-sm font-medium truncate">#{{ idx + 1 }} (ID {{ r.id }}) • <span class="capitalize">{{ r.aid_type }}</span></p>
                 <p v-if="r.description" class="text-xs text-gray-600 mt-1 line-clamp-3">{{ r.description }}</p>
                 <p class="text-[11px] text-gray-400 mt-1">{{ r.requester?.name || 'Unknown' }} • {{ format(r.created_at) }}</p>
               </div>

@@ -261,8 +261,7 @@ class MapController extends Controller
             ->where('volunteer_registrations.ngo_id', $ngoId)
             ->where('aid_requests.location', $match)
             ->select('aid_requests.*')
-            ->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
-            ->orderBy('aid_requests.created_at','desc')
+            ->orderBy('aid_requests.created_at','desc') // newest first
             ->limit(200)
             ->get()
             ->map(function($r){ return [
