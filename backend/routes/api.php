@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Middleware\HandleCors;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NgoController;
@@ -59,7 +60,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/auth/redirect', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/callback', [AuthController::class, 'handleGoogleCallback']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // Authenticated user profile
 
     Route::get('/user', [AuthController::class, 'user']);
@@ -116,6 +117,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/donation-reports/disasters', [DonationReportController::class, 'allDonationReports']);
 
 
+
+    Route::get('/active-disasters', [DisasterController::class, 'index']);
 
     Route::get('/disasters/active', [DisasterController::class, 'active']);
 
