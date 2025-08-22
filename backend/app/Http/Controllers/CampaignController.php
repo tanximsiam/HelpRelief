@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DisasterCampaignAssignment;
 use App\Models\NgoStaff;
+use App\Models\Disaster;
 
 class CampaignController extends Controller
 {
@@ -90,5 +91,54 @@ class CampaignController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Campaign not found'], 404);
         }
+    }
+
+    /**
+     * Create a new campaign assignment (NGO staff) linking an NGO to a disaster.
+     */
+    public function store(Request $request)
+    {
+        $user = $request->user();
+        $staff = NgoStaff::where('user_id', $user->id)->first();
+        if (!$staff) {
+            return response()->json(['error' => 'Unauthorized. User is not NGO staff.'], 403);
+        }
+
+        $validated = $request->validate([
+            'disaster_id' => ['required','integer','exists:disasters,id'],
+            'help_needed' => ['required','in:low,medium,high'],
+            'status' => ['nullable','in:active,inactive,pending']
+        ]);
+
+        // Ensure disaster exists
+        $disaster = Disaster::find($validated['disaster_id']);
+        if (!$disaster) {
+            return response()->json(['error' => 'Disaster not found'], 404);
+        }
+
+        // Prevent duplicate campaign registration for same NGO & disaster
+        $already = DisasterCampaignAssignment::where('disaster_id', $validated['disaster_id'])
+            ->where('ngo_id', $staff->ngo_id)
+            ->first();
+        if ($already) {
+            return response()->json([
+                'errors' => [
+                    'disaster_id' => ['A campaign for this disaster is already registered by your NGO.']
+                ]
+            ], 422);
+        }
+
+        $assignment = DisasterCampaignAssignment::create([
+            'disaster_id' => $validated['disaster_id'],
+            'ngo_id' => $staff->ngo_id,
+            'assigned_by' => $user->id,
+            'status' => $validated['status'] ?? 'active',
+            'help_needed' => $validated['help_needed'],
+            'updated_by' => $user->id,
+        ]);
+
+        $assignment->load(['disaster','ngo']);
+
+        return response()->json($this->formatCampaignData($assignment), 201);
     }
 }

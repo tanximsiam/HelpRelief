@@ -137,6 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/campaigns', [CampaignController::class, 'index']);
     Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
+    Route::post('/campaigns', [CampaignController::class, 'store']);
 
     // Map routes for NGO dashboard
     Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']);

@@ -28,13 +28,13 @@ const topPriorityCampaigns = computed(() => {
     .slice(0, 3);
 });
 
-// Fetch user role and dashboard data on mount
-onMounted(async () => {
+async function loadCampaigns() {
+  isLoading.value = true;
   try {
-    // Fetch NGO staff status to determine role and ngo_id
+    // Fetch NGO staff status
     const staffRes = await api.get('/ngo-staff');
     const staffData = staffRes.data;
-    if (staffData.role === 'ngo_staff' && staffData.ngo_id) {
+    if (staffData?.ngo_id) {
       isNgoStaff.value = true;
       ngoId.value = staffData.ngo_id;
     } else {
@@ -42,25 +42,31 @@ onMounted(async () => {
       ngoId.value = null;
     }
   } catch (error) {
-    console.log('User is not NGO staff:', error);
     isNgoStaff.value = false;
   }
-
   try {
-    // Fetch campaigns based on NGO staff status
-    let campaignEndpoint = '/campaigns';
-    if (isNgoStaff.value && ngoId.value) {
-      campaignEndpoint = `/campaigns/my`;
-    }
-    const campaignRes = await api.get(campaignEndpoint);
+    let endpoint = '/campaigns';
+    if (isNgoStaff.value && ngoId.value) endpoint = '/campaigns/my';
+    const campaignRes = await api.get(endpoint);
     campaigns.value = Array.isArray(campaignRes.data) ? campaignRes.data : [];
-  } catch (error) {
-    console.error('Failed to fetch campaigns:', error);
+    errorMessage.value = '';
+  } catch (e) {
     errorMessage.value = 'Failed to load campaigns';
   } finally {
     isLoading.value = false;
   }
-});
+}
+
+function appendCampaign(c: Campaign) {
+  // Avoid duplicates
+  if (!campaigns.value.find(x => x.id === c.id)) {
+    campaigns.value.unshift(c as any);
+  }
+}
+
+onMounted(loadCampaigns);
+
+defineExpose({ refresh: loadCampaigns, append: appendCampaign });
 
 // Function to open campaign list modal
 const openCampaignList = () => {
