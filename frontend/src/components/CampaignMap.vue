@@ -28,21 +28,25 @@
     <!-- Modal for Interactive Map -->
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4"
       @click="closeModal"
     >
       <div
-        class="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] w-full mx-4 overflow-auto"
+        class="relative w-full rounded-xl bg-white shadow-xl ring-1 ring-black/5 max-w-5xl max-h-[90vh] overflow-auto"
         @click.stop
       >
+        <button
+          type="button"
+          class="absolute right-3.5 top-3.5 inline-flex h-5 w-5 items-center justify-center rounded-full border border-blue-600 text-blue-600 text-[15px] leading-none font-semibold transition hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
+          @click="closeModal"
+          aria-label="Close"
+        >
+          <span class="-mt-[1px]">×</span>
+        </button>
+        <div class="p-8">
+
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold">Interactive {{ mode === 'campaigns' ? 'Campaign Map' : 'Aid Request Heatmap' }}</h2>
-          <button
-            @click="closeModal"
-            class="text-gray-500 hover:text-gray-700 text-2xl"
-          >
-            ×
-          </button>
         </div>
 
         <div class="h-96 w-full rounded border flex items-center justify-center bg-gray-50 mb-4">
@@ -118,6 +122,7 @@
         <div v-if="hoveredDistrict" class="mt-4 p-2 bg-gray-100 rounded">
           <p v-if="mode==='campaigns'" class="text-sm"><strong>{{ hoveredDistrict }}:</strong> {{ getDistrictByName(hoveredDistrict)?.campaign_count || 0 }} active campaigns</p>
           <p v-else class="text-sm"><strong>{{ hoveredDistrict }}:</strong> {{ getDensityByName(hoveredDistrict)?.request_count || 0 }} aid requests</p>
+        </div>
         </div>
       </div>
     </div>
