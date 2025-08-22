@@ -12,12 +12,12 @@ class DisasterSeeder extends Seeder
             'id' => 1,
             'name' => 'Cyclone Remal',
             'disaster_type' => 'storm',
-            'location' => 'Cox’s Bazar',
+            'location' => 'Chittagong',
             'start_date' => '2025-08-01',
             'severity' => 'medium',
             'status' => 'active',
             'description' => 'A severe tropical storm hit the coastal areas.',
-            'created_by' => 1, 
+            'created_by' => 1,
         ]);
 
         Disaster::create([
@@ -29,7 +29,7 @@ class DisasterSeeder extends Seeder
             'severity' => 'high',
             'status' => 'active',
             'description' => 'Floodwaters have inundated large parts of the Sylhet district.',
-            'created_by' => 2, 
+            'created_by' => 2,
         ]);
 
         Disaster::create([
@@ -41,7 +41,7 @@ class DisasterSeeder extends Seeder
             'severity' => 'high',
             'status' => 'closed',
             'description' => 'An earthquake of magnitude 6.5 struck Dhaka city.',
-            'created_by' => 3, 
+            'created_by' => 3,
         ]);
     }
 }

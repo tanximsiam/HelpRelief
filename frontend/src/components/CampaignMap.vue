@@ -5,7 +5,13 @@
       class="bg-white p-4 rounded shadow cursor-pointer hover:shadow-lg transition-shadow h-full flex flex-col"
       @click="openModal"
     >
-      <h3 class="text-xl font-semibold mb-4">Campaign Coverage Map</h3>
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold">{{ mode === 'campaigns' ? 'Campaign Coverage Map' : 'Aid Request Heatmap' }}</h3>
+        <button
+          @click.stop="toggleMode"
+          class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded"
+        >Switch to {{ mode === 'campaigns' ? 'Aid Requests' : 'Campaigns' }}</button>
+      </div>
       <div class="flex-1 w-full rounded border flex items-center justify-center bg-gray-50 min-h-[300px]">
         <div class="w-full h-full flex items-center justify-center">
           <SvgMap
@@ -30,7 +36,7 @@
         @click.stop
       >
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold">Interactive Campaign Map</h2>
+          <h2 class="text-2xl font-bold">Interactive {{ mode === 'campaigns' ? 'Campaign Map' : 'Aid Request Heatmap' }}</h2>
           <button
             @click="closeModal"
             class="text-gray-500 hover:text-gray-700 text-2xl"
@@ -52,28 +58,23 @@
 
         <!-- Legend -->
         <div class="mb-4">
-          <h4 class="text-sm font-semibold mb-2">Campaign Intensity</h4>
-          <div class="flex items-center space-x-4">
-            <div class="flex items-center">
-              <div class="w-4 h-4 bg-gray-300 mr-2"></div>
-              <span class="text-sm">No campaigns</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-4 h-4 bg-blue-300 mr-2"></div>
-              <span class="text-sm">Low (1-2)</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-4 h-4 bg-blue-500 mr-2"></div>
-              <span class="text-sm">Medium (3-5)</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-4 h-4 bg-blue-800 mr-2"></div>
-              <span class="text-sm">High (6+)</span>
-            </div>
+          <h4 class="text-sm font-semibold mb-2" v-if="mode==='campaigns'">Campaign Intensity</h4>
+          <h4 class="text-sm font-semibold mb-2" v-else>Aid Request Density (Total Requests)</h4>
+          <div v-if="mode==='campaigns'" class="flex items-center space-x-4">
+            <div class="flex items-center"><div class="w-4 h-4 bg-gray-300 mr-2"></div><span class="text-sm">No campaigns</span></div>
+            <div class="flex items-center"><div class="w-4 h-4 bg-blue-300 mr-2"></div><span class="text-sm">Low (1-2)</span></div>
+            <div class="flex items-center"><div class="w-4 h-4 bg-blue-500 mr-2"></div><span class="text-sm">Medium (3-5)</span></div>
+            <div class="flex items-center"><div class="w-4 h-4 bg-blue-800 mr-2"></div><span class="text-sm">High (6+)</span></div>
+          </div>
+          <div v-else class="flex items-center space-x-4">
+            <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-0 mr-2"></div><span class="text-sm">None</span></div>
+            <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-1 mr-2"></div><span class="text-sm">Low</span></div>
+            <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-2 mr-2"></div><span class="text-sm">Medium</span></div>
+            <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-3 mr-2"></div><span class="text-sm">High</span></div>
           </div>
         </div>
 
-        <div v-if="selectedDistrict" class="border-t pt-4">
+  <div v-if="selectedDistrict && mode==='campaigns'" class="border-t pt-4">
           <h3 class="text-lg font-semibold mb-2">{{ selectedDistrict.name }} - Campaign Details</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div class="text-center">
@@ -101,12 +102,22 @@
           </button>
         </div>
 
+        <!-- Aid Request Detail (when in heatmap mode) -->
+        <div v-if="selectedDensity && mode==='aid'" class="border-t pt-4">
+          <h3 class="text-lg font-semibold mb-2">{{ selectedDensity.name }} - Aid Requests</h3>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+            <div class="text-center"><div class="text-2xl font-bold text-rose-600">{{ selectedDensity.request_count }}</div><div class="text-sm text-gray-600">Total Requests</div></div>
+            <div class="text-center"><div class="text-lg font-semibold text-gray-700">{{ selectedDensity.breakdown.low }}</div><div class="text-xs text-gray-500">Low</div></div>
+            <div class="text-center"><div class="text-lg font-semibold text-yellow-600">{{ selectedDensity.breakdown.medium }}</div><div class="text-xs text-gray-500">Medium</div></div>
+            <div class="text-center"><div class="text-lg font-semibold text-orange-600">{{ selectedDensity.breakdown.high }}</div><div class="text-xs text-gray-500">High</div></div>
+            <div class="text-center"><div class="text-lg font-semibold text-red-600">{{ selectedDensity.breakdown.critical }}</div><div class="text-xs text-gray-500">Critical</div></div>
+          </div>
+        </div>
+
         <!-- Hover info -->
         <div v-if="hoveredDistrict" class="mt-4 p-2 bg-gray-100 rounded">
-          <p class="text-sm">
-            <strong>{{ hoveredDistrict }}:</strong>
-            {{ getDistrictByName(hoveredDistrict)?.campaign_count || 0 }} active campaigns
-          </p>
+          <p v-if="mode==='campaigns'" class="text-sm"><strong>{{ hoveredDistrict }}:</strong> {{ getDistrictByName(hoveredDistrict)?.campaign_count || 0 }} active campaigns</p>
+          <p v-else class="text-sm"><strong>{{ hoveredDistrict }}:</strong> {{ getDensityByName(hoveredDistrict)?.request_count || 0 }} aid requests</p>
         </div>
       </div>
     </div>
@@ -122,11 +133,8 @@ import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 
 // Interfaces
-interface DistrictData {
-  name: string
-  campaign_count: number
-  intensity: number
-}
+interface DistrictData { name: string; campaign_count: number; intensity: number }
+interface DensityData { name: string; request_count: number; breakdown: Record<string, number>; intensity: number }
 
 interface CampaignData {
   ngo_id: number
@@ -143,9 +151,12 @@ const router = useRouter()
 // Reactive state
 const showModal = ref(false)
 const selectedDistrict = ref<DistrictData | null>(null)
+const selectedDensity = ref<DensityData | null>(null)
 const hoveredDistrict = ref<string | null>(null)
 const districtData = ref<DistrictData[]>([])
+const densityData = ref<DensityData[]>([])
 const campaignData = ref<CampaignData | null>(null)
+const mode = ref<'campaigns' | 'aid'>('campaigns')
 
 // Fetch campaign intensity data
 const fetchMapData = async () => {
@@ -158,11 +169,17 @@ const fetchMapData = async () => {
     console.error('Error fetching map data:', error)
     // Initialize with empty data if API fails
     const bangladeshDistricts = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-    districtData.value = bangladeshDistricts.map(name => ({
-      name,
-      campaign_count: Math.floor(Math.random() * 8), // Random data for demo
-      intensity: 0
-    }))
+    districtData.value = bangladeshDistricts.map(name => ({ name, campaign_count: 0, intensity: 0 }))
+  }
+}
+
+// Fetch aid request density data
+const fetchDensityData = async () => {
+  try {
+    const response = await api.get('/map/aid-request-density')
+    densityData.value = response.data.states
+  } catch (e) {
+    console.error('Error fetching density data', e)
   }
 }
 
@@ -180,23 +197,31 @@ const getLocationClass = (location: { id: string; name: string }) => {
   }
 
   const districtName = districtMap[location.id] || location.name
-  const district = getDistrictByName(districtName)
-  const campaignCount = district?.campaign_count || 0
-
-  console.log(`District: ${districtName}, Campaign Count: ${campaignCount}`) // Debug log
-
-  let intensityClass = 'campaign-intensity-none'
-  if (campaignCount >= 6) intensityClass = 'campaign-intensity-high'
-  else if (campaignCount >= 3) intensityClass = 'campaign-intensity-medium'
-  else if (campaignCount >= 1) intensityClass = 'campaign-intensity-low'
-
-  return `svg-map__location ${intensityClass}`
+  if (mode.value === 'campaigns') {
+    const district = getDistrictByName(districtName)
+    const campaignCount = district?.campaign_count || 0
+    let intensityClass = 'campaign-intensity-none'
+    if (campaignCount >= 6) intensityClass = 'campaign-intensity-high'
+    else if (campaignCount >= 3) intensityClass = 'campaign-intensity-medium'
+    else if (campaignCount >= 1) intensityClass = 'campaign-intensity-low'
+    return `svg-map__location ${intensityClass}`
+  } else {
+    const density = getDensityByName(districtName)
+    const intensity = density?.intensity || 0
+    let bucket = 0
+    if (intensity >= 0.66) bucket = 3
+    else if (intensity >= 0.33) bucket = 2
+    else if (intensity > 0) bucket = 1
+    return `svg-map__location heatmap-intensity-${bucket}`
+  }
 }
 
 // Get district by name
 const getDistrictByName = (name: string) => {
   return districtData.value.find(d => d.name === name)
 }
+
+const getDensityByName = (name: string) => densityData.value.find(d => d.name === name)
 
 // Handle location click
 const handleLocationClick = (event: Event) => {
@@ -215,12 +240,13 @@ const handleLocationClick = (event: Event) => {
   }
 
   const districtName = districtMap[locationId]
-  if (districtName) {
+  if (!districtName) return
+  if (mode.value === 'campaigns') {
     const district = getDistrictByName(districtName)
-    if (district) {
-      selectedDistrict.value = district
-      console.log('Selected district:', district.name)
-    }
+    if (district) selectedDistrict.value = district
+  } else {
+    const density = getDensityByName(districtName)
+    if (density) selectedDensity.value = density
   }
 }
 
@@ -245,6 +271,17 @@ const handleLocationHover = (event: Event) => {
 // Clear hover
 const clearHover = () => {
   hoveredDistrict.value = null
+}
+
+const toggleMode = async () => {
+  mode.value = mode.value === 'campaigns' ? 'aid' : 'campaigns'
+  // Clear selections
+  selectedDistrict.value = null
+  selectedDensity.value = null
+  // Fetch data if switching to aid mode first time
+  if (mode.value === 'aid' && densityData.value.length === 0) {
+    await fetchDensityData()
+  }
 }
 
 // Modal functions
@@ -310,6 +347,18 @@ onMounted(async () => {
 .svg-map__location.campaign-intensity-high {
   fill: #1e40af !important; /* blue-800 */
 }
+
+/* Aid request heatmap buckets */
+.svg-map__location.heatmap-intensity-0 { fill: #f3f4f6 !important; }
+.svg-map__location.heatmap-intensity-1 { fill: #fde68a !important; }
+.svg-map__location.heatmap-intensity-2 { fill: #f59e0b !important; }
+.svg-map__location.heatmap-intensity-3 { fill: #dc2626 !important; }
+
+/* Legend squares reuse classes */
+.heatmap-intensity-0 { background: #f3f4f6; }
+.heatmap-intensity-1 { background: #fde68a; }
+.heatmap-intensity-2 { background: #f59e0b; }
+.heatmap-intensity-3 { background: #dc2626; }
 
 /* Ensure proper sizing */
 .svg-map {

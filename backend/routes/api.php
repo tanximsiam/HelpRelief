@@ -142,6 +142,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Map routes for NGO dashboard
     Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']);
     Route::get('/map/state/{stateName}', [MapController::class, 'getStateDetails']);
+    Route::get('/map/aid-request-density', [MapController::class, 'getAidRequestDensityByState']);
 
 });
 
