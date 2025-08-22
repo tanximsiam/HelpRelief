@@ -25,6 +25,8 @@ use App\Http\Controllers\VolunteerTaskLogController;
 use App\Http\Controllers\DonationReportController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\DisasterAlertController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -41,6 +43,8 @@ Route::get('/aid-supports', [AidSupportController::class, 'index']);
 Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
 // Pre-Login Routes
 Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
+
+
 
 // Route::get('/users', function () {
     //     return User.index();
@@ -148,5 +152,14 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/map/aid-request-density', [MapController::class, 'getAidRequestDensityByState']);
     Route::get('/map/aid-requests/state/{stateName}', [MapController::class, 'getAidRequestsForState']);
 
+    // Disaster Alert controller
+    Route::post('/alerts/{id}/reject', [DisasterAlertController::class, 'reject']);
+    Route::post('/alerts/{id}/confirm', [DisasterAlertController::class, 'confirm']);
+
 });
 
+
+Route::get('/alerts', [DisasterAlertController::class, 'new']);
+
+
+Route::get('/alerts-all', [DisasterAlertController::class, 'index']);

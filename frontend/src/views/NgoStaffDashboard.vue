@@ -9,6 +9,30 @@ import ProfileView from '@/components/ProfileView.vue'
 import { useAuth } from '@/stores/auth'
 import { computed, ref, onMounted } from 'vue'
 import { api } from '@/lib/api'
+import DisasterAlerts from '@/components/DisasterAlerts.vue'
+
+interface Alert {
+  id: number
+  title: string
+  disaster_type: string
+  status: string
+  description: string
+  divisions: string[]
+  reported_at: string
+  confirmed: 'pending' | 'confirmed' | 'rejected'
+}
+
+const alerts = ref<Alert[]>([])
+
+async function loadAlerts() {
+  try {
+    const { data } = await api.get<Alert[]>('/alerts')
+    alerts.value = data.filter(a => a.confirmed === 'pending')
+    console.log('alerts:', data)
+  } catch (e) {
+    console.warn('Failed to load alerts', e)
+  }
+}
 
 const auth = useAuth()
 // Aid request removed per new requirements
@@ -46,6 +70,7 @@ onMounted(async () => {
   } catch (e) {
     console.warn('Failed to fetch ngo staff details', e)
   }
+  await loadAlerts()
 })
 
 // Aid request handlers removed
@@ -80,19 +105,20 @@ const handleCampaignCreated = (payload:any) => {
         <div class="flex gap-4 items-center">
           <!-- Report Disaster trigger -->
           <button
-            type="button"
-            @click="openReportDisaster"
-            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
+          type="button"
+          @click="openReportDisaster"
+          class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
           >
-            Report a disaster
-          </button>
-          <PrimaryButton
-            variant="primary"
-            class="px-5 py-2 text-sm font-medium"
-            @click="openRegisterCampaign"
-          >Register Campaign</PrimaryButton>
-        </div>
+          Report a disaster
+        </button>
+        <PrimaryButton
+        variant="primary"
+        class="px-5 py-2 text-sm font-medium"
+        @click="openRegisterCampaign"
+        >Register Campaign</PrimaryButton>
       </div>
+    </div>
+    <DisasterAlerts v-if="alerts.length" :alerts="alerts" @refresh="loadAlerts" />
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" style="height:600px;">
         <div class="lg:col-span-1" style="height:600px;">
           <ProfileView class="h-full" />
