@@ -121,6 +121,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/active-disasters', [DisasterController::class, 'index']);
 
     Route::get('/disasters/active', [DisasterController::class, 'active']);
+    Route::post('/disasters/store', [DisasterController::class, 'store']);
 
     // Volunteer Reports
     Route::get('/reports/volunteers/aggregate', [VolunteerReportController::class, 'aggregate']);
@@ -139,10 +140,12 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/campaigns', [CampaignController::class, 'index']);
     Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
+    Route::post('/campaigns', [CampaignController::class, 'store']);
 
     // Map routes for NGO dashboard
     Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']);
     Route::get('/map/state/{stateName}', [MapController::class, 'getStateDetails']);
+    Route::get('/map/aid-request-density', [MapController::class, 'getAidRequestDensityByState']);
 
 });
 

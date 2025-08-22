@@ -6,7 +6,8 @@ import Modal from '@/components/Modal.vue'
 interface Disaster {
   id: number;
   name: string;
-  type: string;
+  disaster_type?: string; // new backend field
+  type?: string; // backward compatibility
   location: string;
   severity: string;
   status: string;
@@ -29,27 +30,29 @@ const getStatusColor = (severity: string) => {
   return 'bg-green-500 text-white';
 };
 
-// Fetch user role and dashboard data on mount
-onMounted(async () => {
+async function loadDisasters() {
   try {
     // Fetch NGO staff status to determine ngo_id
     const staffRes = await api.get('/ngo-staff');
     const staffData = staffRes.data;
-    if (staffData.ngo_id) {
+    if (staffData?.ngo_id) {
       isNgoStaff.value = true;
       ngoId.value = staffData.ngo_id;
     } else {
       isNgoStaff.value = false;
       ngoId.value = null;
     }
-
-    // Fetch active disasters
     const disasterRes = await api.get('/disasters/active');
     disasters.value = disasterRes.data;
   } catch (error) {
     console.error('Failed to load disasters:', error);
   }
-});
+}
+
+onMounted(loadDisasters);
+
+// Expose a refresh method for parent components (e.g., after creating a new disaster)
+defineExpose({ refresh: loadDisasters });
 
 // Open and close modal functions
 const openAllDisastersModal = () => {
@@ -69,7 +72,7 @@ const closeAllDisastersModal = () => {
     <ul class="space-y-2">
       <li v-for="disaster in topDisasters" :key="disaster.id" class="p-2 border-b">
         <div class="flex justify-between">
-          <span>{{ disaster.name }} ({{ disaster.type }} in {{ disaster.location }})</span>
+          <span>{{ disaster.name }} ({{ disaster.disaster_type || disaster.type }} in {{ disaster.location }})</span>
           <span :class="getStatusColor(disaster.severity)" class="px-2 py-1 rounded text-sm">
             {{ (disaster.severity?.charAt(0).toUpperCase() || 'Urgent') + (disaster.severity?.slice(1) || '') }} help required
           </span>
@@ -98,7 +101,7 @@ const closeAllDisastersModal = () => {
           <div class="flex flex-col sm:flex-row sm:justify-between gap-2">
             <div>
               <h4 class="font-medium">{{ disaster.name }}</h4>
-              <p class="text-gray-600">{{ disaster.type }} in {{ disaster.location }}</p>
+              <p class="text-gray-600">{{ disaster.disaster_type || disaster.type }} in {{ disaster.location }}</p>
             </div>
             <div class="flex items-center">
               <span :class="getStatusColor(disaster.severity)" class="px-3 py-1 rounded text-sm whitespace-nowrap">
