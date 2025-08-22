@@ -118,6 +118,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::get('/disasters/active', [DisasterController::class, 'active']);
+    Route::post('/disasters/store', [DisasterController::class, 'store']);
 
     // Volunteer Reports
     Route::get('/reports/volunteers/aggregate', [VolunteerReportController::class, 'aggregate']);

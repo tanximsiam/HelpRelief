@@ -14,20 +14,20 @@ class Disaster extends Model
 {
     use HasFactory;
 
+    // Columns based on migration (2025_07_31_166640_create_disasters_table)
     protected $fillable = [
         'name',
-        'type',
-        'description',
+        'disaster_type',
         'location',
+        'start_date',
         'severity',
         'status',
-        'occurred_at',
-        'resolved_at',
+        'description',
+        'created_by',
     ];
 
     protected $casts = [
-        'occurred_at' => 'datetime',
-        'resolved_at' => 'datetime',
+        'start_date' => 'date',
     ];
 
     // Relationships

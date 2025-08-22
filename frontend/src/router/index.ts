@@ -3,7 +3,9 @@ import { useAuth } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 
-import UserDashboard from '../views/UserDashboard.vue'
+import UserDashboard from '../views/UserDashboard.vue' // legacy / shared if needed
+import GeneralUserDashboard from '../views/GeneralUserDashboard.vue'
+import NgoStaffDashboard from '../views/NgoStaffDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
 import DonationReportsView from '@/views/DonationReportsView.vue'
 import MyRequestsView from '@/views/MyRequestsView.vue'
@@ -34,11 +36,34 @@ const router = createRouter({
       component: LoginView,
       // meta: { guestOnly: true },
     },
+    // Dynamic redirect entry point
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: UserDashboard,
       meta: { requiresAuth: true },
+      redirect: (to) => {
+        // role-based redirect will also happen in global guard once user loaded
+        return { name: 'dashboard-role' }
+      }
+    },
+    // Internal role resolution route (kept separate to avoid infinite redirect loops)
+    {
+      path: '/dashboard/role',
+      name: 'dashboard-role',
+      meta: { requiresAuth: true },
+      component: UserDashboard, // temporary shell; replaced in guard
+    },
+    {
+      path: '/dashboard/general',
+      name: 'dashboard-general',
+      meta: { requiresAuth: true },
+      component: GeneralUserDashboard,
+    },
+    {
+      path: '/dashboard/ngo',
+      name: 'dashboard-ngo',
+      meta: { requiresAuth: true },
+      component: NgoStaffDashboard,
     },
 
     {
@@ -53,11 +78,7 @@ const router = createRouter({
       name: 'AidSupport',
       component: () => import('../views/AidSupport.vue'),
     },
-        {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: UserDashboard,
-        },
+      // remove duplicate dashboard route (handled above)
     {
       path: '/oauth/callback',
       name: 'OauthCallback',
@@ -108,15 +129,26 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuth()
 
-  // const requiresAuth = to.meta.requiresAuth
+  const requiresAuth = to.meta.requiresAuth
   const guestOnly = to.meta.guestOnly
 
-  // if (requiresAuth && !auth.isAuthenticated) {
-  //   return next({ name: 'login', query: { redirect: to.fullPath } })
-  // }
+  // Ensure user loaded if we have a token but no user yet (for hard refresh)
+  if (auth.token && !auth.user) {
+    try { await auth.fetchUser() } catch (e) { /* ignore */ }
+  }
 
   if (guestOnly && auth.isAuthenticated) {
-    return next({ name: 'home' }) // or role-based redirect
+    return next({ name: 'home' })
+  }
+
+  if (requiresAuth && !auth.isAuthenticated) {
+    return next({ name: 'login', query: { redirect: to.fullPath } })
+  }
+
+  // Role-based dashboard routing
+  if (to.name === 'dashboard' || to.name === 'dashboard-role') {
+    if (auth.isNGO) return next({ name: 'dashboard-ngo' })
+    return next({ name: 'dashboard-general' })
   }
 
   return next()
