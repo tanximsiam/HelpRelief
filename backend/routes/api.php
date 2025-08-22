@@ -25,6 +25,8 @@ use App\Http\Controllers\VolunteerTaskLogController;
 use App\Http\Controllers\DonationReportController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\DisasterAlertController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -41,6 +43,9 @@ Route::get('/aid-supports', [AidSupportController::class, 'index']);
 Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
 // Pre-Login Routes
 Route::post('/ngo-apply', [NgoApplicationController::class, 'submit']);
+
+Route::get('/alerts', [DisasterAlertController::class, 'index']);
+
 
 // Route::get('/users', function () {
     //     return User.index();

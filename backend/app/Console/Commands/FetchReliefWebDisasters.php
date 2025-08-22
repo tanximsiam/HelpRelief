@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+use App\Models\DisasterAlert;
 
 class FetchReliefWebDisasters extends Command
 {
@@ -114,6 +115,19 @@ class FetchReliefWebDisasters extends Command
         foreach ($disasterMap as $title => $info) {
             [$type, $status, $created] = $info['meta'];
             $divisions = implode(', ', array_keys($info['divisions']));
+
+            DisasterAlert::updateOrCreate(
+                ['title' => $title, 'reported_at' => $created],
+                [
+                    'disaster_type' => $type,
+                    'status' => $status,
+                    'description' => $fields['url'] ?? '',
+                    'divisions' => json_encode($divisions),
+                    'confirmed' => 'pending',
+                ]
+            );
+
+
             $this->line("• [$type][$status] $title → Divisions: $divisions → Time: $created");
         }
 
