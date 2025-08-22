@@ -5,10 +5,9 @@ import LoginView from '../views/LoginView.vue'
 
 import UserDashboard from '../views/UserDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
-import UserProfileUpdate from '@/views/UserProfileUpdate.vue'
-import NgoProfileUpdate from '@/views/NgoProfileUpdate.vue'
 import DonationReportsView from '@/views/DonationReportsView.vue'
 import MyRequestsView from '@/views/MyRequestsView.vue'
+import StateDetails from '@/views/StateDetails.vue'
 
 
 
@@ -81,19 +80,6 @@ const router = createRouter({
     },
 
     {
-      path: '/profile/update',
-      name: 'profile',
-      component: UserProfileUpdate,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/profile/ngo/update/:ngoId',
-      name: 'NgoProfileUpdate',
-      component: NgoProfileUpdate,
-      props: true,
-      meta: { requiresAuth: true },
-    },
-    {
       path: '/donation-reports',
       name: 'DonationReports',
       component: DonationReportsView,
@@ -103,6 +89,13 @@ const router = createRouter({
       path: '/my-requests',
       name: 'MyRequests',
       component: MyRequestsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/state/:stateName',
+      name: 'StateDetails',
+      component: StateDetails,
+      props: true,
       meta: { requiresAuth: true }
     },
 

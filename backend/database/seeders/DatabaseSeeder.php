@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             NgoStaffSeeder::class,
             NgoEmailDomainSeeder::class,
             DisasterSeeder::class,
+            DisasterCampaignAssignmentSeeder::class,
             AidRequestSeeder::class,
             TaskSeeder::class,
             AidSupportSeeder::class,

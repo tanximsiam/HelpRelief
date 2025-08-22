@@ -24,6 +24,7 @@ use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\MapController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -32,10 +33,10 @@ Route::get('/user', function (Request $request) {
 // TEST ROUTES
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/ngos', [NgoController::class, 'index']);
+Route::get('/ngo-staffs', [NgoStaffController::class, 'index']);
 Route::get('/ngo-applications', [NgoApplicationController::class, 'index']);
 Route::get('/cause-focuses', [CauseFocusController::class, 'index']);
 Route::get('/ngo-invites/{ngo}', [NgoInviteLinkController::class, 'index']);
-Route::get('/ngo-staff', [NgoStaffController::class, 'index']);
 Route::get('/aid-supports', [AidSupportController::class, 'index']);
 Route::get('/myRequests', [AidSupportController::class, 'myRequests']);
 // Pre-Login Routes
@@ -73,7 +74,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::post('/cause-focuses', [CauseFocusController::class, 'store']);
 
     // NGO Staff
-    Route::get('/ngo-staffs', [NgoStaffController::class, 'index']);
+    Route::get('/ngo-staff', [NgoStaffController::class, 'me']);
     Route::delete('/ngo-staffs/{id}', [NgoStaffController::class, 'destroy']);
 
     // Invite Accept (WIP)
@@ -118,6 +119,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
 
 
     Route::get('/active-disasters', [DisasterController::class, 'index']);
+
     Route::get('/disasters/active', [DisasterController::class, 'active']);
 
     // Volunteer Reports
@@ -128,13 +130,19 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // NGO Profile Update
     Route::get('/ngo/{ngoId}', [NgoController::class, 'show']);
     Route::patch('/ngo/{ngoId}', [NgoController::class, 'updateNgo']);
+
     // User Profile Update
     Route::get('/user', [UserController::class, 'show']);
     Route::patch('/user', [UserController::class, 'update']);
 
-    // New Campaign routes
+    // Campaign routes
     Route::get('/campaigns', [CampaignController::class, 'index']);
     Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
+    Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
+
+    // Map routes for NGO dashboard
+    Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']);
+    Route::get('/map/state/{stateName}', [MapController::class, 'getStateDetails']);
 
 });
 

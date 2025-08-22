@@ -24,7 +24,7 @@ class DisasterCampaignAssignment extends Model
     // Relationships
     public function disaster()
     {
-        return $this->belongsTo(Disaster::class);
+        return $this->belongsTo(Disaster::class, 'disaster_id');
     }
 
     public function ngo()
