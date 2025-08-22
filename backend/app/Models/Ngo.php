@@ -39,4 +39,29 @@ class Ngo extends Model
     {
         return $this->belongsToMany(CauseFocus::class, 'ngo_cause_focuses');
     }
+    public function aidRequests()
+    {
+        return $this->hasMany(AidRequest::class);
+    }
+
+    public function aidSupports()
+    {
+        return $this->hasMany(AidSupport::class);
+    }
+
+    public function volunteers()
+    {
+        return $this->hasMany(VolunteerRegistration::class);
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'created_by'); // assuming created_by = ngo_id
+    }
+
+    public function disasterCampaignAssignments()
+    {
+        return $this->hasMany(DisasterCampaignAssignment::class);
+    }
+    
 }

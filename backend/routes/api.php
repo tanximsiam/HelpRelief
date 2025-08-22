@@ -24,8 +24,12 @@ use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
 use App\Http\Controllers\CampaignController;
+
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\DisasterAlertController;
+
+use App\Http\Controllers\AidNeedController;
+use App\Http\Controllers\ReportController;
 
 
 Route::get('/user', function (Request $request) {
@@ -155,6 +159,12 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // Disaster Alert controller
     Route::post('/alerts/{id}/reject', [DisasterAlertController::class, 'reject']);
     Route::post('/alerts/{id}/confirm', [DisasterAlertController::class, 'confirm']);
+
+    // Aid Needs
+    Route::get('/aid-needed', [AidNeedController::class, 'index']);
+
+    // Reports
+    Route::get('/report/ngos', [ReportController::class, 'ngoReports']);
 
 });
 
