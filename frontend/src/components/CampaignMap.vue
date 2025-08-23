@@ -15,7 +15,7 @@
       <div class="flex-1 w-full rounded border flex items-center justify-center bg-gray-50 min-h-[300px]">
         <div class="w-full h-full flex items-center justify-center">
           <SvgMap
-            :map="bangladeshMap"
+            :map="bdMap"
             :location-class="getLocationClass"
             class="max-w-full max-h-full"
             style="pointer-events: none;"
@@ -51,7 +51,7 @@
 
         <div class="h-96 w-full rounded border flex items-center justify-center bg-gray-50 mb-4 relative overflow-hidden" ref="mapContainer">
           <SvgMap
-            :map="bangladeshMap"
+            :map="bdMap"
             :location-class="getLocationClass"
             class="max-w-full max-h-full cursor-pointer"
             @click="handleLocationClick"
@@ -157,7 +157,7 @@
 
 <script setup lang="ts">
 import { SvgMap } from "vue3-svg-map"
-import bangladeshMap from "@/assets/maps/bangladeshMap.json"
+import bdMap from "@/assets/maps/bdMap.json"
 import "vue3-svg-map/style.css"
 import { ref, onMounted, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
@@ -204,7 +204,7 @@ const fetchMapData = async () => {
   } catch (error) {
     console.error('Error fetching map data:', error)
     // Initialize with empty data if API fails
-    const bangladeshDistricts = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
+    const bangladeshDistricts = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet', 'Mymensingh']
     districtData.value = bangladeshDistricts.map(name => ({ name, campaign_count: 0, intensity: 0 }))
   }
 }
@@ -223,13 +223,14 @@ const fetchDensityData = async () => {
 const getLocationClass = (location: { id: string; name: string }) => {
   // Map location ID to district name
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal',
-    'BD-B': 'Chittagong',
-    'BD-C': 'Dhaka',
-    'BD-D': 'Khulna',
-    'BD-E': 'Rajshahi',
-    'BD-F': 'Rangpur',
-    'BD-G': 'Sylhet'
+    'BDA': 'Barisal',
+    'BDB': 'Chittagong',
+    'BDC': 'Dhaka',
+    'BDD': 'Khulna',
+    'BDE': 'Rajshahi',
+    'BDF': 'Rangpur',
+    'BDG': 'Sylhet',
+    'BDH': 'Mymensingh'
   }
 
   const districtName = districtMap[location.id] || location.name
@@ -264,15 +265,16 @@ const handleLocationClick = (event: Event) => {
   const target = event.target as SVGElement
   const locationId = target.id
 
-  // Extract district name from ID (BD-A -> Barisal, etc.)
+  // Extract district name from ID (BDA -> Barisal, etc.)
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal',
-    'BD-B': 'Chittagong',
-    'BD-C': 'Dhaka',
-    'BD-D': 'Khulna',
-    'BD-E': 'Rajshahi',
-    'BD-F': 'Rangpur',
-    'BD-G': 'Sylhet'
+    'BDA': 'Barisal',
+    'BDB': 'Chittagong',
+    'BDC': 'Dhaka',
+    'BDD': 'Khulna',
+    'BDE': 'Rajshahi',
+    'BDF': 'Rangpur',
+    'BDG': 'Sylhet',
+    'BDH': 'Mymensingh'
   }
 
   const districtName = districtMap[locationId]
@@ -297,13 +299,14 @@ const handleLocationHover = (event: MouseEvent) => {
   const locationId = target.id
 
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal',
-    'BD-B': 'Chittagong',
-    'BD-C': 'Dhaka',
-    'BD-D': 'Khulna',
-    'BD-E': 'Rajshahi',
-    'BD-F': 'Rangpur',
-    'BD-G': 'Sylhet'
+    'BDA': 'Barisal',
+    'BDB': 'Chittagong',
+    'BDC': 'Dhaka',
+    'BDD': 'Khulna',
+    'BDE': 'Rajshahi',
+    'BDF': 'Rangpur',
+    'BDG': 'Sylhet',
+    'BDH': 'Mymensingh'
   }
 
   hoveredDistrict.value = districtMap[locationId] || null

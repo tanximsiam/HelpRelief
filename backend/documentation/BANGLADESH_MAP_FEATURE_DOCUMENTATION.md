@@ -113,9 +113,9 @@ The Bangladesh Map Feature follows a modern web application architecture with cl
 │   └── MapController.php (API endpoints)
 ├── Frontend
 │   ├── CampaignMap.vue (Main component)
-│   ├── bangladesh.js (Map data)
+│   ├── bdMap.json (Map data with 8 administrative divisions)
 │   ├── vue3-svg-map.d.ts (TypeScript definitions)
-│   └── bangladeshHigh.svg (High-quality SVG)
+│   └── bd.svg (Bangladesh map SVG)
 └── Integration
     └── UserDashboard.vue (Parent component)
 ```
@@ -206,13 +206,14 @@ const fetchCampaignData = async () => {
 const getLocationClass = (location: { id: string; name: string }) => {
   // Map location ID to district name
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal',
-    'BD-B': 'Chittagong',
-    'BD-C': 'Dhaka',
-    'BD-D': 'Khulna',
-    'BD-E': 'Rajshahi',
-    'BD-F': 'Rangpur',
-    'BD-G': 'Sylhet'
+    'BDA': 'Barisal',
+    'BDB': 'Chittagong',
+    'BDC': 'Dhaka',
+    'BDD': 'Khulna',
+    'BDE': 'Rajshahi',
+    'BDF': 'Rangpur',
+    'BDG': 'Sylhet',
+    'BDH': 'Mymensingh'
   }
   
   const districtName = districtMap[location.id] || location.name
@@ -285,13 +286,14 @@ CSS classes for campaign intensity visualization with enhanced specificity:
 
 | ID | Division | Administrative Code |
 |----|----------|-------------------|
-| BD-A | Barisal | Barisal Division |
-| BD-B | Chittagong | Chittagong Division |
-| BD-C | Dhaka | Dhaka Division |
-| BD-D | Khulna | Khulna Division |
-| BD-E | Rajshahi | Rajshahi Division |
-| BD-F | Rangpur | Rangpur Division |
-| BD-G | Sylhet | Sylhet Division |
+| BDA | Barisal | Barisal Division |
+| BDB | Chittagong | Chittagong Division |
+| BDC | Dhaka | Dhaka Division |
+| BDD | Khulna | Khulna Division |
+| BDE | Rajshahi | Rajshahi Division |
+| BDF | Rangpur | Rangpur Division |
+| BDG | Sylhet | Sylhet Division |
+| BDH | Mymensingh | Mymensingh Division |
 
 ## Technical Decisions & Rationale
 
@@ -563,15 +565,16 @@ declare module 'vue3-svg-map' {
 
 **Solution**:
 ```typescript
-// Correct ID to district mapping
+// Correct ID to district mapping (Updated August 2025)
 const districtMap: Record<string, string> = {
-  'BD-A': 'Barisal',
-  'BD-B': 'Chittagong',
-  'BD-C': 'Dhaka',
-  'BD-D': 'Khulna',
-  'BD-E': 'Rajshahi',
-  'BD-F': 'Rangpur',
-  'BD-G': 'Sylhet'
+  'BDA': 'Barisal',
+  'BDB': 'Chittagong',
+  'BDC': 'Dhaka',
+  'BDD': 'Khulna',
+  'BDE': 'Rajshahi',
+  'BDF': 'Rangpur',
+  'BDG': 'Sylhet',
+  'BDH': 'Mymensingh'  // New: 8th administrative division
 }
 
 const districtName = districtMap[location.id] || location.name
@@ -621,8 +624,9 @@ const districtName = districtMap[location.id] || location.name
 const getLocationClass = (location: { id: string; name: string }) => {
   // Map location ID to district name
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal', 'BD-B': 'Chittagong', 'BD-C': 'Dhaka',
-    'BD-D': 'Khulna', 'BD-E': 'Rajshahi', 'BD-F': 'Rangpur', 'BD-G': 'Sylhet'
+    'BDA': 'Barisal', 'BDB': 'Chittagong', 'BDC': 'Dhaka',
+    'BDD': 'Khulna', 'BDE': 'Rajshahi', 'BDF': 'Rangpur', 
+    'BDG': 'Sylhet', 'BDH': 'Mymensingh'
   }
   
   const districtName = districtMap[location.id] || location.name
@@ -676,6 +680,71 @@ const getLocationClass = (location: { id: string; name: string }) => {
 
 **Purpose**: Provides clear visual distinction between available and active campaign areas during user interaction.
 
+### Map Data Structure Migration (August 2025)
+
+**Enhancement**: Migrated from `bangladeshMap.json` to new `bdMap.json` structure with comprehensive district coverage.
+
+**Key Changes**:
+
+1. **Updated Import Structure**:
+```typescript
+// Before
+import bangladeshMap from "@/assets/maps/bangladeshMap.json"
+
+// After  
+import bdMap from "@/assets/maps/bdMap.json"
+```
+
+2. **ID Format Migration**:
+```typescript
+// Before: Hyphenated format
+'BD-A': 'Barisal',
+'BD-B': 'Chittagong',
+'BD-C': 'Dhaka',
+'BD-D': 'Khulna',
+'BD-E': 'Rajshahi',
+'BD-F': 'Rangpur',
+'BD-G': 'Sylhet'
+
+// After: Compact format + Mymensingh addition
+'BDA': 'Barisal',
+'BDB': 'Chittagong', 
+'BDC': 'Dhaka',
+'BDD': 'Khulna',
+'BDE': 'Rajshahi',
+'BDF': 'Rangpur',
+'BDG': 'Sylhet',
+'BDH': 'Mymensingh'  // ✅ NEW: 8th administrative division
+```
+
+3. **Complete Administrative Coverage**:
+   - **Added**: Mymensingh division (BDH) - created in 2015 as Bangladesh's 8th administrative division
+   - **Updated**: All district mapping functions to include complete division coverage
+   - **Enhanced**: Mock data generation to include all 8 divisions
+
+4. **Files Updated**:
+   - `CampaignMap.vue`: Updated all district mapping objects (3 locations)
+   - `bangladeshDistricts` array: Added 'Mymensingh' to mock data generation
+   - Template references: Updated both SvgMap components to use `bdMap`
+
+5. **Backward Compatibility**:
+   - All existing functionality preserved
+   - Same API structure maintained
+   - Visual styling and interactions unchanged
+   - Enhanced coverage with additional district
+
+**Migration Benefits**:
+- **Complete Coverage**: Now includes all 8 administrative divisions of Bangladesh
+- **Updated Standards**: Reflects current administrative boundaries (post-2015)
+- **Improved Accuracy**: Better representation of Bangladesh's actual administrative structure
+- **Enhanced User Experience**: Users can now interact with all major divisions including Mymensingh
+
+**Technical Impact**:
+- All map interactions (click, hover, intensity visualization) now work for 8 divisions
+- Campaign data collection expanded to cover complete national territory
+- API responses can include Mymensingh division campaign data
+- No breaking changes to existing functionality
+
 ## Files Modified
 
 1. `frontend/src/components/ProfileView.vue`
@@ -692,11 +761,19 @@ const getLocationClass = (location: { id: string; name: string }) => {
    - Main map component with dual-view functionality
    - Interactive modal system
    - Campaign intensity visualization
+   - **Updated**: Migrated to bdMap.json structure (August 2025)
+   - **Updated**: Added BDH (Mymensingh) district mapping (August 2025)
+   - **Updated**: Enhanced district coverage for all 8 administrative divisions (August 2025)
 
 4. `backend/app/Http/Controllers/MapController.php`
    - API endpoints for map data
    - NGO staff authentication and authorization
    - Campaign intensity calculation
+
+5. `frontend/src/assets/maps/bdMap.json` ✅ **NEW**
+   - Updated Bangladesh map data structure
+   - Includes all 8 administrative divisions including Mymensingh
+   - Replaces bangladeshMap.json with improved ID format
 
 ## Setup & Configuration
 
@@ -797,7 +874,13 @@ VITE_API_BASE_URL=http://localhost:8000/api
 
 ---
 
-**Document Version**: 2.0  
-**Last Updated**: August 2025  
+**Document Version**: 2.1  
+**Last Updated**: August 23, 2025  
 **Authors**: Development Team  
 **Status**: Production Ready
+
+**Recent Updates**:
+- Added bdMap.json migration documentation
+- Included BDH (Mymensingh) district coverage
+- Updated all district mapping examples
+- Enhanced administrative division completeness
