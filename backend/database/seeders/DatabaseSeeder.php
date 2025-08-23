@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             VolunteerSeeder::class,
             VolunteerTaskLogsSeeder::class,
             DonationReportSeeder::class,
+            DisasterCampaignAssignmentSeeder::class,
         ]);
 
         // User::factory()->create([

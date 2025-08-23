@@ -13,6 +13,7 @@ import StateDetails from '@/views/StateDetails.vue'
 
 
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -104,6 +105,18 @@ const router = createRouter({
       path: '/donation-reports',
       name: 'DonationReports',
       component: DonationReportsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/reports/ngos',
+      name: 'NgoReports',
+      component: () => import('../views/NgoReports.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/my-ngo',
+      name: 'MyNgo',
+      component: () => import('../views/MyNgoView.vue'),
       meta: { requiresAuth: true }
     },
     {

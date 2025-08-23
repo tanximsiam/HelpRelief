@@ -85,6 +85,9 @@ const route = useRoute()
 const router = useRouter()
 
 const aidRequestId = route.query.aid_request_id ?? null
+const aidRequestAidType = route.query.aid_request_aid_type ?? null
+const aidRequestUrgency = route.query.aid_request_urgency ?? null
+const aidRequestDescription = route.query.aid_request_description ?? null
 
 const disasters = ref<any[]>([])
 const volunteers = ref<any[]>([])
@@ -120,12 +123,14 @@ const submitTask = async () => {
   try {
     if (aidRequestId) {
       await api.post(`/aid-requests/${aidRequestId}/assign`, {
+
         volunteer_id: payload.volunteer_id,
         start_time: payload.start_time,
         end_time: payload.end_time,
         location: payload.location,
         disaster_id: payload.disaster_id,
         task_type: payload.task_type
+        
       })
 
       alert('Task created and aid request assigned successfully!')
