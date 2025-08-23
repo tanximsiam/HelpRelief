@@ -36,7 +36,7 @@ const handleAidRequestSubmit = () => { alert('Aid request submitted successfully
         </div>
         <div class="flex gap-6 items-center">
           <button @click="openAidRequestModal" class="text-2xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Request for Aid</button>
-          <PrimaryButton variant="primary" to="/offer-help" class="px-8 py-4 text-xl">Offer Help</PrimaryButton>
+          <PrimaryButton variant="primary" to="/aid-support" class="px-8 py-4 text-xl">Offer Help</PrimaryButton>
         </div>
       </div>
 

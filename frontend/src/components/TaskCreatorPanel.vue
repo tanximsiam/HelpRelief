@@ -118,7 +118,7 @@ const handleAccept = async (request: any) => {
   } else {
     router.push({
       name: 'TaskCreate',
-      query: { aid_request_id: request.id }
+      query: { aid_request_id: request.id, aid_request_aid_type: request.aid_type, aid_request_urgency: request.urgency, aid_request_description: request.description },
     })
   }
 }

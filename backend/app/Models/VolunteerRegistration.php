@@ -26,4 +26,15 @@ class VolunteerRegistration extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+    public function aidRequests()
+    {
+        return $this->hasManyThrough(
+            \App\Models\AidRequest::class,
+            \App\Models\User::class,
+            'id',            // User's local key
+            'requester_id',  // AidRequest's FK pointing to user
+            'user_id',       // VolunteerRegistration's FK to user
+            'id'             // User's PK
+        );
+    }
 }

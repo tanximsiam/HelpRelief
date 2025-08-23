@@ -165,6 +165,10 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
 
     // Reports
     Route::get('/report/ngos', [ReportController::class, 'ngoReports']);
+    Route::get('/report/my-ngo', [ReportController::class, 'myNgoReport']);
+
+    Route::get('/map/aid-need', [MapController::class, 'getAidNeedByState']);
+        Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
 
 });
 
@@ -173,3 +177,6 @@ Route::get('/alerts', [DisasterAlertController::class, 'new']);
 
 
 Route::get('/alerts-all', [DisasterAlertController::class, 'index']);
+// Test route outside auth middleware for development (REMOVE IN PRODUCTION)
+Route::get('/test/aid-need', [MapController::class, 'testAidNeed']);
+
