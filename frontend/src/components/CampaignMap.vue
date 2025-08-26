@@ -33,7 +33,7 @@
       <div class="flex-1 w-full rounded border flex items-center justify-center bg-gray-50 min-h-[300px]">
         <div class="w-full h-full flex items-center justify-center">
           <SvgMap
-            :map="bangladeshMap"
+            :map="bdMap"
             :location-class="getLocationClass"
             class="max-w-full max-h-full"
             style="pointer-events: none;"
@@ -75,6 +75,33 @@
               }}
             </h2>
           </div>
+
+
+        <div class="h-96 w-full rounded border flex items-center justify-center bg-gray-50 mb-4 relative overflow-hidden" ref="mapContainer">
+          <SvgMap
+            :map="bdMap"
+            :location-class="getLocationClass"
+            class="max-w-full max-h-full cursor-pointer"
+            @click="handleLocationClick"
+            @mouseover="handleLocationHover"
+            @mousemove="handleMouseMove"
+            @mouseout="clearHover"
+          />
+          <!-- Trigger button to show Aid Requests overlay (appears after selecting a state in aid mode) -->
+          <button
+            v-if="mode==='aid' && selectedDensity && !showAidOverlay"
+            @click="showAidOverlay = true"
+            class="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-3 py-1.5 text-sm font-medium rounded shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            See Aid Requests
+          </button>
+          <!-- Aid Requests inline overlay over heatmap -->
+          <AidRequestsOverlay
+            :show="showAidOverlay && mode==='aid'"
+            :state-name="selectedDensity?.name || null"
+            @close="showAidOverlay=false"
+          />
+          <!-- Hover tooltip -->
 
           <div
             class="h-96 w-full rounded border flex items-center justify-center bg-gray-50 mb-4 relative overflow-hidden"
@@ -403,9 +430,11 @@
 </template>
 
 <script setup lang="ts">
-import { SvgMap } from 'vue3-svg-map'
-import bangladeshMap from '@/assets/maps/bangladeshMap.json'
-import 'vue3-svg-map/style.css'
+
+import { SvgMap } from "vue3-svg-map"
+import bdMap from "@/assets/maps/bdMap.json"
+import "vue3-svg-map/style.css"
+
 import { ref, onMounted, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
@@ -458,8 +487,11 @@ const fetchMapData = async () => {
     districtData.value = response.data.states
   } catch (error) {
     console.error('Error fetching map data:', error)
-    const bangladeshDistricts = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet']
-    districtData.value = bangladeshDistricts.map((name) => ({ name, campaign_count: 0, intensity: 0 }))
+
+    // Initialize with empty data if API fails
+    const bangladeshDistricts = ['Barisal', 'Chittagong', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur', 'Sylhet', 'Mymensingh']
+    districtData.value = bangladeshDistricts.map(name => ({ name, campaign_count: 0, intensity: 0 }))
+
   }
 }
 
@@ -504,13 +536,14 @@ const fetchAidNeedData = async () => {
 
 const getLocationClass = (location: { id: string; name: string }) => {
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal',
-    'BD-B': 'Chittagong',
-    'BD-C': 'Dhaka',
-    'BD-D': 'Khulna',
-    'BD-E': 'Rajshahi',
-    'BD-F': 'Rangpur',
-    'BD-G': 'Sylhet'
+    'BDA': 'Barisal',
+    'BDB': 'Chittagong',
+    'BDC': 'Dhaka',
+    'BDD': 'Khulna',
+    'BDE': 'Rajshahi',
+    'BDF': 'Rangpur',
+    'BDG': 'Sylhet',
+    'BDH': 'Mymensingh'
   }
   const districtName = districtMap[location.id] || location.name
 
@@ -548,14 +581,19 @@ const getAidNeedByName = (name: string) => aidNeedData.value.find((d) => d.name 
 const handleLocationClick = (event: Event) => {
   const target = event.target as SVGElement
   const locationId = target.id
+
+
+  // Extract district name from ID (BDA -> Barisal, etc.)
+
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal',
-    'BD-B': 'Chittagong',
-    'BD-C': 'Dhaka',
-    'BD-D': 'Khulna',
-    'BD-E': 'Rajshahi',
-    'BD-F': 'Rangpur',
-    'BD-G': 'Sylhet'
+    'BDA': 'Barisal',
+    'BDB': 'Chittagong',
+    'BDC': 'Dhaka',
+    'BDD': 'Khulna',
+    'BDE': 'Rajshahi',
+    'BDF': 'Rangpur',
+    'BDG': 'Sylhet',
+    'BDH': 'Mymensingh'
   }
   const districtName = districtMap[locationId]
   if (!districtName) return
@@ -576,13 +614,14 @@ const handleLocationHover = (event: MouseEvent) => {
   const target = event.target as SVGElement
   const locationId = target.id
   const districtMap: Record<string, string> = {
-    'BD-A': 'Barisal',
-    'BD-B': 'Chittagong',
-    'BD-C': 'Dhaka',
-    'BD-D': 'Khulna',
-    'BD-E': 'Rajshahi',
-    'BD-F': 'Rangpur',
-    'BD-G': 'Sylhet'
+    'BDA': 'Barisal',
+    'BDB': 'Chittagong',
+    'BDC': 'Dhaka',
+    'BDD': 'Khulna',
+    'BDE': 'Rajshahi',
+    'BDF': 'Rangpur',
+    'BDG': 'Sylhet',
+    'BDH': 'Mymensingh'
   }
   hoveredDistrict.value = districtMap[locationId] || null
   if (hoveredDistrict.value) updateHoverPosition(event)
