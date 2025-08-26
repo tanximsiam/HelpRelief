@@ -28,13 +28,13 @@ const topPriorityCampaigns = computed(() => {
     .slice(0, 3);
 });
 
-async function loadCampaigns() {
-  isLoading.value = true;
+// Fetch user role and dashboard data on mount
+onMounted(async () => {
   try {
-    // Fetch NGO staff status
+    // Fetch NGO staff status to determine role and ngo_id
     const staffRes = await api.get('/ngo-staff');
     const staffData = staffRes.data;
-    if (staffData?.ngo_id) {
+    if (staffData.role === 'ngo_staff' && staffData.ngo_id) {
       isNgoStaff.value = true;
       ngoId.value = staffData.ngo_id;
     } else {
@@ -42,31 +42,25 @@ async function loadCampaigns() {
       ngoId.value = null;
     }
   } catch (error) {
+    console.log('User is not NGO staff:', error);
     isNgoStaff.value = false;
   }
+
   try {
-    let endpoint = '/campaigns';
-    if (isNgoStaff.value && ngoId.value) endpoint = '/campaigns/my';
-    const campaignRes = await api.get(endpoint);
+    // Fetch campaigns based on NGO staff status
+    let campaignEndpoint = '/campaigns';
+    if (isNgoStaff.value && ngoId.value) {
+      campaignEndpoint = `/campaigns/my`;
+    }
+    const campaignRes = await api.get(campaignEndpoint);
     campaigns.value = Array.isArray(campaignRes.data) ? campaignRes.data : [];
-    errorMessage.value = '';
-  } catch (e) {
+  } catch (error) {
+    console.error('Failed to fetch campaigns:', error);
     errorMessage.value = 'Failed to load campaigns';
   } finally {
     isLoading.value = false;
   }
-}
-
-function appendCampaign(c: Campaign) {
-  // Avoid duplicates
-  if (!campaigns.value.find(x => x.id === c.id)) {
-    campaigns.value.unshift(c as any);
-  }
-}
-
-onMounted(loadCampaigns);
-
-defineExpose({ refresh: loadCampaigns, append: appendCampaign });
+});
 
 // Function to open campaign list modal
 const openCampaignList = () => {
@@ -109,6 +103,13 @@ const getPriorityColor = (priority: string) => {
               </div>
               <p class="text-sm text-gray-600">by {{ campaign.ngo_name || 'Unknown NGO' }}</p>
               <p class="text-xs text-gray-500 mt-1">{{ campaign.disaster_name }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-blue-500 cursor-pointer hover:text-blue-700" title="View Details">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </span>
             </div>
           </div>
         </li>

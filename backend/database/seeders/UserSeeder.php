@@ -76,5 +76,78 @@ class UserSeeder extends Seeder
             'role' => 'ngo_staff',
             'volunteer' => false,
         ]);
+
+        // Additional general users who can be volunteers
+        User::create([
+            'name' => 'volunteer1',
+            'email' => 'volunteer1@example.com',
+            'phone' => '111-222-3333',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
+
+        User::create([
+            'name' => 'volunteer2',
+            'email' => 'volunteer2@example.com',
+            'phone' => '222-333-4444',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
+
+        User::create([
+            'name' => 'volunteer3',
+            'email' => 'volunteer3@example.com',
+            'phone' => '333-444-5555',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
+
+        User::create([
+            'name' => 'volunteer4',
+            'email' => 'volunteer4@example.com',
+            'phone' => '444-555-6666',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
+
+        User::create([
+            'name' => 'volunteer5',
+            'email' => 'volunteer5@example.com',
+            'phone' => '555-666-7777',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
+
+        User::create([
+            'name' => 'volunteer6',
+            'email' => 'volunteer6@example.com',
+            'phone' => '666-777-8888',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
+
+        User::create([
+            'name' => 'volunteer7',
+            'email' => 'volunteer7@example.com',
+            'phone' => '777-888-9999',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
+
+        User::create([
+            'name' => 'volunteer8',
+            'email' => 'volunteer8@example.com',
+            'phone' => '888-999-0000',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => true,
+        ]);
     }
 }

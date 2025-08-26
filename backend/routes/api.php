@@ -147,6 +147,8 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // Campaign routes
     Route::get('/campaigns', [CampaignController::class, 'index']);
     Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
+    Route::get('/campaigns/stats', [CampaignController::class, 'campaignStats']);
+    Route::get('/campaigns/{campaignId}/volunteers', [CampaignController::class, 'campaignVolunteers']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
     Route::post('/campaigns', [CampaignController::class, 'store']);
 
