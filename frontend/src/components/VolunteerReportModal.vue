@@ -14,22 +14,46 @@ interface Campaign {
 
 interface VolunteerAggregate {
   disaster_id: number;
+  ngo_id: number;
+  report_type: string;
   total_volunteers: number;
+  active_volunteers: number;
+  pending_volunteers: number;
+  rejected_volunteers: number;
+  completed_volunteers: number;
   tasks_assigned: number;
   tasks_completed: number;
   completion_rate: number;
   total_hours: number;
+  volunteers_with_tasks?: number;
 }
 
 interface VolunteerIndividual {
   volunteer_id: number;
+  registration_id?: number;
   name: string;
+  email?: string;
+  phone?: string;
+  registration_status?: string;
+  skills?: string;
+  availability?: string;
+  registered_at?: string;
+  notes?: string;
   tasks_assigned: number;
   tasks_completed: number;
   attendance_days: number;
-  first_checkin: string;
-  last_checkout: string;
+  first_checkin: string | null;
+  last_checkout: string | null;
   total_hours: number;
+  task_statistics?: {
+    tasks_assigned: number;
+    tasks_completed: number;
+    tasks_in_progress: number;
+    attendance_days: number;
+    total_hours: number;
+    first_checkin: string | null;
+    last_checkout: string | null;
+  };
 }
 
 // Props
@@ -60,13 +84,21 @@ const fetchReports = async () => {
   errorMessage.value = '';
 
   try {
-    // Fetch aggregate report
-    const aggRes = await api.get(`/reports/volunteers/aggregate?disaster_id=${props.campaign.disaster_id}`);
+    // Fetch aggregate report (comprehensive type to get all volunteer registration data)
+    const aggRes = await api.get(`/reports/volunteers/aggregate?disaster_id=${props.campaign.disaster_id}&type=all`);
     aggregateReport.value = aggRes.data;
 
-    // Fetch individual reports
-    const indRes = await api.get(`/reports/volunteers/individual?disaster_id=${props.campaign.disaster_id}`);
-    individualReports.value = Array.isArray(indRes.data) ? indRes.data : [];
+    // Fetch individual reports (comprehensive type to get all volunteer data)
+    const indRes = await api.get(`/reports/volunteers/individual?disaster_id=${props.campaign.disaster_id}&type=all`);
+
+    // Handle the response structure - it might be an array or an object with volunteers property
+    if (indRes.data && indRes.data.volunteers) {
+      individualReports.value = Array.isArray(indRes.data.volunteers) ? indRes.data.volunteers : [];
+    } else if (Array.isArray(indRes.data)) {
+      individualReports.value = indRes.data;
+    } else {
+      individualReports.value = [];
+    }
 
   } catch (error) {
     console.error('Failed to fetch volunteer reports:', error);
@@ -81,21 +113,34 @@ const closeModal = () => {
   emit('close');
 };
 
-// Function to format date
-const formatDate = (dateString: string) => {
-  if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
 // Function to format hours
 const formatHours = (hours: number) => {
   return `${hours.toFixed(1)}h`;
+};
+
+// Function to get registration status color
+const getRegistrationStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'approved':
+    case 'active':
+      return 'bg-green-100 text-green-800';
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'rejected':
+      return 'bg-red-100 text-red-800';
+    case 'completed':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// Function to get task completion color
+const getTaskCompletionColor = (completed: number, assigned: number) => {
+  if (assigned === 0) return 'bg-gray-100 text-gray-800';
+  if (completed === assigned) return 'bg-green-100 text-green-800';
+  if (completed > assigned * 0.7) return 'bg-yellow-100 text-yellow-800';
+  return 'bg-red-100 text-red-800';
 };
 
 // Computed property for completion rate color
@@ -178,45 +223,85 @@ const completionRateColor = computed(() => {
 
         <!-- Aggregate Report -->
         <div v-else-if="activeTab === 'aggregate' && aggregateReport" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Total Volunteers -->
-            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h3 class="text-lg font-semibold text-blue-800">Total Volunteers</h3>
-              <p class="text-3xl font-bold text-blue-900">{{ aggregateReport.total_volunteers }}</p>
-            </div>
+          <!-- Volunteer Registration Statistics -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Volunteer Registration Statistics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <!-- Total Registered -->
+              <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 class="text-sm font-semibold text-blue-800">Total Registered</h4>
+                <p class="text-2xl font-bold text-blue-900">{{ aggregateReport.total_volunteers || 0 }}</p>
+              </div>
 
-            <!-- Tasks Assigned -->
-            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-              <h3 class="text-lg font-semibold text-purple-800">Tasks Assigned</h3>
-              <p class="text-3xl font-bold text-purple-900">{{ aggregateReport.tasks_assigned }}</p>
-            </div>
+              <!-- Active Volunteers -->
+              <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 class="text-sm font-semibold text-green-800">Active</h4>
+                <p class="text-2xl font-bold text-green-900">{{ aggregateReport.active_volunteers || 0 }}</p>
+              </div>
 
-            <!-- Tasks Completed -->
-            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-              <h3 class="text-lg font-semibold text-green-800">Tasks Completed</h3>
-              <p class="text-3xl font-bold text-green-900">{{ aggregateReport.tasks_completed }}</p>
-            </div>
+              <!-- Pending Volunteers -->
+              <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <h4 class="text-sm font-semibold text-yellow-800">Pending</h4>
+                <p class="text-2xl font-bold text-yellow-900">{{ aggregateReport.pending_volunteers || 0 }}</p>
+              </div>
 
-            <!-- Completion Rate -->
-            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-              <h3 class="text-lg font-semibold text-yellow-800">Completion Rate</h3>
-              <p :class="['text-3xl font-bold', completionRateColor]">
-                {{ aggregateReport.completion_rate }}%
-              </p>
-            </div>
+              <!-- Rejected Volunteers -->
+              <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                <h4 class="text-sm font-semibold text-red-800">Rejected</h4>
+                <p class="text-2xl font-bold text-red-900">{{ aggregateReport.rejected_volunteers || 0 }}</p>
+              </div>
 
-            <!-- Total Hours -->
-            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-              <h3 class="text-lg font-semibold text-indigo-800">Total Hours</h3>
-              <p class="text-3xl font-bold text-indigo-900">{{ formatHours(aggregateReport.total_hours) }}</p>
+              <!-- Completed Volunteers -->
+              <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 class="text-sm font-semibold text-purple-800">Completed</h4>
+                <p class="text-2xl font-bold text-purple-900">{{ aggregateReport.completed_volunteers || 0 }}</p>
+              </div>
             </div>
+          </div>
 
-            <!-- Average Hours per Volunteer -->
-            <div class="bg-pink-50 p-4 rounded-lg border border-pink-200">
-              <h3 class="text-lg font-semibold text-pink-800">Avg Hours/Volunteer</h3>
-              <p class="text-3xl font-bold text-pink-900">
-                {{ aggregateReport.total_volunteers > 0 ? formatHours(aggregateReport.total_hours / aggregateReport.total_volunteers) : '0h' }}
-              </p>
+          <!-- Task Performance Statistics -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Task Performance Statistics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Volunteers with Tasks -->
+              <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                <h4 class="text-sm font-semibold text-indigo-800">Volunteers with Tasks</h4>
+                <p class="text-2xl font-bold text-indigo-900">{{ aggregateReport.volunteers_with_tasks || 0 }}</p>
+              </div>
+
+              <!-- Tasks Assigned -->
+              <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 class="text-sm font-semibold text-purple-800">Tasks Assigned</h4>
+                <p class="text-2xl font-bold text-purple-900">{{ aggregateReport.tasks_assigned || 0 }}</p>
+              </div>
+
+              <!-- Tasks Completed -->
+              <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 class="text-sm font-semibold text-green-800">Tasks Completed</h4>
+                <p class="text-2xl font-bold text-green-900">{{ aggregateReport.tasks_completed || 0 }}</p>
+              </div>
+
+              <!-- Completion Rate -->
+              <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <h4 class="text-sm font-semibold text-yellow-800">Completion Rate</h4>
+                <p :class="['text-2xl font-bold', completionRateColor]">
+                  {{ aggregateReport.completion_rate || 0 }}%
+                </p>
+              </div>
+
+              <!-- Total Hours -->
+              <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <h4 class="text-sm font-semibold text-orange-800">Total Hours</h4>
+                <p class="text-2xl font-bold text-orange-900">{{ formatHours(aggregateReport.total_hours || 0) }}</p>
+              </div>
+
+              <!-- Average Hours per Active Volunteer -->
+              <div class="bg-pink-50 p-4 rounded-lg border border-pink-200">
+                <h4 class="text-sm font-semibold text-pink-800">Avg Hours/Active Volunteer</h4>
+                <p class="text-2xl font-bold text-pink-900">
+                  {{ aggregateReport.active_volunteers > 0 ? formatHours((aggregateReport.total_hours || 0) / aggregateReport.active_volunteers) : '0h' }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -231,6 +316,12 @@ const completionRateColor = computed(() => {
                     Volunteer
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Registration Status
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Skills
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tasks Assigned
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -243,10 +334,7 @@ const completionRateColor = computed(() => {
                     Total Hours
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    First Check-in
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Check-out
+                    Contact Info
                   </th>
                 </tr>
               </thead>
@@ -256,26 +344,35 @@ const completionRateColor = computed(() => {
                     <div class="text-sm font-medium text-gray-900">{{ volunteer.name }}</div>
                     <div class="text-sm text-gray-500">ID: {{ volunteer.volunteer_id }}</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ volunteer.tasks_assigned }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          :class="volunteer.tasks_completed === volunteer.tasks_assigned ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'">
-                      {{ volunteer.tasks_completed }}
+                          :class="getRegistrationStatusColor(volunteer.registration_status || 'unknown')">
+                      {{ volunteer.registration_status || 'N/A' }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ volunteer.attendance_days }}
+                    <div class="max-w-32 truncate" :title="volunteer.skills || 'No skills listed'">
+                      {{ volunteer.skills || 'No skills listed' }}
+                    </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatHours(volunteer.total_hours) }}
+                    {{ volunteer.task_statistics?.tasks_assigned || volunteer.tasks_assigned || 0 }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatDate(volunteer.first_checkin) }}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          :class="getTaskCompletionColor(volunteer.task_statistics?.tasks_completed || volunteer.tasks_completed || 0, volunteer.task_statistics?.tasks_assigned || volunteer.tasks_assigned || 0)">
+                      {{ volunteer.task_statistics?.tasks_completed || volunteer.tasks_completed || 0 }}
+                    </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatDate(volunteer.last_checkout) }}
+                    {{ volunteer.task_statistics?.attendance_days || volunteer.attendance_days || 0 }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ formatHours(volunteer.task_statistics?.total_hours || volunteer.total_hours || 0) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div>{{ volunteer.email || 'N/A' }}</div>
+                    <div>{{ volunteer.phone || 'N/A' }}</div>
                   </td>
                 </tr>
               </tbody>

@@ -8,8 +8,8 @@
             <h1 class="text-3xl font-bold text-gray-900">{{ stateName }} Operations</h1>
             <p class="text-gray-600 mt-1">Detailed view of campaigns and activities</p>
           </div>
-          <button 
-            @click="goBack" 
+          <button
+            @click="goBack"
             class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
           >
             ← Back to Dashboard
@@ -102,11 +102,17 @@
           <div class="px-6 py-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-900">Active Campaigns</h2>
           </div>
-          
+
           <div v-if="stateData.campaigns.length === 0" class="p-6 text-center text-gray-500">
-            No active campaigns in this state.
+            <div class="mb-4">
+              <svg class="w-16 h-16 mx-auto text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No Active Campaigns</h3>
+            <p class="text-gray-500">There are currently no active disaster relief campaigns in {{ stateName }}.</p>
           </div>
-          
+
           <div v-else class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -140,7 +146,7 @@
                     <div class="text-sm text-gray-900">{{ campaign.disaster_type }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span 
+                    <span
                       class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                       :class="getSeverityColor(campaign.severity)"
                     >
@@ -148,7 +154,7 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span 
+                    <span
                       class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                       :class="getStatusColor(campaign.status)"
                     >
@@ -238,7 +244,7 @@ const error = ref('')
 const fetchStateDetails = async () => {
   loading.value = true
   error.value = ''
-  
+
   try {
     const response = await api.get(`/map/state/${stateName.value}`)
     stateData.value = response.data
@@ -257,7 +263,7 @@ const fetchStateDetails = async () => {
 
 // Utility functions
 const goBack = () => {
-  router.push({ name: 'dashboard' })
+  router.push('/dashboard')
 }
 
 const getSeverityColor = (severity: string) => {

@@ -37,7 +37,8 @@ class MapController extends Controller
             'Khulna',
             'Barisal',
             'Sylhet',
-            'Rangpur'
+            'Rangpur',
+            'Mymensingh'
         ];
 
         // Get campaign counts by state for this NGO
@@ -102,12 +103,35 @@ class MapController extends Controller
                 ];
             });
 
-        // Get some basic statistics (dummy data for now as requested)
+        // Get disaster IDs for this state and NGO
+        $disasterIds = DisasterCampaignAssignment::join('disasters', 'disaster_campaign_assignments.disaster_id', '=', 'disasters.id')
+            ->where('disaster_campaign_assignments.ngo_id', $ngoId)
+            ->where('disasters.location', $stateName)
+            ->pluck('disaster_campaign_assignments.disaster_id');
+
+        // Count active volunteers for disasters in this state for this NGO
+        $activeVolunteers = VolunteerRegistration::whereIn('disaster_id', $disasterIds)
+            ->where('ngo_id', $ngoId)
+            ->whereIn('status', ['approved', 'active'])
+            ->count();
+
+        // Count aid distributed (received aid supports) for disasters in this state for this NGO
+        $aidDistributed = AidSupport::whereIn('disaster_id', $disasterIds)
+            ->where('ngo_id', $ngoId)
+            ->where('status', 'received')
+            ->count();
+
+        // Count beneficiaries reached (completed aid requests) for disasters in this state
+        $beneficiariesReached = AidRequest::whereIn('disaster_id', $disasterIds)
+            ->where('status', 'completed')
+            ->count();
+
+        // Get basic statistics
         $stats = [
             'total_campaigns' => $campaigns->count(),
-            'active_volunteers' => rand(10, 50), // Dummy data
-            'aid_distributed' => rand(100, 1000), // Dummy data
-            'beneficiaries_reached' => rand(500, 5000), // Dummy data
+            'active_volunteers' => $activeVolunteers,
+            'aid_distributed' => $aidDistributed,
+            'beneficiaries_reached' => $beneficiariesReached,
         ];
 
         return response()->json([
@@ -263,7 +287,8 @@ class MapController extends Controller
             ->where('volunteer_registrations.ngo_id', $ngoId)
             ->where('aid_requests.location', $match)
             ->select('aid_requests.*')
-            ->orderBy('aid_requests.created_at','desc') // newest first
+            ->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
+            ->orderBy('aid_requests.created_at','desc')
             ->limit(200)
             ->get()
             ->map(function($r){ return [
@@ -291,7 +316,7 @@ class MapController extends Controller
     {
         $user = $request->user();
         $staff = \App\Models\NgoStaff::where('user_id', $user->id)->first();
-        
+
         if (!$staff) {
             return response()->json(['error' => 'Unauthorized - NGO staff only'], 403);
         }
@@ -356,11 +381,11 @@ class MapController extends Controller
         foreach ($aidRequests as $row) {
             $original = $row->location;
             $division = $districtToDivision[$original] ?? $original;
-            
+
             if (!in_array($division, $bangladeshStates, true)) {
                 continue;
             }
-            
+
             if (!isset($requestBuckets[$division])) {
                 $requestBuckets[$division] = [
                     'request_count' => 0,
@@ -370,7 +395,7 @@ class MapController extends Controller
                     'critical' => 0,
                 ];
             }
-            
+
             $requestBuckets[$division]['request_count'] += (int)$row->request_count;
             $requestBuckets[$division]['low'] += (int)$row->low_count;
             $requestBuckets[$division]['medium'] += (int)$row->medium_count;
@@ -383,40 +408,40 @@ class MapController extends Controller
         foreach ($aidSupport as $disasterId => $support) {
             $disaster = $disasterLocations->get($disasterId);
             if (!$disaster) continue;
-            
+
             $original = $disaster->location;
             $division = $districtToDivision[$original] ?? $original;
-            
+
             if (!in_array($division, $bangladeshStates, true)) {
                 continue;
             }
-            
+
             if (!isset($supportBuckets[$division])) {
                 $supportBuckets[$division] = 0;
             }
-            
+
             $supportBuckets[$division] += (int)$support->support_count;
         }
 
         // Calculate aid need and prepare state data
         $stateData = [];
         $deploymentZones = [];
-        
+
         foreach ($bangladeshStates as $state) {
             $requestData = $requestBuckets[$state] ?? null;
             $requestCount = $requestData['request_count'] ?? 0;
             $supportCount = $supportBuckets[$state] ?? 0;
             $aidNeeded = max(0, $requestCount - $supportCount);
-            
+
             // Calculate urgency-weighted need score for prioritization
             $urgencyScore = 0;
             if ($requestData) {
-                $urgencyScore = ($requestData['low'] * 1) + 
-                               ($requestData['medium'] * 2) + 
-                               ($requestData['high'] * 3) + 
+                $urgencyScore = ($requestData['low'] * 1) +
+                               ($requestData['medium'] * 2) +
+                               ($requestData['high'] * 3) +
                                ($requestData['critical'] * 4);
             }
-            
+
             $stateData[] = [
                 'name' => $state,
                 'request_count' => $requestCount,
@@ -431,7 +456,7 @@ class MapController extends Controller
                 ],
                 'intensity' => $this->calculateAidNeedIntensity($aidNeeded, $urgencyScore),
             ];
-            
+
             // Add to deployment zones if there's significant need
             if ($aidNeeded > 0) {
                 $deploymentZones[] = [
@@ -479,17 +504,17 @@ class MapController extends Controller
         // Only show data for regions that actually have aid requests
         $bangladeshStates = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur'];
         $statesWithData = array_intersect($bangladeshStates, $actualLocations);
-        
+
         $stateData = [];
         $deploymentZones = [];
-        
+
         foreach ($bangladeshStates as $state) {
             if (in_array($state, $statesWithData)) {
                 // Generate realistic data for states with actual aid requests
                 $requestCount = rand(5, 20);
                 $supportCount = rand(0, min($requestCount, 10)); // Support can't exceed requests
                 $aidNeeded = max(0, $requestCount - $supportCount);
-                
+
                 // Generate realistic urgency breakdown that sums to request count
                 $remaining = $requestCount;
                 $low = rand(0, min($remaining, 5));
@@ -499,10 +524,10 @@ class MapController extends Controller
                 $high = rand(0, min($remaining, 5));
                 $remaining -= $high;
                 $critical = $remaining; // Whatever is left
-                
+
                 // Calculate urgency score properly
                 $urgencyScore = ($low * 1) + ($medium * 2) + ($high * 3) + ($critical * 4);
-                
+
                 $stateData[] = [
                     'name' => $state,
                     'request_count' => $requestCount,
@@ -517,7 +542,7 @@ class MapController extends Controller
                     ],
                     'intensity' => $this->calculateAidNeedIntensity($aidNeeded, $urgencyScore),
                 ];
-                
+
                 if ($aidNeeded > 0) {
                     $deploymentZones[] = [
                         'state' => $state,
@@ -568,11 +593,11 @@ class MapController extends Controller
     private function calculateAidNeedIntensity($aidNeeded, $urgencyScore)
     {
         if ($aidNeeded == 0) return 0;
-        
+
         // Normalize by combining quantity and urgency
         $quantityFactor = min($aidNeeded / 10, 1.0); // Normalize to 0-1, assuming 10+ requests is max
         $urgencyFactor = min($urgencyScore / 20, 1.0); // Normalize to 0-1, assuming 20+ urgency score is max
-        
+
         return round(($quantityFactor * 0.6 + $urgencyFactor * 0.4), 3);
     }
 
@@ -582,7 +607,7 @@ class MapController extends Controller
     private function getPriorityLevel($aidNeeded, $urgencyScore)
     {
         $totalScore = $aidNeeded + ($urgencyScore * 0.5);
-        
+
         if ($totalScore >= 15) return 'critical';
         if ($totalScore >= 10) return 'high';
         if ($totalScore >= 5) return 'medium';
@@ -596,7 +621,7 @@ class MapController extends Controller
     {
         $baseVolunteers = max(1, ceil($aidNeeded / 3)); // 1 volunteer per 3 aid requests
         $urgencyBonus = ceil($urgencyScore / 8); // Additional volunteers for high urgency
-        
+
         return min(20, $baseVolunteers + $urgencyBonus); // Cap at 20 volunteers
     }
 
@@ -611,11 +636,11 @@ class MapController extends Controller
             ->count();
 
         $taskRecommendations = [];
-        
+
         foreach ($deploymentZones as $zone) {
             $recommendedVolunteers = $zone['recommended_volunteers'];
             $availableForZone = min($recommendedVolunteers, $availableVolunteers);
-            
+
             if ($availableForZone > 0) {
                 $taskRecommendations[] = [
                     'state' => $zone['state'],
@@ -624,7 +649,7 @@ class MapController extends Controller
                     'task_types' => $this->getRecommendedTaskTypes($zone['priority_level']),
                     'estimated_duration' => $this->getEstimatedTaskDuration($zone['aid_needed']),
                 ];
-                
+
                 $availableVolunteers -= $availableForZone;
             }
         }
@@ -643,7 +668,7 @@ class MapController extends Controller
             'medium' => ['food_distribution', 'shelter_setup', 'logistics', 'community_outreach'],
             'low' => ['community_outreach', 'logistics', 'data_collection'],
         ];
-        
+
         return $taskTypes[$priorityLevel] ?? ['general_support'];
     }
 
