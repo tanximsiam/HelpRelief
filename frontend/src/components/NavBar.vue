@@ -96,6 +96,7 @@ const auth = useAuth()
 
 const links = props.links ?? [
   { label: 'For Users', to: '/for-users' },
+  { label: 'My NGO', to: '/dashboard/ngo?openNgoReport=1' },
   { label: 'About Us', to: '/about' },
   { label: 'Our partners', to: '/partners' },
 ]

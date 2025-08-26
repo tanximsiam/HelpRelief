@@ -54,5 +54,4 @@ class VolunteerRegistrationController extends Controller
 
         return response()->json($volunteers);
     }
-
 }
