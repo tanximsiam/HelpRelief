@@ -18,8 +18,9 @@ const emit = defineEmits<{
 }>()
 
 // Constants
+// Updated to include all 8 administrative divisions (added 'Mymensingh')
 const DIVISIONS = Object.freeze([
-  'Dhaka','Chattogram','Rajshahi','Khulna','Barishal','Sylhet','Rangpur'
+  'Dhaka','Chattogram','Rajshahi','Khulna','Barishal','Sylhet','Rangpur','Mymensingh'
 ])
 const DISASTER_TYPES = Object.freeze(['flood','earthquake','storm','wildfire','drought','other'])
 const SEVERITIES = Object.freeze(['low','medium','high'])
