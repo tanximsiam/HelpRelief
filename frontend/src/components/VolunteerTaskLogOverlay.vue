@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { api } from '@/lib/api'
 import Modal from '@/components/Modal.vue'
 import VolunteerTaskLogTable from '@/components/VolunteerTaskLogTable.vue'
@@ -20,8 +20,7 @@ const emit = defineEmits<{ (e:'close'): void }>()
 
 const logs = ref<VolunteerTaskLog[]>([])
 const loading = ref(false)
-const search = ref('')
-const newTaskId = ref<string>('')
+const newTaskId = ref<string>('') // will be unused now but keep placeholder to avoid refactoring startTask
 const starting = ref(false)
 const startError = ref<string | null>(null)
 const startMessage = ref<string | null>(null)
@@ -30,6 +29,8 @@ const tasks = ref<any[]>([])
 const selectedTaskId = ref<string>('')
 const tasksLoading = ref(false)
 const tasksError = ref<string | null>(null)
+
+const campaignName = ref<string>('')
 
 async function fetchLogs() {
   loading.value = true
@@ -95,25 +96,25 @@ function buildTasksFromLogsFallback() {
   }
 }
 
-function refresh() { fetchLogs(); fetchTasks() }
-
-watch(() => props.open, async (val) => { if (val) { await fetchLogs(); await fetchTasks(); buildTasksFromLogsFallback() } })
+watch(() => props.open, async (val) => { if (val) { await fetchLogs(); await fetchTasks(); await fetchCampaignName(); buildTasksFromLogsFallback() } })
 watch(() => props.campaignId, (newId, oldId) => {
   if (props.open && newId && newId !== oldId) {
     fetchTasks();
     fetchLogs().then(buildTasksFromLogsFallback)
+    fetchCampaignName()
   }
 })
 
-const filteredLogs = computed(() => {
-  if (!search.value) return logs.value
-  const q = search.value.toLowerCase()
-  return logs.value.filter(l =>
-    (l.volunteer?.name || '').toLowerCase().includes(q) ||
-    (l.task?.task_type || '').toLowerCase().includes(q) ||
-    String(l.task_id).includes(q)
-  )
+onMounted(() => {
+  if (props.open) {
+    fetchLogs();
+    fetchTasks();
+    fetchCampaignName();
+    buildTasksFromLogsFallback();
+  }
 })
+
+const filteredLogs = computed(() => logs.value) // no search now
 
 function formatDate(dt?: string) {
   if (!dt) return '-'
@@ -155,6 +156,20 @@ async function checkOut(log: VolunteerTaskLog) {
     }
   } catch (e) { console.error('Check-out failed', e) }
 }
+
+async function fetchCampaignName() {
+  if (!props.campaignId) { campaignName.value = ''; return }
+  try {
+    const { data } = await api.get(`/campaigns/${props.campaignId}`)
+    campaignName.value = data?.disaster?.name || data?.disaster_name || data?.name || `Campaign #${props.campaignId}`
+  } catch { campaignName.value = `Campaign #${props.campaignId}` }
+}
+
+// Replace availableTasks logic: hide tasks after first check-in
+const availableTasks = computed(() => {
+  if (!tasks.value.length) return []
+  return tasks.value.filter(t => !logs.value.some(l => l.task_id === t.id && l.check_in))
+})
 </script>
 
 <style scoped>
@@ -164,39 +179,27 @@ async function checkOut(log: VolunteerTaskLog) {
 </style>
 
 <template>
-  <Modal :show="open" :title="'Task Logs' + (campaignId ? ' – Campaign #' + campaignId : '')" maxWidth="max-w-4xl" zIndex="z-60" @close="$emit('close')">
+  <Modal :show="open" :title="'Task Logs' + (campaignId ? ' – ' + (campaignName || ('Campaign #' + campaignId)) : '')" maxWidth="max-w-4xl" zIndex="z-60" @close="$emit('close')">
     <div class="space-y-6">
-      <!-- Controls Panel -->
       <div class="rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
-          <div class="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <div class="flex flex-col">
-              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Campaign Tasks</label>
-              <select v-model="selectedTaskId" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 disabled:opacity-50" :disabled="tasksLoading || tasksError">
-                <option value="">{{ tasksLoading ? 'Loading tasks...' : (tasksError ? 'Failed to load tasks' : (tasks.length ? 'Select a task...' : 'No tasks found')) }}</option>
-                <option v-for="t in tasks" :key="t.id" :value="t.id">#{{ t.id }} · {{ t.task_type }} · {{ t.status }} · {{ t.urgency || '-' }} · {{ t.assigned_to_name || 'Unassigned' }}</option>
-              </select>
-              <p v-if="tasksError" class="mt-1 text-[11px] text-red-600 font-medium">{{ tasksError }}</p>
-            </div>
-            <div class="flex flex-col">
-              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Manual Task ID</label>
-              <input v-model="newTaskId" placeholder="Task ID" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20" />
-            </div>
-            <div class="flex flex-col">
-              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Search Logs</label>
-              <input v-model="search" placeholder="Search volunteer / type / id" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20" />
-            </div>
+          <div class="flex-1">
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Campaign Tasks</label>
+            <select v-model="selectedTaskId" class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 disabled:opacity-50" :disabled="tasksLoading || tasksError">
+              <option value="">{{ tasksLoading ? 'Loading tasks...' : (tasksError ? 'Failed to load tasks' : (availableTasks.length ? 'Select a task...' : 'No available tasks')) }}</option>
+              <option v-for="t in availableTasks" :key="t.id" :value="t.id">#{{ t.id }} · {{ t.task_type }} · {{ t.status }} · {{ t.urgency || '-' }} · {{ t.assigned_to_name || 'Unassigned' }}</option>
+            </select>
+            <p v-if="tasksError" class="mt-1 text-[11px] text-red-600 font-medium">{{ tasksError }}</p>
           </div>
           <div class="flex gap-3">
-            <button @click="startTask" :disabled="starting || (!newTaskId && !selectedTaskId)" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
+            <button @click="startTask" :disabled="starting || !selectedTaskId" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
               <span v-if="starting" class="animate-spin h-4 w-4 rounded-full border-2 border-white border-t-transparent"></span>
               <span>{{ starting ? 'Starting...' : 'Check In' }}</span>
             </button>
-            <button @click="refresh" type="button" class="rounded-md bg-white px-5 py-2 text-sm font-semibold text-blue-600 shadow-sm ring-1 ring-blue-600/50 transition hover:bg-blue-50">Refresh</button>
           </div>
         </div>
         <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-          <p v-if="!loading">Showing <span class="font-semibold text-slate-700">{{ filteredLogs.length }}</span> of {{ logs.length }} logs</p>
+          <p v-if="!loading">Showing <span class="font-semibold text-slate-700">{{ logs.length }}</span> logs</p>
           <p v-else class="italic">Loading logs...</p>
         </div>
       </div>
@@ -207,9 +210,9 @@ async function checkOut(log: VolunteerTaskLog) {
 
       <div class="rounded-xl border border-slate-200 shadow-sm overflow-hidden bg-white">
         <VolunteerTaskLogTable
-          :logs="filteredLogs"
+          :logs="logs"
           :loading="loading"
-          :search="search"
+          search=""
           @checkOut="checkOut"
         />
       </div>
@@ -217,7 +220,6 @@ async function checkOut(log: VolunteerTaskLog) {
       <div class="flex justify-between items-center gap-4 pt-2 border-t border-slate-200">
         <p class="text-xs text-slate-400">Updated {{ new Date().toLocaleTimeString() }}</p>
         <div class="flex gap-3">
-          <button type="button" @click="refresh" class="rounded-md border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">Reload</button>
           <button type="button" @click="$emit('close')" class="rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white">Close</button>
         </div>
       </div>
