@@ -5,11 +5,15 @@ import OngoingCampaigns from '@/components/OngoingCampaigns.vue'
 import ProfileView from '@/components/ProfileView.vue'
 import Modal from '@/components/Modal.vue'
 import AidRequestForm from '@/components/AidRequestForm.vue'
+import VolunteerRegistrationForm from '@/components/VolunteerRegistrationForm.vue'
+import AidSupportOverlay from '@/components/AidSupportOverlay.vue'
 import { useAuth } from '@/stores/auth'
 import { computed, ref, onMounted } from 'vue'
 
 const auth = useAuth()
 const showAidRequestModal = ref(false)
+const showAidSupport = ref(false)
+const showVolunteerModal = ref(false)
 
 onMounted(async () => {
   if (auth.token && !auth.user) {
@@ -22,6 +26,11 @@ const userName = computed(() => auth.user?.name || 'User')
 const openAidRequestModal = () => showAidRequestModal.value = true
 const closeAidRequestModal = () => showAidRequestModal.value = false
 const handleAidRequestSubmit = () => { alert('Aid request submitted successfully!'); closeAidRequestModal() }
+const openVolunteerModal = () => showVolunteerModal.value = true
+const closeVolunteerModal = () => showVolunteerModal.value = false
+const handleVolunteerSubmit = () => { alert('Volunteer registration submitted successfully!'); closeVolunteerModal() }
+const openAidSupport = () => showAidSupport.value = true
+const closeAidSupport = () => showAidSupport.value = false
 </script>
 
 <template>
@@ -35,8 +44,9 @@ const handleAidRequestSubmit = () => { alert('Aid request submitted successfully
           </h1>
         </div>
         <div class="flex gap-6 items-center">
-          <button @click="openAidRequestModal" class="text-2xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Request for Aid</button>
-          <PrimaryButton variant="primary" to="/aid-support" class="px-8 py-4 text-xl">Offer Help</PrimaryButton>
+          <button @click="openAidRequestModal" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Request for Aid</button>
+          <button v-if="auth.user" @click="openVolunteerModal" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Volunteer registrations</button>
+          <PrimaryButton variant="primary" @click="openAidSupport" class="px-8 py-4 text-l">Offer Help</PrimaryButton>
         </div>
       </div>
 
@@ -56,5 +66,9 @@ const handleAidRequestSubmit = () => { alert('Aid request submitted successfully
     <Modal :show="showAidRequestModal" title="Aid Request" @close="closeAidRequestModal">
       <AidRequestForm @submit="handleAidRequestSubmit" />
     </Modal>
+    <Modal :show="showVolunteerModal" title="Volunteer registration" @close="closeVolunteerModal">
+      <VolunteerRegistrationForm @submit="handleVolunteerSubmit" />
+    </Modal>
+  <AidSupportOverlay :show="showAidSupport" @close="closeAidSupport" />
   </div>
 </template>

@@ -23,19 +23,31 @@ export interface Ngo {
   logoUrl?: string
 }
 
+export interface Campaign {
+  id: number | string
+  name: string
+  disaster_id: number | string
+  disaster_name?: string
+  ngo_id?: number | string
+  ngo_name?: string
+  status?: string
+  help_needed?: string
+}
+
 export const useAidSupportStore = defineStore('aidSupport', {
   state: () => ({
     // data
     disasters: [] as Disaster[],
-    ngos: [] as Ngo[],
+    campaigns: [] as Campaign[],
 
     // selections
     aidType: null as AidOption | null,
     disaster: null as Disaster | null,
-    ngo: null as Ngo | null,
+    campaign: null as Campaign | null,
 
     // required extra field
     quantity: '' as string,
+    description: '' as string,
 
     // ui state
     loading: false,
@@ -46,7 +58,7 @@ export const useAidSupportStore = defineStore('aidSupport', {
 
   getters: {
     canSubmit(state) {
-      const hasCore = !!(state.aidType && state.disaster && state.ngo)
+      const hasCore = !!(state.aidType && state.disaster && state.campaign)
       const hasQty  = state.quantity?.toString().trim().length > 0
       return hasCore && hasQty
     },
@@ -54,16 +66,17 @@ export const useAidSupportStore = defineStore('aidSupport', {
       return [
         { label: 'FINANCIAL', value: 'financial', hint: 'Monetary help' },
         { label: 'MEDICAL',   value: 'medical',   hint: 'First-aid / blood' },
-        { label: 'FOOD',      value: 'food',      hint: 'Meals & supplies' },
+        { label: 'RESOURCES', value: 'resource',  hint: 'Food / goods / supplies' },
       ]
     },
   },
 
   actions: {
     setAidType(opt: AidOption | null) { this.aidType = opt; this.quantity = '' },
-    setDisaster(d: Disaster | null)   { this.disaster = d; this.ngo = null; this.ngos = [] },
-    setNgo(n: Ngo | null)             { this.ngo = n },
+    setDisaster(d: Disaster | null)   { this.disaster = d; this.campaign = null; this.campaigns = [] },
+    setCampaign(c: Campaign | null)   { this.campaign = c },
     setQuantity(v: string)    { this.quantity = v },
+    setDescription(v: string) { this.description = v },
 
     async fetchDisasters() {
       if (this.disasters.length) return
@@ -76,14 +89,16 @@ export const useAidSupportStore = defineStore('aidSupport', {
       } finally { this.loading = false }
     },
 
-    async fetchNgosForSelected() {
+    async fetchCampaignsForSelected() {
       if (!this.disaster?.id) return
       this.loading = true; this.error = null
       try {
-        const { data } = await api.get('/ngos', { params: { disaster_id: this.disaster.id } })
-        this.ngos = Array.isArray(data) ? data : (data?.data ?? [])
+        // Get all active campaigns and filter by selected disaster_id
+        const { data } = await api.get('/campaigns')
+        const list = Array.isArray(data) ? data : (data?.data ?? [])
+        this.campaigns = list.filter((c: Campaign) => String(c.disaster_id) === String(this.disaster!.id))
       } catch (e: any) {
-        this.error = e?.response?.data?.message || e.message || 'Failed to load NGOs'
+        this.error = e?.response?.data?.message || e.message || 'Failed to load campaigns'
       } finally { this.loading = false }
     },
 
@@ -100,17 +115,18 @@ export const useAidSupportStore = defineStore('aidSupport', {
         await api.post('/aid-supports', {
           aid_type: this.aidType!.value,
           disaster_id: this.disaster!.id,
-          ngo_id: this.ngo!.id,
+          campaign_id: this.campaign!.id,
           quantity: this.quantity,
-          description: null,
-          contact_info: null,
+          description: this.description || null,
+          contact: null,
         })
         // reset after success
         this.aidType = null
         this.disaster = null
-        this.ngo = null
-        this.ngos = []
+        this.campaign = null
+        this.campaigns = []
         this.quantity = ''
+        this.description = ''
         this.ok = true
         this.message = '✅ Aid support submitted! Thank you.'
       } catch (e: any) {

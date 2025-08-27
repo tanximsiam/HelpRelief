@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('disaster_id')->constrained('disasters');
-            $table->foreignId('ngo_id')->constrained('ngos'); // NGO
+            $table->foreignId('campaign_id')->constrained('disaster_campaign_assignments');
             $table->enum('aid_type', ['financial', 'medical', 'resource']);
             $table->string('quantity');
             $table->text('description')->nullable();

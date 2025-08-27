@@ -1,34 +1,46 @@
 <template>
   <div class="space-y-2">
-    <h3 class="text-lg font-semibold">Choose the campaign / NGO</h3>
+    <h3 class="text-lg font-semibold">Choose the campaign</h3>
 
     <div v-if="!store.disaster" class="text-sm text-gray-500">
       Select a disaster first.
     </div>
 
     <div v-else>
-      <div v-if="store.loading && !store.ngos.length" class="text-sm text-gray-500">Loading NGOs…</div>
-      <div v-else-if="store.error && !store.ngos.length" class="text-sm text-red-600">{{ store.error }}</div>
+      <div v-if="store.loading && !store.campaigns.length" class="text-sm text-gray-500">Loading campaigns…</div>
+      <div v-else-if="store.error && !store.campaigns.length" class="text-sm text-red-600">{{ store.error }}</div>
 
       <ul v-else class="divide-y rounded-xl border">
-        <li v-for="ngo in store.ngos" :key="ngo.id">
+        <li v-for="(campaign, idx) in store.campaigns" :key="campaign.id">
           <BaseRowButton
-            :selected="store.ngo?.id === ngo.id"
-            @click="select(ngo)"
+            :selected="store.campaign?.id === campaign.id"
+            :class="[
+              store.campaign?.id === campaign.id ? 'bg-gray-200 border-gray-300' : 'bg-white border-transparent',
+              idx === 0 ? 'rounded-t-xl' : '',
+              idx === store.campaigns.length - 1 ? 'rounded-b-xl' : ''
+            ]"
+            @click="select(campaign)"
             chevron
           >
-            <template #leading v-if="ngo.logoUrl">
-              <img :src="ngo.logoUrl" alt="" class="h-8 w-8 rounded-md object-cover" />
-            </template>
-
-            {{ ngo.name }}
+            {{ campaign.name || (campaign.disaster_name + ' Campaign') }}
             <template #sub>
-              {{ ngo.campaign_title || ngo.description || 'Relief mission' }}
+              {{ campaign.ngo_name || 'Relief mission' }}
             </template>
           </BaseRowButton>
-
         </li>
       </ul>
+
+      <div class="pt-3">
+        <label class="block text-sm font-medium mb-1" for="aid-desc">Additional details </label>
+        <textarea
+          id="aid-desc"
+          rows="3"
+          class="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          :placeholder="store.aidType?.value === 'financial' ? 'Ex: Preferred payment channel, reference' : 'Ex: Item type, packaging, pickup info'"
+          :disabled="store.loading"
+          v-model="store.description"
+        />
+      </div>
 
       <div class="pt-3 flex justify-end gap-2">
         <button
@@ -55,17 +67,15 @@
 </template>
 
 <script setup lang="ts">
-import { useAidSupportStore, type Ngo } from '@/stores/AidSupport'
+import { useAidSupportStore, type Campaign } from '@/stores/AidSupport'
 
 import BaseRowButton from './BaseRowButton.vue'
 
 const store = useAidSupportStore()
 
-function select(n: Ngo) {
-  store.setNgo(n)
+function select(c: Campaign) {
+  store.setCampaign(c)
 }
-
-
 
 async function confirm() {
   if (!store.canSubmit) {
@@ -76,10 +86,8 @@ async function confirm() {
     return
   }
 
-
   try {
     await store.submitAidSupport()
   } catch {}
-
 }
 </script>

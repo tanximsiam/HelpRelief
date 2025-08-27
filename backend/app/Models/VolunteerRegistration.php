@@ -10,7 +10,7 @@ class VolunteerRegistration extends Model
 
     protected $fillable = [
         'user_id', 
-        'disaster_id', 
+        'campaign_id', 
         'ngo_id',
         'status', 
         'registered_at', 
@@ -26,7 +26,11 @@ class VolunteerRegistration extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-    public function aidRequests()
+    public function campaign()
+    {
+        return $this->belongsTo(DisasterCampaignAssignment::class, 'campaign_id');
+    }   
+     public function aidRequests()
     {
         return $this->hasManyThrough(
             \App\Models\AidRequest::class,

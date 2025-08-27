@@ -51,7 +51,7 @@ function normalize() {
   qty.value = (qty.value ?? '').toString().trim()
 }
 
-const showError = computed(() => !store.quantity?.toString().trim().length)
+const showError = computed(() => !store.quantity.value?.toString().trim().length)
 </script>
 
 <style scoped>
