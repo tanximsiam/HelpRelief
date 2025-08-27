@@ -6,21 +6,24 @@
     <div v-else-if="store.error && !store.disasters.length" class="text-sm text-red-600">{{ store.error }}</div>
 
     <ul v-else class="divide-y rounded-xl border">
-      <li v-for="d in store.disasters" :key="d.id">
+      <li v-for="(d, idx) in store.disasters" :key="d.id">
         <BaseRowButton
           :selected="store.disaster?.id === d.id"
+          :class="[
+            store.disaster?.id === d.id ? 'bg-gray-200 border-gray-300' : 'bg-white border-transparent',
+            idx === 0 ? 'rounded-t-xl' : '',
+            idx === store.disasters.length - 1 ? 'rounded-b-xl' : ''
+          ]"
           @click="select(d)"
+          chevron
         >
-          {{ d.name }}
+          {{ d.name || (d.location + ' Disaster') }}
           <template #sub>
-            {{ d.location }}<span v-if="d.location && (d.meta?.since || d.since)"> • </span>{{ d.meta?.since || d.since || '' }}
-          </template>
-          <template #trailing>
-            <span
-              class="rounded-full px-2 py-1 text-xs"
-              :class="badgeClass(d.severity)"
-            >
-              {{ d.severityLabel || (d.severity === 'major' ? 'Major help required' : 'Moderate help required') }}
+            <span class="inline-flex items-center gap-2">
+              <span class="text-sm text-gray-500">{{ d.location }}</span>
+              <span :class="['px-2 py-0.5 text-xs font-medium rounded-full', badgeClass(d.severity)]">
+                {{ d.severity === 'high' ? 'High' : 'Medium' }}
+              </span>
             </span>
           </template>
         </BaseRowButton>
@@ -40,13 +43,13 @@ onMounted(() => store.fetchDisasters())
 
 
 function badgeClass(sev?: Disaster['severity']) {
-  return sev === 'major'
+  return sev === 'high'
     ? 'bg-rose-100 text-rose-700'
     : 'bg-amber-100 text-amber-700'
 }
 
 function select(d: Disaster) {
   store.setDisaster(d)
-  store.fetchNgosForSelected()
+  store.fetchCampaignsForSelected()
 }
 </script>

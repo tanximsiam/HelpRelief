@@ -12,4 +12,5 @@ import AidTypePicker from '@/components/AidSupportType.vue'
 import DisasterPicker from '@/components/AidSupportDisasterType.vue'
 import AidQuantity from '@/components/AidQuantity.vue'
 import NgoPicker from '@/components/AidSupportNgotype.vue'
+
 </script>
