@@ -15,11 +15,11 @@ class TaskSeeder extends Seeder
     public function run(): void
     {
         Task::create([
-            'disaster_id' => 1,  
-            'assigned_to' => 1,   
-            'created_by' => 6,    
+            'campaign_id' => 1,
+            'assigned_to' => 1,
+            'created_by' => 6,
             'task_type' => 'aid_request',
-            'aid_request_id' => 1,  
+            'aid_request_id' => 1,
             'location' => 'Dhaka, Bangladesh',
             'start_time' => Carbon::now(),
             'end_time' => null,
@@ -32,7 +32,7 @@ class TaskSeeder extends Seeder
             'updated_at' => Carbon::now(),
             ]);
         Task::create([
-            'disaster_id' => 2,
+            'campaign_id' => 2,
             'assigned_to' => 3,
             'created_by' => 6,
             'task_type' => 'aid_request',
@@ -49,7 +49,7 @@ class TaskSeeder extends Seeder
             'updated_at' => Carbon::now(),
         ]);
         Task::create([
-            'disaster_id' => 3,
+            'campaign_id' => 3,
             'assigned_to' => 1,
             'created_by' => 7,
             'task_type' => 'aid_request',

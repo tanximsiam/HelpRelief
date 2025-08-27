@@ -14,7 +14,8 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('disaster_id')->constrained('disasters');
+            // Replaced disaster_id with campaign_id to directly associate tasks with a campaign
+            $table->foreignId('campaign_id')->constrained('disaster_campaign_assignments');
             $table->foreignId('assigned_to')->constrained('users'); // the volunteer
             $table->foreignId('created_by')->constrained('users');  // NGO or admin
             $table->enum('task_type', ['aid_request', 'delivery'])->default('aid_request');

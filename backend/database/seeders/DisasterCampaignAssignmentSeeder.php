@@ -4,55 +4,34 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\DisasterCampaignAssignment;
+use App\Models\Task;
+use App\Models\VolunteerTaskLog;
 
 class DisasterCampaignAssignmentSeeder extends Seeder
 {
     public function run()
     {
-        DisasterCampaignAssignment::create([
-            'disaster_id' => 1,
-            'ngo_id' => 1,
-            'assigned_by' => 1,
-            'status' => 'active',
-            'help_needed' => 'high',
-            'updated_by' => 1,
-        ]);
+    // Ensure a clean slate (delete dependent tasks first to satisfy FKs)
+    VolunteerTaskLog::query()->delete();
+    Task::query()->delete();
+    DisasterCampaignAssignment::query()->delete();
 
-        DisasterCampaignAssignment::create([
-            'disaster_id' => 2,
-            'ngo_id' => 1,
-            'assigned_by' => 1,
-            'status' => 'active',
-            'help_needed' => 'medium',
-            'updated_by' => 1,
-        ]);
+        // One unique campaign per disaster (assign different NGOs if available)
+        $rows = [
+            ['disaster_id' => 1, 'ngo_id' => 1, 'help_needed' => 'high'],
+            ['disaster_id' => 2, 'ngo_id' => 2, 'help_needed' => 'medium'],
+            ['disaster_id' => 3, 'ngo_id' => 3, 'help_needed' => 'medium'],
+        ];
 
-        DisasterCampaignAssignment::create([
-            'disaster_id' => 3,
-            'ngo_id' => 1,
-            'assigned_by' => 1,
-            'status' => 'active',
-            'help_needed' => 'medium',
-            'updated_by' => 1,
-        ]);
-
-        // Add some campaigns for other NGOs to test variety
-        DisasterCampaignAssignment::create([
-            'disaster_id' => 1,
-            'ngo_id' => 2,
-            'assigned_by' => 1,
-            'status' => 'active',
-            'help_needed' => 'low',
-            'updated_by' => 1,
-        ]);
-
-        DisasterCampaignAssignment::create([
-            'disaster_id' => 2,
-            'ngo_id' => 3,
-            'assigned_by' => 1,
-            'status' => 'active',
-            'help_needed' => 'high',
-            'updated_by' => 1,
-        ]);
+        foreach ($rows as $r) {
+            DisasterCampaignAssignment::create([
+                'disaster_id' => $r['disaster_id'],
+                'ngo_id' => $r['ngo_id'],
+                'assigned_by' => 1,
+                'status' => 'active',
+                'help_needed' => $r['help_needed'],
+                'updated_by' => 1,
+            ]);
+        }
     }
 }
