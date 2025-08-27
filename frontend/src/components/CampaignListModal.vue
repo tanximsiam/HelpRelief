@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import PrimaryButton from '@/components/PrimaryButton.vue'
 import VolunteerReportModal from '@/components/VolunteerReportModal.vue'
+import VolunteerTaskLogOverlay from '@/components/VolunteerTaskLogOverlay.vue'
 
 interface Campaign {
   id: number;
@@ -27,6 +28,13 @@ const emit = defineEmits<{
 // State
 const showVolunteerReportModal = ref(false);
 const selectedCampaign = ref<Campaign | null>(null);
+const showTaskLogs = ref(false);
+const taskLogCampaign = ref<Campaign | null>(null);
+
+function openTaskLogs(campaign: Campaign) {
+  taskLogCampaign.value = campaign;
+  showTaskLogs.value = true;
+}
 
 // Computed property to sort campaigns by priority
 const sortedCampaigns = computed(() => {
@@ -67,7 +75,7 @@ const closeModal = () => {
   <!-- Modal Backdrop -->
   <div
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    @click="closeModal"
+    @click.self="closeModal"
   >
     <!-- Modal Content -->
     <div
@@ -122,14 +130,19 @@ const closeModal = () => {
               </div>
 
               <!-- Action Button (only for NGO staff) -->
-              <div v-if="isNgoStaff" class="ml-4">
+              <div v-if="isNgoStaff" class="ml-4 flex flex-col gap-2 w-36">
                 <PrimaryButton
                   variant="primary"
                   @click="viewVolunteerReports(campaign)"
-                  class="px-4 py-2 text-sm"
+                  class="px-4 py-2 text-sm w-full"
                 >
                   View Reports
                 </PrimaryButton>
+                <button
+                  type="button"
+                  @click="openTaskLogs(campaign)"
+                  class="bg-blue-600 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-700 text-sm w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                >View Task Logs</button>
               </div>
             </div>
           </div>
@@ -156,5 +169,10 @@ const closeModal = () => {
     v-if="showVolunteerReportModal && selectedCampaign"
     :campaign="selectedCampaign"
     @close="closeVolunteerReportModal"
+  />
+  <VolunteerTaskLogOverlay
+    v-if="showTaskLogs"
+    :open="showTaskLogs"
+  @close="() => { showTaskLogs = false; taskLogCampaign = null }"
   />
 </template>

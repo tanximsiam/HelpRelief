@@ -99,7 +99,7 @@ async function checkOut(log: VolunteerTaskLog) {
 </style>
 
 <template>
-  <Modal :show="open" title="Volunteer Task Logs" maxWidth="max-w-6xl" @close="$emit('close')">
+  <Modal :show="open" title="Volunteer Task Logs" maxWidth="max-w-6xl" zIndex="z-60" @close="$emit('close')">
     <div class="space-y-6">
       <!-- Controls -->
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

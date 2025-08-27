@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ show: boolean; title?: string; maxWidth?: string }>()
+const props = defineProps<{ show: boolean; title?: string; maxWidth?: string; zIndex?: string }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 function onBackdrop(e: MouseEvent) {
@@ -9,7 +9,7 @@ function onBackdrop(e: MouseEvent) {
 
 <template>
   <transition name="fade">
-    <div v-if="show" class="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-12" @click="onBackdrop">
+  <div v-if="show" :class="['fixed inset-0 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-12', props.zIndex || 'z-40']" @click="onBackdrop">
       <div
         class="relative w-full rounded-xl bg-white shadow-xl ring-1 ring-black/5"
         :class="maxWidth || 'max-w-4xl'"
