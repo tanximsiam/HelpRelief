@@ -9,9 +9,9 @@ function onBackdrop(e: MouseEvent) {
 
 <template>
   <transition name="fade">
-  <div v-if="show" :class="['fixed inset-0 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-12', props.zIndex || 'z-40']" @click="onBackdrop">
+  <div v-if="show" :class="['fixed inset-0 flex items-center justify-center bg-black/40 px-4 py-8', props.zIndex || 'z-40']" @click="onBackdrop">
       <div
-        class="relative w-full rounded-xl bg-white shadow-xl ring-1 ring-black/5"
+        class="relative w-full max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl ring-1 ring-black/5"
         :class="maxWidth || 'max-w-4xl'"
       >
         <button

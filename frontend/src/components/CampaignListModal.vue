@@ -173,6 +173,7 @@ const closeModal = () => {
   <VolunteerTaskLogOverlay
     v-if="showTaskLogs"
     :open="showTaskLogs"
-  @close="() => { showTaskLogs = false; taskLogCampaign = null }"
+    :campaign-id="taskLogCampaign?.id || null"
+    @close="() => { showTaskLogs = false; taskLogCampaign = null }"
   />
 </template>

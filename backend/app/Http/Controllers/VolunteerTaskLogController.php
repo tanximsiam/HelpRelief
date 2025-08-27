@@ -30,7 +30,7 @@ class VolunteerTaskLogController extends Controller
             $query->where('campaign_id', $request->integer('campaign_id'));
         }
 
-    $logs = $query->limit(200)->get();
+    $logs = $query->limit(500)->get();
     return response()->json($logs);
     }
     // Check-in (start) a task: creates or updates a volunteer task log
