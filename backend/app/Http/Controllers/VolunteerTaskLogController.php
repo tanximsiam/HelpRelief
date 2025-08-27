@@ -26,8 +26,8 @@ class VolunteerTaskLogController extends Controller
         if ($request->filled('volunteer_id')) {
             $query->where('volunteer_id', $request->integer('volunteer_id'));
         }
-        if ($request->filled('disaster_id')) {
-            $query->where('disaster_id', $request->integer('disaster_id'));
+        if ($request->filled('campaign_id')) {
+            $query->where('campaign_id', $request->integer('campaign_id'));
         }
 
     $logs = $query->limit(200)->get();
@@ -49,7 +49,7 @@ class VolunteerTaskLogController extends Controller
                 $taskLog = VolunteerTaskLog::create([
                     'task_id' => $validated['task_id'],
                     'volunteer_id' => $assignedVolunteerId,
-                    'disaster_id' => $task->disaster_id,
+                    'campaign_id' => $task->campaign_id,
                     'status' => 'assigned',
                     'check_in' => now(),
                     'check_out' => null,

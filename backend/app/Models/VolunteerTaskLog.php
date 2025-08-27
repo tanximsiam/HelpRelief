@@ -13,7 +13,7 @@ class VolunteerTaskLog extends Model
     protected $fillable = [
         'task_id',
         'volunteer_id',
-        'disaster_id',
+        'campaign_id',
         'status',
         'check_in',
         'check_out',

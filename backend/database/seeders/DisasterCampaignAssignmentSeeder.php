@@ -18,9 +18,9 @@ class DisasterCampaignAssignmentSeeder extends Seeder
 
         // One unique campaign per disaster (assign different NGOs if available)
         $rows = [
-            ['disaster_id' => 1, 'ngo_id' => 1, 'help_needed' => 'high'],
-            ['disaster_id' => 2, 'ngo_id' => 2, 'help_needed' => 'medium'],
-            ['disaster_id' => 3, 'ngo_id' => 3, 'help_needed' => 'medium'],
+            ['disaster_id' => 1, 'ngo_id' => 1, 'help_needed' => 'high', 'status' => 'active'],
+            ['disaster_id' => 2, 'ngo_id' => 1, 'help_needed' => 'medium', 'status' => 'active'],
+            ['disaster_id' => 3, 'ngo_id' => 1, 'help_needed' => 'medium', 'status' => 'inactive'],
         ];
 
         foreach ($rows as $r) {
@@ -28,7 +28,7 @@ class DisasterCampaignAssignmentSeeder extends Seeder
                 'disaster_id' => $r['disaster_id'],
                 'ngo_id' => $r['ngo_id'],
                 'assigned_by' => 1,
-                'status' => 'active',
+                'status' => $r['status'],
                 'help_needed' => $r['help_needed'],
                 'updated_by' => 1,
             ]);
