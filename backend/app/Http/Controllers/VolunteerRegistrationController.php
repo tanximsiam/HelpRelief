@@ -4,30 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Ngo;
-use App\Models\Disaster;
-use App\Models\AidSupport;
 use App\Models\VolunteerRegistration;
 use Illuminate\Http\Request;
-
 
 class VolunteerRegistrationController extends Controller
 {
     public function store(Request $request)
     {
         $user = $request->user();
+
         $request->validate([
-            'disaster_id' => 'required|exists:disasters,id',
-            'ngo_id' => 'required|exists:users,id',
-            'availability' => 'nullable|string',
+            'campaign_id' => 'required|exists:disaster_campaign_assignments,id',
+            'ngo_id' => 'required|exists:ngos,id',
+            'availability' => 'nullable|boolean',
             'skills' => 'nullable|string'
         ]);
 
         $volunteer = VolunteerRegistration::create([
             'user_id' => $user->id,
-            'disaster_id' => $request->disaster_id,
+            'campaign_id' => $request->campaign_id,
             'ngo_id' => $request->ngo_id,
             'status' => 'pending',
-            'availability' => $request->availability,
+            'availability' => $request->availability ?? true,
             'skills' => $request->skills,
             'registered_at' => now(),
         ]);
@@ -37,6 +35,7 @@ class VolunteerRegistrationController extends Controller
             'status' => $volunteer->status
         ]);
     }
+
     public function index()
     {
         $volunteers = VolunteerRegistration::with('user')

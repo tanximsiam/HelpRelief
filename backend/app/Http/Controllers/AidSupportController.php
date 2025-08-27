@@ -16,7 +16,7 @@ class AidSupportController extends Controller
         $user = $request->user();
         $request->validate([
             'disaster_id' => 'required|exists:disasters,id',
-            'ngo_id' => 'required|exists:ngos,id',
+            'campaign_id' => 'required|exists:disaster_campaign_assignments,id',
             'aid_type' => 'required|in:financial,medical,resource',
             'quantity' => 'required|string',
             'description' => 'nullable|string',
@@ -26,7 +26,7 @@ class AidSupportController extends Controller
         $aid = AidSupport::create([
             'user_id' => $user->id,
             'disaster_id' => $request->disaster_id,
-            'ngo_id' => $request->ngo_id,
+            'campaign_id' => $request->campaign_id,
             'aid_type' => $request->aid_type,
             'quantity' => $request->quantity,
             'description' => $request->description,

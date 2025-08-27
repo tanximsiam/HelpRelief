@@ -149,5 +149,13 @@ class UserSeeder extends Seeder
             'role' => 'general',
             'volunteer' => true,
         ]);
+        User::create([
+            'name' => 'general110',
+            'email' => 'general10@example.com',
+            'phone' => '0123456789',
+            'password' => Hash::make('userpass'),
+            'role' => 'general',
+            'volunteer' => false,
+        ]);
     }
 }

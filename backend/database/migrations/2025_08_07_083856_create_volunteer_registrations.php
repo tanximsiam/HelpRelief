@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -15,9 +14,12 @@ return new class extends Migration
         Schema::create('volunteer_registrations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('disaster_id')->constrained('disasters');
-            $table->foreignId('ngo_id')->constrained('ngos'); // NGO
-            $table->enum('status', ['pending', 'approved', 'rejected', 'active', 'inactive', 'completed'])->default('pending');
+            // Changed to campaign_id
+            $table->foreignId('campaign_id')->constrained('disaster_campaign_assignments');
+            $table->foreignId('ngo_id')->constrained('ngos');
+            $table->enum('status', [
+                'pending', 'approved', 'rejected', 'active', 'inactive', 'completed'
+            ])->default('pending');
             $table->timestamp('registered_at')->nullable();
             $table->boolean('availability')->default(true);
             $table->text('skills')->nullable();
@@ -25,7 +27,6 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */

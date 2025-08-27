@@ -16,7 +16,7 @@ class VolunteerSeeder extends Seeder
         // Existing seeded data - keeping original
         VolunteerRegistration::create([
             'user_id' => 1, // general1
-            'disaster_id' => 1,
+            'campaign_id' => 1,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now(),
@@ -27,7 +27,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 3, // general2
-            'disaster_id' => 2,
+            'campaign_id' => 2,
             'ngo_id' => 2,
             'status' => 'approved',
             'registered_at' => now(),
@@ -41,7 +41,7 @@ class VolunteerSeeder extends Seeder
         // For Disaster 1 (Cyclone Remal in Chittagong) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 9, // volunteer1
-            'disaster_id' => 1,
+            'campaign_id' => 1,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(2),
@@ -52,7 +52,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 10, // volunteer2
-            'disaster_id' => 1,
+            'campaign_id' => 1,
             'ngo_id' => 1,
             'status' => 'rejected',
             'registered_at' => now()->subDays(3),
@@ -63,7 +63,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 11, // volunteer3
-            'disaster_id' => 1,
+            'campaign_id' => 1,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(1),
@@ -75,7 +75,7 @@ class VolunteerSeeder extends Seeder
         // For Disaster 2 (Flood in Sylhet) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 12, // volunteer4
-            'disaster_id' => 2,
+            'campaign_id' => 2,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(1),
@@ -86,7 +86,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 13, // volunteer5
-            'disaster_id' => 2,
+            'campaign_id' => 2,
             'ngo_id' => 1,
             'status' => 'pending',
             'registered_at' => now()->subHours(12),
@@ -97,7 +97,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 14, // volunteer6
-            'disaster_id' => 2,
+            'campaign_id' => 2,
             'ngo_id' => 1,
             'status' => 'completed',
             'registered_at' => now()->subDays(5),
@@ -108,7 +108,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 1, // general1 (cross-registering for multiple disasters)
-            'disaster_id' => 2,
+            'campaign_id' => 2,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(2),
@@ -120,7 +120,7 @@ class VolunteerSeeder extends Seeder
         // For Disaster 3 (Earthquake in Dhaka) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 15, // volunteer7
-            'disaster_id' => 3,
+            'campaign_id' => 3,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(1),
@@ -131,7 +131,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 16, // volunteer8
-            'disaster_id' => 3,
+            'campaign_id' => 3,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subHours(18),
@@ -142,7 +142,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 9, // volunteer1 (cross-registering)
-            'disaster_id' => 3,
+            'campaign_id' => 3,
             'ngo_id' => 1,
             'status' => 'rejected',
             'registered_at' => now()->subDays(2),
@@ -153,7 +153,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 3, // general2 (cross-registering from NGO 2 to NGO 1)
-            'disaster_id' => 3,
+            'campaign_id' => 3,
             'ngo_id' => 1,
             'status' => 'completed',
             'registered_at' => now()->subDays(4),
@@ -164,7 +164,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 11, // volunteer3 (cross-registering)
-            'disaster_id' => 3,
+            'campaign_id' => 3,
             'ngo_id' => 1,
             'status' => 'pending',
             'registered_at' => now()->subHours(6),

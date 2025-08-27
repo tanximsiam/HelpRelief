@@ -12,11 +12,25 @@ class AidSupport extends Model
     protected $fillable = [
         'user_id', 
         'disaster_id', 
-        'ngo_id',
+        'campaign_id',
         'aid_type', 
         'quantity', 
         'description',
         'contact', 
         'status'
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function disaster()
+    {
+        return $this->belongsTo(Disaster::class);
+    }
+
+    public function campaign()
+    {
+        return $this->belongsTo(DisasterCampaignAssignment::class, 'campaign_id');
+    }
 }
