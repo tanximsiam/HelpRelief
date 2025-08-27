@@ -59,14 +59,6 @@
             @mousemove="handleMouseMove"
             @mouseout="clearHover"
           />
-          <!-- Trigger button to show Aid Requests overlay (appears after selecting a state in aid mode) -->
-          <button
-            v-if="mode==='aid' && selectedDensity && !showAidOverlay"
-            @click="showAidOverlay = true"
-            class="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-3 py-1.5 text-sm font-medium rounded shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            See Aid Requests
-          </button>
           <!-- Aid Requests inline overlay over heatmap -->
           <AidRequestsOverlay
             :show="showAidOverlay && mode==='aid'"
@@ -146,6 +138,13 @@
             <div class="text-center"><div class="text-lg font-semibold text-orange-600">{{ selectedDensity.breakdown.high }}</div><div class="text-xs text-gray-500">High</div></div>
             <div class="text-center"><div class="text-lg font-semibold text-red-600">{{ selectedDensity.breakdown.critical }}</div><div class="text-xs text-gray-500">Critical</div></div>
           </div>
+          <button
+            v-if="!showAidOverlay"
+            @click="openAidDetails"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            View Aid Request Details
+          </button>
         </div>
 
   <!-- Removed static hover info panel; replaced with floating tooltip -->
@@ -359,6 +358,10 @@ const viewStateDetails = () => {
       params: { stateName: selectedDistrict.value.name }
     })
   }
+}
+
+const openAidDetails = () => {
+  showAidOverlay.value = true
 }
 
 // Lifecycle
