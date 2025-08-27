@@ -5,8 +5,8 @@ import RadioGroup from '@/components/RadioGroup.vue'
 import { api } from '@/lib/api'
 
 // ---- Types ----
-interface Disaster { id: number; name: string; location: string }
-interface FormState { disaster_id: string; aid_type: string | null; urgency: string | null; description: string }
+interface Campaign { id: number; name: string; disaster_id: number; disaster_location: string; ngo_id: number; ngo_name: string }
+interface FormState { campaign_id: string; aid_type: string | null; urgency: string | null; description: string }
 
 // ---- Static option sets (must match backend enums) ----
 const aidTypeOptions = [
@@ -22,9 +22,10 @@ const urgencyOptions = [
 ]
 
 // ---- Reactive state ----
-const form = reactive<FormState>({ disaster_id: '', aid_type: null, urgency: null, description: '' })
-const disasters = ref<Disaster[]>([])
-const loadingDisasters = ref(false)
+const form = reactive<FormState>({ campaign_id: '', aid_type: null, urgency: null, description: '' })
+const campaigns = ref<Campaign[]>([])
+const loadingCampaigns = ref(false)
+const volunteerOnlyError = ref<string | null>(null)
 const submitting = ref(false)
 const errors = reactive<Record<string,string>>({})
 const successMessage = ref<string | null>(null)
@@ -32,26 +33,41 @@ const successMessage = ref<string | null>(null)
 const emit = defineEmits<{ (e: 'submit', payload: any): void }>()
 
 // ---- Data loading ----
-async function loadActiveDisasters() {
-  loadingDisasters.value = true
+async function loadVolunteerCampaigns() {
+  loadingCampaigns.value = true
   try {
-    const { data } = await api.get('/disasters/active')
-    disasters.value = data
-    if (!form.disaster_id && disasters.value.length) form.disaster_id = String(disasters.value[0].id)
-  } catch {
-    errors.root = 'Failed to load active disasters'
+    const { data } = await api.get('/campaigns/volunteer')
+    // Deduplicate by id in case backend returns accidental duplicates
+    // First collapse by composite (disaster_id + ngo_id) to avoid legacy duplicates
+    const composite = new Map<string, Campaign>()
+    for (const c of data as Campaign[]) {
+      const key = `${c.disaster_id}:${c.ngo_id}`
+      if (!composite.has(key)) composite.set(key, c)
+    }
+    campaigns.value = Array.from(composite.values())
+    if (!campaigns.value.length) {
+      volunteerOnlyError.value = 'No active campaigns found for your volunteer NGOs.'
+    } else if (!form.campaign_id) {
+      form.campaign_id = String(campaigns.value[0].id)
+    }
+  } catch (e: any) {
+    if (e.response?.status === 403) {
+      volunteerOnlyError.value = 'Only active volunteers can submit aid requests.'
+    } else {
+      errors.root = 'Failed to load campaigns'
+    }
   } finally {
-    loadingDisasters.value = false
+    loadingCampaigns.value = false
   }
 }
 
-onMounted(loadActiveDisasters)
+onMounted(loadVolunteerCampaigns)
 
 // ---- Validation ----
 function validate(): boolean {
   successMessage.value = null
   for (const k of Object.keys(errors)) delete errors[k]
-  if (!form.disaster_id) errors.disaster_id = 'Select a disaster'
+  if (!form.campaign_id) errors.campaign_id = 'Select a campaign'
   if (!form.aid_type) errors.aid_type = 'Select an aid type'
   if (!form.urgency) errors.urgency = 'Select urgency'
   if (!form.description) errors.description = 'Provide description'
@@ -63,7 +79,13 @@ async function submit() {
   if (!validate()) return
   submitting.value = true
   try {
-    const payload = { ...form, disaster_id: Number(form.disaster_id) }
+    const selected = campaigns.value.find(c => String(c.id) === form.campaign_id)
+    if (!selected) {
+      errors.campaign_id = 'Select a valid campaign'
+      submitting.value = false
+      return
+    }
+    const payload = { disaster_id: selected.disaster_id, aid_type: form.aid_type, urgency: form.urgency, description: form.description }
     const { data } = await api.post('/submit-aid-requests', payload)
     emit('submit', data.aid_request)
     successMessage.value = 'Aid request submitted successfully.'
@@ -91,18 +113,19 @@ async function submit() {
     <div v-if="successMessage" class="rounded-md bg-green-50 p-3 text-sm text-green-700">{{ successMessage }}</div>
 
     <div class="grid gap-8 md:grid-cols-2">
-      <!-- Disaster selection -->
+      <!-- Campaign selection -->
       <div class="md:col-span-2">
-        <label for="disaster" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Active Disaster</label>
+  <label for="campaign" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Active Campaign</label>
         <div class="relative">
-          <select id="disaster" v-model="form.disaster_id" :disabled="loadingDisasters || !disasters.length" class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 pr-10 text-base font-medium text-slate-800 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 disabled:cursor-not-allowed disabled:bg-slate-100">
-            <option value="" disabled>Select active disaster</option>
-            <option v-for="d in disasters" :key="d.id" :value="String(d.id)">{{ d.name }} – {{ d.location }}</option>
+          <select id="campaign" v-model="form.campaign_id" :disabled="loadingCampaigns || !campaigns.length || volunteerOnlyError" class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 pr-10 text-base font-medium text-slate-800 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 disabled:cursor-not-allowed disabled:bg-slate-100">
+            <option value="" disabled>Select active campaign</option>
+            <option v-for="c in campaigns" :key="c.id" :value="String(c.id)">{{ c.name }} – {{ c.disaster_location }} ({{ c.ngo_name }})</option>
           </select>
-          <span v-if="loadingDisasters" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400">⏳</span>
+          <span v-if="loadingCampaigns" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400">⏳</span>
         </div>
-        <p v-if="!loadingDisasters && !disasters.length" class="mt-1 text-sm text-slate-500">No active disasters available.</p>
-        <p v-if="errors.disaster_id" class="mt-1 text-sm text-red-600">{{ errors.disaster_id }}</p>
+        <p v-if="volunteerOnlyError" class="mt-1 text-sm text-red-600">{{ volunteerOnlyError }}</p>
+        <p v-else-if="!loadingCampaigns && !campaigns.length" class="mt-1 text-sm text-slate-500">No active campaigns available.</p>
+        <p v-if="errors.campaign_id" class="mt-1 text-sm text-red-600">{{ errors.campaign_id }}</p>
       </div>
 
       <!-- Aid Type -->

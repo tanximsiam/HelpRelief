@@ -278,4 +278,40 @@ class CampaignController extends Controller
             return response()->json(['error' => 'Failed to fetch campaign volunteers', 'message' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * List active campaigns for NGOs where the authenticated user is an approved/active volunteer.
+     * Only accessible to volunteers; returns 403 if the user has no qualifying volunteer registrations.
+     */
+    public function volunteerCampaigns(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            // Fetch NGO IDs where user is an approved/active volunteer
+            $ngoIds = VolunteerRegistration::where('user_id', $user->id)
+                ->whereIn('status', ['approved', 'active'])
+                ->pluck('ngo_id')
+                ->unique()
+                ->values();
+
+            if ($ngoIds->isEmpty()) {
+                return response()->json(['error' => 'Not authorized. User is not an active volunteer.'], 403);
+            }
+
+            $campaigns = DisasterCampaignAssignment::with(['disaster', 'ngo'])
+                ->whereIn('ngo_id', $ngoIds)
+                ->where('status', 'active')
+                ->orderBy('created_at')
+                ->get()
+                // Guard against duplicate assignments (legacy data) for same disaster & NGO
+                ->unique(function ($a) { return $a->disaster_id . ':' . $a->ngo_id; })
+                ->values()
+                ->map(fn ($assignment) => $this->formatCampaignData($assignment));
+
+            return response()->json($campaigns);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch volunteer campaigns'], 500);
+        }
+    }
 }
