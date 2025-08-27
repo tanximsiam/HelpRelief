@@ -137,6 +137,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
 
 
     // NGO Profile Update
+    Route::get('/ngo', [NgoController::class, 'index']);
     Route::get('/ngo/{ngoId}', [NgoController::class, 'show']);
     Route::patch('/ngo/{ngoId}', [NgoController::class, 'updateNgo']);
 
