@@ -10,7 +10,7 @@ class AidRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-    'campaign_id',
+        'campaign_id',
         'requester_id',
         'location',
         'aid_type',

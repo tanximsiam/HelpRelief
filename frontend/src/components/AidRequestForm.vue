@@ -89,7 +89,7 @@ async function submit() {
       submitting.value = false
       return
     }
-    const payload = { disaster_id: selected.disaster_id, aid_type: form.aid_type, urgency: form.urgency, description: form.description }
+    const payload = { campaign_id: selected.id, aid_type: form.aid_type, urgency: form.urgency, description: form.description }
     const { data } = await api.post('/submit-aid-requests', payload)
     emit('submit', data.aid_request)
     successMessage.value = 'Aid request submitted successfully.'
