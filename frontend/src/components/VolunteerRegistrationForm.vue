@@ -88,6 +88,8 @@ async function submit() {
     if (e.response?.status === 422) {
       const srv = e.response.data.errors || {}
       for (const k in srv) errors[k] = srv[k][0]
+    } else if (e.response?.status === 403 && e.response?.data?.error) {
+      errors.root = e.response.data.error
     } else {
       errors.root = e.response?.data?.message || 'Submission failed.'
     }
