@@ -13,7 +13,9 @@ class VolunteerSeeder extends Seeder
      */
     public function run(): void
     {
-        // Existing seeded data - keeping original
+        // Each volunteer can only be registered to ONE campaign
+        
+        // For Campaign 1 (Cyclone Remal - High Priority) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 1, // general1
             'campaign_id' => 1,
@@ -25,20 +27,6 @@ class VolunteerSeeder extends Seeder
             'notes' => 'Ready to assist with disaster relief.',
         ]);
 
-        VolunteerRegistration::create([
-            'user_id' => 3, // general2
-            'campaign_id' => 2,
-            'ngo_id' => 2,
-            'status' => 'approved',
-            'registered_at' => now(),
-            'availability' => true,
-            'skills' => 'Medical treatment, counseling',
-            'notes' => 'Experienced in handling disaster situations.',
-        ]);
-
-        // Additional volunteers for NGO 1 - using only general users
-
-        // For Disaster 1 (Cyclone Remal in Chittagong) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 9, // volunteer1
             'campaign_id' => 1,
@@ -61,9 +49,10 @@ class VolunteerSeeder extends Seeder
             'notes' => 'Not available during required timeframe.',
         ]);
 
+        // For Campaign 2 (Cyclone Remal - Medium Priority) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 11, // volunteer3
-            'campaign_id' => 1,
+            'campaign_id' => 2,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(1),
@@ -72,10 +61,10 @@ class VolunteerSeeder extends Seeder
             'notes' => 'Experienced in disaster management.',
         ]);
 
-        // For Disaster 2 (Flood in Sylhet) - NGO 1
+        // For Campaign 4 (Flood in Sylhet - High Priority) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 12, // volunteer4
-            'campaign_id' => 2,
+            'campaign_id' => 4,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(1),
@@ -86,7 +75,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 13, // volunteer5
-            'campaign_id' => 2,
+            'campaign_id' => 4,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subHours(12),
@@ -95,9 +84,10 @@ class VolunteerSeeder extends Seeder
             'notes' => 'Waiting for approval to join flood relief.',
         ]);
 
+        // For Campaign 5 (Flood in Sylhet - Medium Priority) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 14, // volunteer6
-            'campaign_id' => 2,
+            'campaign_id' => 5,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(5),
@@ -106,21 +96,22 @@ class VolunteerSeeder extends Seeder
             'notes' => 'Successfully completed flood relief assignment.',
         ]);
 
+        // For Campaign 6 (Flood in Sylhet) - NGO 2
         VolunteerRegistration::create([
-            'user_id' => 1, // general1 (cross-registering for multiple disasters)
-            'campaign_id' => 2,
-            'ngo_id' => 1,
+            'user_id' => 3, // general2
+            'campaign_id' => 6,
+            'ngo_id' => 2,
             'status' => 'approved',
-            'registered_at' => now()->subDays(2),
+            'registered_at' => now(),
             'availability' => true,
-            'skills' => 'Leadership, coordination',
-            'notes' => 'Experienced volunteer helping with flood relief.',
+            'skills' => 'Medical treatment, counseling',
+            'notes' => 'Experienced in handling disaster situations.',
         ]);
 
-        // For Disaster 3 (Earthquake in Dhaka) - NGO 1
+        // For Campaign 7 (Earthquake in Dhaka - High Priority) - NGO 1
         VolunteerRegistration::create([
             'user_id' => 15, // volunteer7
-            'campaign_id' => 3,
+            'campaign_id' => 7,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subDays(1),
@@ -131,7 +122,7 @@ class VolunteerSeeder extends Seeder
 
         VolunteerRegistration::create([
             'user_id' => 16, // volunteer8
-            'campaign_id' => 3,
+            'campaign_id' => 7,
             'ngo_id' => 1,
             'status' => 'approved',
             'registered_at' => now()->subHours(18),
@@ -140,37 +131,10 @@ class VolunteerSeeder extends Seeder
             'notes' => 'Available for post-earthquake trauma support.',
         ]);
 
-        VolunteerRegistration::create([
-            'user_id' => 9, // volunteer1 (cross-registering)
-            'campaign_id' => 3,
-            'ngo_id' => 1,
-            'status' => 'approved',
-            'registered_at' => now()->subDays(2),
-            'availability' => false,
-            'skills' => 'Basic assistance',
-            'notes' => 'Already committed to cyclone relief, cannot take on earthquake response.',
-        ]);
+        // For Campaign 8 (Earthquake in Dhaka - Medium Priority) - NGO 1
+        // No volunteers assigned yet - available for new registrations
 
-        VolunteerRegistration::create([
-            'user_id' => 3, // general2 (cross-registering from NGO 2 to NGO 1)
-            'campaign_id' => 3,
-            'ngo_id' => 1,
-            'status' => 'approved',
-            'registered_at' => now()->subDays(4),
-            'availability' => false,
-            'skills' => 'Emergency coordination, resource management',
-            'notes' => 'Successfully completed initial earthquake response phase.',
-        ]);
-
-        VolunteerRegistration::create([
-            'user_id' => 11, // volunteer3 (cross-registering)
-            'campaign_id' => 3,
-            'ngo_id' => 1,
-            'status' => 'approved',
-            'registered_at' => now()->subHours(6),
-            'availability' => true,
-            'skills' => 'Emergency response, medical assistance',
-            'notes' => 'Requesting to help with earthquake relief as well.',
-        ]);
+        // For Campaign 9 (Earthquake in Dhaka - Low Priority) - NGO 1
+        // No volunteers assigned yet - available for new registrations
     }
 }

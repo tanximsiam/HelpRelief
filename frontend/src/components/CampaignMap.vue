@@ -104,56 +104,45 @@
 
           <!-- Legend -->
           <div class="mb-4">
-            <template v-if="mode==='campaigns'">
-              <h4 class="text-sm font-semibold mb-2">Campaign Intensity</h4>
-              <div class="flex items-center space-x-4">
-                <div class="flex items-center"><div class="w-4 h-4 bg-gray-300 mr-2"></div><span class="text-sm">No campaigns</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 bg-blue-300 mr-2"></div><span class="text-sm">Low (1-2)</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 bg-blue-500 mr-2"></div><span class="text-sm">Medium (3-5)</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 bg-blue-800 mr-2"></div><span class="text-sm">High (6+)</span></div>
-              </div>
-            </template>
-            <template v-else-if="mode==='aid'">
-              <h4 class="text-sm font-semibold mb-2">Aid Request Density (Total Requests)</h4>
-              <div class="flex items-center space-x-4">
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-0 mr-2"></div><span class="text-sm">None</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-1 mr-2"></div><span class="text-sm">Low</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-2 mr-2"></div><span class="text-sm">Medium</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-3 mr-2"></div><span class="text-sm">High</span></div>
-              </div>
-            </template>
-            <template v-else>
-              <h4 class="text-sm font-semibold mb-2">Aid Need Density (Aid Needed)</h4>
-              <div class="flex items-center space-x-4">
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-0 mr-2"></div><span class="text-sm">None</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-1 mr-2"></div><span class="text-sm">Low</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-2 mr-2"></div><span class="text-sm">Medium</span></div>
-                <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-3 mr-2"></div><span class="text-sm">High</span></div>
-              </div>
-            </template>
+            <h4 class="text-sm font-semibold mb-2" v-if="mode==='campaigns'">Campaign Intensity</h4>
+            <h4 class="text-sm font-semibold mb-2" v-else>Aid Request Density (Total Requests)</h4>
+            <div v-if="mode==='campaigns'" class="flex items-center space-x-4">
+              <div class="flex items-center"><div class="w-4 h-4 bg-gray-300 mr-2"></div><span class="text-sm">No campaigns</span></div>
+              <div class="flex items-center"><div class="w-4 h-4 bg-blue-300 mr-2"></div><span class="text-sm">Low (1-2)</span></div>
+              <div class="flex items-center"><div class="w-4 h-4 bg-blue-500 mr-2"></div><span class="text-sm">Medium (3-4)</span></div>
+              <div class="flex items-center"><div class="w-4 h-4 bg-blue-800 mr-2"></div><span class="text-sm">High (5+)</span></div>
+            </div>
+            <div v-else class="flex items-center space-x-4">
+              <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-0 mr-2"></div><span class="text-sm">None</span></div>
+              <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-1 mr-2"></div><span class="text-sm">Low</span></div>
+              <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-2 mr-2"></div><span class="text-sm">Medium</span></div>
+              <div class="flex items-center"><div class="w-4 h-4 heatmap-intensity-3 mr-2"></div><span class="text-sm">High</span></div>
+            </div>
           </div>
 
-          <div v-if="selectedDistrict && mode==='campaigns'" class="border-t pt-4">
-            <h3 class="text-lg font-semibold mb-2">{{ selectedDistrict.name }} - Campaign Details</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div v-if="mode==='campaigns'" class="border-t pt-4">
+            <h3 class="text-lg font-semibold mb-2">NGO Total Overview</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4" :class="{ 'md:grid-cols-3': !selectedDistrict }">
               <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">{{ selectedDistrict.campaign_count }}</div>
-                <div class="text-sm text-gray-600">Active Campaigns</div>
+                <div class="text-2xl font-bold text-blue-600">{{ totalCampaigns }}</div>
+                <div class="text-sm text-gray-600">Total Active Campaigns</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">{{ Math.floor(selectedDistrict.campaign_count * 15) }}</div>
-                <div class="text-sm text-gray-600">Volunteers</div>
+                <div class="text-2xl font-bold text-green-600">{{ totalVolunteers }}</div>
+                <div class="text-sm text-gray-600">Total Active Volunteers</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-orange-600">{{ Math.floor(selectedDistrict.campaign_count * 100) }}</div>
-                <div class="text-sm text-gray-600">Aid Distributed</div>
+                <div class="text-2xl font-bold text-orange-600">{{ totalAidDistributed }}</div>
+                <div class="text-sm text-gray-600">Total Aid Distributed</div>
               </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">{{ Math.floor(selectedDistrict.campaign_count * 500) }}</div>
-                <div class="text-sm text-gray-600">Beneficiaries</div>
+              <!-- State-specific campaign count as 4th column -->
+              <div v-if="selectedDistrict" class="text-center">
+                <div class="text-2xl font-bold text-purple-600">{{ selectedDistrict.campaign_count }}</div>
+                <div class="text-sm text-gray-600">{{ selectedDistrict.name }} Campaigns</div>
               </div>
             </div>
             <button
+              v-if="selectedDistrict"
               @click="viewStateDetails"
               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
             >
@@ -390,13 +379,19 @@
 import { SvgMap } from "vue3-svg-map"
 import bdMap from "@/assets/maps/bdMap.json"
 import "vue3-svg-map/style.css"
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 import AidRequestsOverlay from '@/components/AidRequestsOverlay.vue'
 
 // Interfaces
-interface DistrictData { name: string; campaign_count: number; intensity: number }
+interface DistrictData {
+  name: string;
+  campaign_count: number;
+  intensity: number;
+  active_volunteers?: number;
+  aid_distributed?: number;
+}
 interface DensityData { name: string; request_count: number; breakdown: Record<string, number>; intensity: number }
 
 interface CampaignData {
@@ -440,6 +435,18 @@ const aidNeedError = ref<string | null>(null)
 const selectedAidNeed = ref<AidNeedData | null>(null)
 const aidNeedData = ref<AidNeedData[]>([])
 
+// Computed properties for total counts across all states
+const totalCampaigns = computed(() => {
+  return districtData.value.reduce((sum, district) => sum + district.campaign_count, 0)
+})
+
+const totalVolunteers = computed(() => {
+  return districtData.value.reduce((sum, district) => sum + (district.active_volunteers || 0), 0)
+})
+
+const totalAidDistributed = computed(() => {
+  return districtData.value.reduce((sum, district) => sum + (district.aid_distributed || 0), 0)
+})
 // -------- helpers (moved from template) ----------
 const formatTaskType = (s: string) =>
   s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -519,9 +526,9 @@ const getLocationClass = (location: { id: string; name: string }) => {
     const district = getDistrictByName(districtName)
     const campaignCount = district?.campaign_count || 0
     let intensityClass = 'campaign-intensity-none'
-    if (campaignCount >= 6) intensityClass = 'campaign-intensity-high'
-    else if (campaignCount >= 3) intensityClass = 'campaign-intensity-medium'
-    else if (campaignCount >= 1) intensityClass = 'campaign-intensity-low'
+    if (campaignCount >= 5) intensityClass = 'campaign-intensity-high'  // 5+
+    else if (campaignCount >= 3) intensityClass = 'campaign-intensity-medium'  // 3-4
+    else if (campaignCount >= 1) intensityClass = 'campaign-intensity-low'  // 1-2
     return `svg-map__location ${intensityClass}`
   } else if (mode.value === 'aid') {
     const density = getDensityByName(districtName)
@@ -571,7 +578,9 @@ const handleLocationClick = (event: Event) => {
   if (!districtName) return
   if (mode.value === 'campaigns') {
     const district = getDistrictByName(districtName)
-    if (district) selectedDistrict.value = district
+    if (district) {
+      selectedDistrict.value = district
+    }
     showAidOverlay.value = false
   } else if (mode.value === 'aid') {
     const density = getDensityByName(districtName)
