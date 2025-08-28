@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 
+
 use Illuminate\Http\Request;
 use App\Models\Disaster;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+
 
 class DisasterController extends Controller
 {
@@ -15,11 +17,10 @@ class DisasterController extends Controller
     {
         $activeDisasters = Disaster::where('status', 'active')->get();
         return response()->json($activeDisasters);
-
     }
 
-
     public function active(): JsonResponse
+
     {
         $disasters = Disaster::where('status', 'active')
             ->orderBy('start_date', 'desc')

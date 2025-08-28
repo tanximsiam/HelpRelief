@@ -19,7 +19,19 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        // Base validation
+        // Require current password for any update
+        $request->validate([
+            'current_password' => 'required|string',
+        ]);
+
+        // Verify current password
+        if (!Hash::check($request->input('current_password'), $user->password)) {
+            return response()->json([
+                'error' => 'Current password is incorrect.'
+            ], 403);
+        }
+
+        // Base validation for other fields
         $rules = [
             'name' => 'string|sometimes',
             'phone' => 'string|sometimes',
@@ -28,10 +40,13 @@ class UserController extends Controller
 
         // If general user → allow email update
         if ($user->role === 'general') {
-            $rules['email'] = 'email|unique:users,email,' . $user->id;
+            $rules['email'] = 'email|unique:users,email,' . $user->id . '|sometimes';
         }
 
         $data = $request->validate($rules);
+
+        // Remove current_password from data to update
+        unset($data['current_password']);
 
         // Handle password separately
         if (isset($data['password'])) {
@@ -68,6 +83,7 @@ class UserController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'role' => $user->role,
+                'volunteer' => $user->volunteer
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal server error'], 500);

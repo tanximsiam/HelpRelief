@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { api } from "@/lib/api";
+import TertiaryButton from './TertiaryButton.vue';
 
 // Props
 interface User {
@@ -20,9 +21,16 @@ interface Ngo {
   address?: string;
   type?: string;
   registration_number?: string;
+  registration_no?: string;
   description?: string;
   website?: string;
   established_date?: string;
+  established_year?: number;
+  based_in?: string;
+  director_name?: string;
+  director_phone?: string;
+  num_employees?: number;
+  logo_url?: string;
 }
 
 const props = defineProps<{
@@ -44,6 +52,7 @@ interface UserFormData {
   phone: string;
   password: string;
   password_confirmation: string;
+  current_password: string;
 }
 
 // NGO form data interface (from NgoProfileUpdate.vue)
@@ -52,14 +61,10 @@ interface NgoFormData {
   description: string;
   phone: string;
   based_in: string;
-  cause_focus: string;
   website: string;
-  registration_no: string;
-  established_year: string;
   director_name: string;
   director_phone: string;
-  num_employees: string;
-  logo_url: string;
+  current_password: string;
 }
 
 // State
@@ -69,6 +74,7 @@ const userFormData = ref<UserFormData>({
   phone: '',
   password: '',
   password_confirmation: '',
+  current_password: '',
 });
 
 const ngoFormData = ref<NgoFormData>({
@@ -76,14 +82,10 @@ const ngoFormData = ref<NgoFormData>({
   description: '',
   phone: '',
   based_in: '',
-  cause_focus: '',
   website: '',
-  registration_no: '',
-  established_year: '',
   director_name: '',
   director_phone: '',
-  num_employees: '',
-  logo_url: '',
+  current_password: '',
 });
 
 const originalUserData = ref<UserFormData>({
@@ -92,6 +94,7 @@ const originalUserData = ref<UserFormData>({
   phone: '',
   password: '',
   password_confirmation: '',
+  current_password: '',
 });
 
 const originalNgoData = ref<NgoFormData>({
@@ -99,14 +102,10 @@ const originalNgoData = ref<NgoFormData>({
   description: '',
   phone: '',
   based_in: '',
-  cause_focus: '',
   website: '',
-  registration_no: '',
-  established_year: '',
   director_name: '',
   director_phone: '',
-  num_employees: '',
-  logo_url: '',
+  current_password: '',
 });
 
 const userRole = ref<string>('');
@@ -114,9 +113,44 @@ const successMessage = ref<string>('');
 const errorMessage = ref<string>('');
 const validationErrors = ref<Record<string, string[]>>({});
 
+// Computed property to check if update button should be enabled
+const isUpdateEnabled = computed(() => {
+  if (props.isNgoEdit) {
+    return ngoFormData.value.current_password.trim() !== '';
+  } else {
+    return userFormData.value.current_password.trim() !== '';
+  }
+});
+
+// Form field component data
+const userFields = computed(() => [
+  { id: 'name', label: 'Name', type: 'text', model: 'name', placeholder: originalUserData.value.name || 'Enter your name' },
+  { id: 'phone', label: 'Phone', type: 'text', model: 'phone', placeholder: originalUserData.value.phone || 'Enter your phone number' },
+  { id: 'password', label: 'Password (leave blank if no change)', type: 'password', model: 'password', placeholder: '' },
+  { id: 'password_confirmation', label: 'Confirm Password', type: 'password', model: 'password_confirmation', placeholder: '' }
+]);
+
+const ngoFieldsFullWidth = computed(() => [
+  { id: 'ngo_name', label: 'Name', type: 'text', model: 'name', placeholder: originalNgoData.value.name || 'Enter organization name' },
+  { id: 'description', label: 'Description', type: 'textarea', model: 'description', placeholder: originalNgoData.value.description || 'Enter organization description' }
+]);
+
+const ngoFieldsGrid = computed(() => [
+  { id: 'ngo_phone', label: 'Phone', type: 'text', model: 'phone', placeholder: originalNgoData.value.phone || 'Enter phone number' },
+  { id: 'based_in', label: 'Based In (Location)', type: 'text', model: 'based_in', placeholder: originalNgoData.value.based_in || 'Enter location' },
+  { id: 'website', label: 'Website', type: 'url', model: 'website', placeholder: originalNgoData.value.website || 'Enter website URL' },
+  { id: 'director_name', label: 'Director Name', type: 'text', model: 'director_name', placeholder: originalNgoData.value.director_name || 'Enter director name' },
+  { id: 'director_phone', label: 'Director Phone', type: 'text', model: 'director_phone', placeholder: originalNgoData.value.director_phone || 'Enter director phone' }
+]);
+
 // Initialize data on mount and when props change
 const initializeData = async () => {
   try {
+    // Reset messages
+    successMessage.value = '';
+    errorMessage.value = '';
+    validationErrors.value = {};
+
     if (props.isNgoEdit && props.ngo?.id) {
       // Fetch NGO data
       const response = await api.get(`/ngo/${props.ngo.id}`);
@@ -127,16 +161,13 @@ const initializeData = async () => {
         description: ngoData.description || '',
         phone: ngoData.phone || '',
         based_in: ngoData.based_in || '',
-        cause_focus: ngoData.cause_focus || '',
         website: ngoData.website || '',
-        registration_no: ngoData.registration_no || '',
-        established_year: ngoData.established_year || '',
         director_name: ngoData.director_name || '',
         director_phone: ngoData.director_phone || '',
-        num_employees: ngoData.num_employees || '',
-        logo_url: ngoData.logo_url || '',
+        current_password: '',
       };
       originalNgoData.value = { ...ngoFormData.value };
+      console.log('NGO form data initialized:', ngoFormData.value);
     } else {
       // Fetch user data
       const response = await api.get('/user');
@@ -148,17 +179,16 @@ const initializeData = async () => {
         phone: userData.phone || '',
         password: '',
         password_confirmation: '',
+        current_password: '',
       };
       originalUserData.value = { ...userFormData.value };
       userRole.value = userData.role || '';
+      console.log('User form data initialized:', userFormData.value);
     }
   } catch (error) {
+    console.error('Error loading profile data:', error);
     errorMessage.value = 'Failed to load profile data.';
   }
-
-  // Reset messages
-  successMessage.value = '';
-  validationErrors.value = {};
 };
 
 onMounted(initializeData);
@@ -170,16 +200,21 @@ const handleUserSubmit = async () => {
   validationErrors.value = {};
   successMessage.value = '';
 
-  // Prepare data to send: only include fields that differ from original or are non-empty
-  const updatedData: Partial<UserFormData> = {};
+  // Require current password for any update
+  if (!userFormData.value.current_password) {
+    errorMessage.value = 'Current password is required to update your profile.';
+    return;
+  }
 
-  if (userFormData.value.name && userFormData.value.name !== originalUserData.value.name) {
+  // Prepare data to send: include current password and changed fields
+  const updatedData: Partial<UserFormData> = {
+    current_password: userFormData.value.current_password
+  };
+
+  if (userFormData.value.name !== originalUserData.value.name) {
     updatedData.name = userFormData.value.name;
   }
-  if (userRole.value === 'general' && userFormData.value.email && userFormData.value.email !== originalUserData.value.email) {
-    updatedData.email = userFormData.value.email;
-  }
-  if (userFormData.value.phone && userFormData.value.phone !== originalUserData.value.phone) {
+  if (userFormData.value.phone !== originalUserData.value.phone) {
     updatedData.phone = userFormData.value.phone;
   }
   if (userFormData.value.password) {
@@ -189,8 +224,11 @@ const handleUserSubmit = async () => {
     }
   }
 
-  if (Object.keys(updatedData).length === 0) {
-    successMessage.value = 'No changes provided.';
+  console.log('Submitting user data:', updatedData);
+
+  // Check if there are any changes besides current_password
+  if (Object.keys(updatedData).length === 1) {
+    successMessage.value = 'No changes detected to update.';
     return;
   }
 
@@ -199,20 +237,34 @@ const handleUserSubmit = async () => {
     successMessage.value = response.data.message || 'Profile updated successfully!';
 
     // Update original data with new values
-    originalUserData.value = { ...originalUserData.value, ...updatedData };
+    if (updatedData.name) originalUserData.value.name = updatedData.name;
+    if (updatedData.phone) originalUserData.value.phone = updatedData.phone;
+
+    // Clear password fields
     userFormData.value.password = '';
     userFormData.value.password_confirmation = '';
+    userFormData.value.current_password = '';
 
     // Emit profile updated event
     emit('profileUpdated');
 
+    // Auto-close modal after 2 seconds on success
+    setTimeout(() => {
+      handleClose();
+    }, 2000);
+
   } catch (error: any) {
+    console.error('User profile update error:', error);
+    console.error('Error response:', error.response?.data);
     if (error.response?.status === 422) {
       validationErrors.value = error.response.data.errors || {};
+      errorMessage.value = 'Please check the form for validation errors.';
+    } else if (error.response?.status === 403) {
+      errorMessage.value = error.response.data.error || 'Current password is incorrect.';
     } else if (error.response?.data?.message) {
       successMessage.value = error.response.data.message;
     } else {
-      errorMessage.value = 'Failed to update profile.';
+      errorMessage.value = `Failed to update profile. ${error.response?.data?.error || error.message || 'Unknown error'}`;
     }
   }
 };
@@ -223,48 +275,45 @@ const handleNgoSubmit = async () => {
   validationErrors.value = {};
   successMessage.value = '';
 
-  // Prepare data to send: only include fields that differ from original or are non-empty
-  const updatedData: Partial<NgoFormData> = {};
+  // Require current password for any update
+  if (!ngoFormData.value.current_password) {
+    errorMessage.value = 'Current password is required to update the NGO profile.';
+    return;
+  }
 
-  if (ngoFormData.value.name && ngoFormData.value.name !== originalNgoData.value.name) {
+  // Prepare data to send: include current password and changed fields
+  const updatedData: Partial<NgoFormData> = {
+    current_password: ngoFormData.value.current_password
+  };
+
+  if (ngoFormData.value.name !== originalNgoData.value.name) {
     updatedData.name = ngoFormData.value.name;
   }
-  if (ngoFormData.value.description && ngoFormData.value.description !== originalNgoData.value.description) {
+  if (ngoFormData.value.description !== originalNgoData.value.description) {
     updatedData.description = ngoFormData.value.description;
   }
-  if (ngoFormData.value.phone && ngoFormData.value.phone !== originalNgoData.value.phone) {
+  if (ngoFormData.value.phone !== originalNgoData.value.phone) {
     updatedData.phone = ngoFormData.value.phone;
   }
-  if (ngoFormData.value.based_in && ngoFormData.value.based_in !== originalNgoData.value.based_in) {
+  if (ngoFormData.value.based_in !== originalNgoData.value.based_in) {
     updatedData.based_in = ngoFormData.value.based_in;
   }
-  if (ngoFormData.value.cause_focus && ngoFormData.value.cause_focus !== originalNgoData.value.cause_focus) {
-    updatedData.cause_focus = ngoFormData.value.cause_focus;
-  }
-  if (ngoFormData.value.website && ngoFormData.value.website !== originalNgoData.value.website) {
+  if (ngoFormData.value.website !== originalNgoData.value.website) {
     updatedData.website = ngoFormData.value.website;
   }
-  if (ngoFormData.value.registration_no && ngoFormData.value.registration_no !== originalNgoData.value.registration_no) {
-    updatedData.registration_no = ngoFormData.value.registration_no;
-  }
-  if (ngoFormData.value.established_year && ngoFormData.value.established_year !== originalNgoData.value.established_year) {
-    updatedData.established_year = ngoFormData.value.established_year;
-  }
-  if (ngoFormData.value.director_name && ngoFormData.value.director_name !== originalNgoData.value.director_name) {
+  if (ngoFormData.value.director_name !== originalNgoData.value.director_name) {
     updatedData.director_name = ngoFormData.value.director_name;
   }
-  if (ngoFormData.value.director_phone && ngoFormData.value.director_phone !== originalNgoData.value.director_phone) {
+  if (ngoFormData.value.director_phone !== originalNgoData.value.director_phone) {
     updatedData.director_phone = ngoFormData.value.director_phone;
   }
-  if (ngoFormData.value.num_employees && ngoFormData.value.num_employees !== originalNgoData.value.num_employees) {
-    updatedData.num_employees = ngoFormData.value.num_employees;
-  }
-  if (ngoFormData.value.logo_url && ngoFormData.value.logo_url !== originalNgoData.value.logo_url) {
-    updatedData.logo_url = ngoFormData.value.logo_url;
-  }
 
-  if (Object.keys(updatedData).length === 0) {
-    successMessage.value = 'No changes provided.';
+  console.log('Submitting NGO data:', updatedData);
+  console.log('NGO ID:', props.ngo?.id);
+
+  // Check if there are any changes besides current_password
+  if (Object.keys(updatedData).length === 1) {
+    successMessage.value = 'No changes detected to update.';
     return;
   }
 
@@ -273,20 +322,34 @@ const handleNgoSubmit = async () => {
     successMessage.value = response.data.message || 'NGO profile updated successfully!';
 
     // Update original data with new values
-    originalNgoData.value = { ...originalNgoData.value, ...updatedData };
+    Object.keys(updatedData).forEach(key => {
+      if (key !== 'current_password' && updatedData[key as keyof NgoFormData]) {
+        (originalNgoData.value as any)[key] = updatedData[key as keyof NgoFormData];
+      }
+    });
+
+    ngoFormData.value.current_password = '';
 
     // Emit profile updated event
     emit('profileUpdated');
 
+    // Auto-close modal after 2 seconds on success
+    setTimeout(() => {
+      handleClose();
+    }, 2000);
+
   } catch (error: any) {
+    console.error('NGO profile update error:', error);
+    console.error('Error response:', error.response?.data);
     if (error.response?.status === 422) {
       validationErrors.value = error.response.data.errors || {};
+      errorMessage.value = 'Please check the form for validation errors.';
     } else if (error.response?.status === 403) {
-      errorMessage.value = error.response.data.error || 'Unauthorized.';
+      errorMessage.value = error.response.data.error || 'Current password is incorrect.';
     } else if (error.response?.data?.message) {
       successMessage.value = error.response.data.message;
     } else {
-      errorMessage.value = 'Failed to update NGO profile.';
+      errorMessage.value = `Failed to update NGO profile. ${error.response?.data?.error || error.message || 'Unknown error'}`;
     }
   }
 };
@@ -303,28 +366,36 @@ const handleSubmit = () => {
 const handleClose = () => {
   emit('close');
 };
+
+// Helper methods for form field access
+const getUserFieldValue = (field: string) => {
+  return userFormData.value[field as keyof UserFormData];
+};
+
+const setUserFieldValue = (field: string, value: string) => {
+  userFormData.value[field as keyof UserFormData] = value;
+};
+
+const getNgoFieldValue = (field: string) => {
+  return ngoFormData.value[field as keyof NgoFormData];
+};
+
+const setNgoFieldValue = (field: string, value: string) => {
+  ngoFormData.value[field as keyof NgoFormData] = value;
+};
 </script>
 
 <template>
   <!-- Modal Backdrop -->
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    @click="handleClose"
-  >
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="handleClose">
     <!-- Modal Content -->
-    <div
-      class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
-      @click.stop
-    >
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
       <!-- Modal Header -->
       <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <h2 class="text-2xl font-bold">
           {{ isNgoEdit ? 'Update NGO Profile' : 'Update Your Profile' }}
         </h2>
-        <button
-          @click="handleClose"
-          class="text-gray-400 hover:text-gray-600 text-xl"
-        >
+        <button @click="handleClose" class="text-gray-400 hover:text-gray-600 text-xl">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -333,303 +404,128 @@ const handleClose = () => {
 
       <!-- Modal Body -->
       <div class="px-6 py-4">
-        <!-- Success/Error Messages -->
-        <div v-if="successMessage" class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
-          {{ successMessage }}
+        <!-- Messages -->
+        <div v-if="successMessage" class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-green-800">{{ successMessage }}</p>
+            </div>
+          </div>
         </div>
-        <div v-if="errorMessage" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
-          {{ errorMessage }}
+
+        <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-red-800">{{ errorMessage }}</p>
+            </div>
+          </div>
         </div>
 
-        <!-- User Profile Form -->
-        <form v-if="!isNgoEdit" @submit.prevent="handleSubmit" class="space-y-4">
-          <!-- Name -->
-          <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              id="name"
-              v-model="userFormData.name"
-              type="text"
-              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Leave blank to keep current"
-            />
-            <div v-if="validationErrors.name" class="text-red-600 text-sm mt-1">
-              {{ validationErrors.name[0] }}
+        <!-- Form -->
+        <form @submit.prevent="handleSubmit" class="space-y-4">
+          <!-- User Profile Form -->
+          <template v-if="!isNgoEdit">
+            <div v-for="field in userFields" :key="field.id">
+              <label :for="field.id" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+              <input
+                :id="field.id"
+                :type="field.type"
+                :value="getUserFieldValue(field.model)"
+                @input="setUserFieldValue(field.model, $event.target.value)"
+                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                :placeholder="field.placeholder"
+              />
+              <div v-if="validationErrors[field.model]" class="text-red-600 text-sm mt-1">
+                {{ validationErrors[field.model][0] }}
+              </div>
             </div>
-          </div>
+          </template>
 
-          <!-- Email (only for general role) -->
-          <div v-if="userRole === 'general'">
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              id="email"
-              v-model="userFormData.email"
-              type="email"
-              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Leave blank to keep current"
-            />
-            <div v-if="validationErrors.email" class="text-red-600 text-sm mt-1">
-              {{ validationErrors.email[0] }}
+          <!-- NGO Profile Form -->
+          <template v-else>
+            <!-- Full width fields -->
+            <div v-for="field in ngoFieldsFullWidth" :key="field.id">
+              <label :for="field.id" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+              <textarea
+                v-if="field.type === 'textarea'"
+                :id="field.id"
+                :value="getNgoFieldValue(field.model)"
+                @input="setNgoFieldValue(field.model, $event.target.value)"
+                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                rows="3"
+                :placeholder="field.placeholder"
+              ></textarea>
+              <input
+                v-else
+                :id="field.id"
+                :type="field.type"
+                :value="getNgoFieldValue(field.model)"
+                @input="setNgoFieldValue(field.model, $event.target.value)"
+                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                :placeholder="field.placeholder"
+              />
+              <div v-if="validationErrors[field.model]" class="text-red-600 text-sm mt-1">
+                {{ validationErrors[field.model][0] }}
+              </div>
             </div>
-          </div>
 
-          <!-- Phone -->
-          <div>
-            <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-            <input
-              id="phone"
-              v-model="userFormData.phone"
-              type="text"
-              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Leave blank to keep current"
-            />
-            <div v-if="validationErrors.phone" class="text-red-600 text-sm mt-1">
-              {{ validationErrors.phone[0] }}
+            <!-- Two column grid for remaining fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div v-for="field in ngoFieldsGrid" :key="field.id">
+                <label :for="field.id" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                <input
+                  :id="field.id"
+                  :type="field.type"
+                  :value="getNgoFieldValue(field.model)"
+                  @input="setNgoFieldValue(field.model, $event.target.value)"
+                  class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  :placeholder="field.placeholder"
+                />
+                <div v-if="validationErrors[field.model]" class="text-red-600 text-sm mt-1">
+                  {{ validationErrors[field.model][0] }}
+                </div>
+              </div>
             </div>
-          </div>
+          </template>
 
-          <!-- Password -->
+          <!-- Current Password (always required) -->
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Password (leave blank if no change)</label>
+            <label :for="isNgoEdit ? 'ngo_current_password' : 'current_password'" class="block text-sm font-medium text-gray-700">
+              Current Password <span class="text-red-500">*</span>
+            </label>
             <input
-              id="password"
-              v-model="userFormData.password"
+              :id="isNgoEdit ? 'ngo_current_password' : 'current_password'"
               type="password"
+              :value="isNgoEdit ? ngoFormData.current_password : userFormData.current_password"
+              @input="isNgoEdit ? ngoFormData.current_password = $event.target.value : userFormData.current_password = $event.target.value"
               class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Enter your current password to confirm changes"
+              required
             />
-            <div v-if="validationErrors.password" class="text-red-600 text-sm mt-1">
-              {{ validationErrors.password[0] }}
+            <div v-if="validationErrors.current_password" class="text-red-600 text-sm mt-1">
+              {{ validationErrors.current_password[0] }}
             </div>
           </div>
 
-          <!-- Password Confirmation -->
-          <div>
-            <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-            <input
-              id="password_confirmation"
-              v-model="userFormData.password_confirmation"
-              type="password"
-              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          <!-- Submit Button -->
+          <!-- Submit Buttons -->
           <div class="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              @click="handleClose"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              Cancel
-            </button>
+            <TertiaryButton @click="handleClose">Cancel</TertiaryButton>
             <button
               type="submit"
-              class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              :disabled="!isUpdateEnabled"
+              class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Update Profile
-            </button>
-          </div>
-        </form>
-
-        <!-- NGO Profile Form -->
-        <form v-else @submit.prevent="handleSubmit" class="space-y-4">
-          <!-- Name -->
-          <div>
-            <label for="ngo_name" class="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              id="ngo_name"
-              v-model="ngoFormData.name"
-              type="text"
-              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Leave blank to keep current"
-            />
-            <div v-if="validationErrors.name" class="text-red-600 text-sm mt-1">
-              {{ validationErrors.name[0] }}
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              id="description"
-              v-model="ngoFormData.description"
-              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              rows="3"
-              placeholder="Leave blank to keep current"
-            ></textarea>
-            <div v-if="validationErrors.description" class="text-red-600 text-sm mt-1">
-              {{ validationErrors.description[0] }}
-            </div>
-          </div>
-
-          <!-- Two column grid for remaining fields -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Phone -->
-            <div>
-              <label for="ngo_phone" class="block text-sm font-medium text-gray-700">Phone</label>
-              <input
-                id="ngo_phone"
-                v-model="ngoFormData.phone"
-                type="text"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.phone" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.phone[0] }}
-              </div>
-            </div>
-
-            <!-- Based In -->
-            <div>
-              <label for="based_in" class="block text-sm font-medium text-gray-700">Based In (Location)</label>
-              <input
-                id="based_in"
-                v-model="ngoFormData.based_in"
-                type="text"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.based_in" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.based_in[0] }}
-              </div>
-            </div>
-
-            <!-- Cause Focus -->
-            <div>
-              <label for="cause_focus" class="block text-sm font-medium text-gray-700">Cause Focus</label>
-              <input
-                id="cause_focus"
-                v-model="ngoFormData.cause_focus"
-                type="text"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.cause_focus" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.cause_focus[0] }}
-              </div>
-            </div>
-
-            <!-- Website -->
-            <div>
-              <label for="website" class="block text-sm font-medium text-gray-700">Website</label>
-              <input
-                id="website"
-                v-model="ngoFormData.website"
-                type="url"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.website" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.website[0] }}
-              </div>
-            </div>
-
-            <!-- Registration No -->
-            <div>
-              <label for="registration_no" class="block text-sm font-medium text-gray-700">Registration No</label>
-              <input
-                id="registration_no"
-                v-model="ngoFormData.registration_no"
-                type="text"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.registration_no" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.registration_no[0] }}
-              </div>
-            </div>
-
-            <!-- Established Year -->
-            <div>
-              <label for="established_year" class="block text-sm font-medium text-gray-700">Established Year</label>
-              <input
-                id="established_year"
-                v-model="ngoFormData.established_year"
-                type="number"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.established_year" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.established_year[0] }}
-              </div>
-            </div>
-
-            <!-- Director Name -->
-            <div>
-              <label for="director_name" class="block text-sm font-medium text-gray-700">Director Name</label>
-              <input
-                id="director_name"
-                v-model="ngoFormData.director_name"
-                type="text"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.director_name" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.director_name[0] }}
-              </div>
-            </div>
-
-            <!-- Director Phone -->
-            <div>
-              <label for="director_phone" class="block text-sm font-medium text-gray-700">Director Phone</label>
-              <input
-                id="director_phone"
-                v-model="ngoFormData.director_phone"
-                type="text"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.director_phone" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.director_phone[0] }}
-              </div>
-            </div>
-
-            <!-- Number of Employees -->
-            <div>
-              <label for="num_employees" class="block text-sm font-medium text-gray-700">Number of Employees</label>
-              <input
-                id="num_employees"
-                v-model="ngoFormData.num_employees"
-                type="number"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.num_employees" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.num_employees[0] }}
-              </div>
-            </div>
-
-            <!-- Logo URL -->
-            <div>
-              <label for="logo_url" class="block text-sm font-medium text-gray-700">Logo URL</label>
-              <input
-                id="logo_url"
-                v-model="ngoFormData.logo_url"
-                type="url"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Leave blank to keep current"
-              />
-              <div v-if="validationErrors.logo_url" class="text-red-600 text-sm mt-1">
-                {{ validationErrors.logo_url[0] }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <div class="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              @click="handleClose"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              Update NGO Profile
+              {{ isNgoEdit ? 'Update NGO Profile' : 'Update Profile' }}
             </button>
           </div>
         </form>

@@ -21,21 +21,28 @@ class NgoStaffController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-        
+
         $staff = NgoStaff::with(['user', 'ngo'])
             ->where('user_id', $user->id)
             ->first();
-            
+
         if (!$staff) {
             return response()->json(['ngo_id' => null, 'role' => null], 200);
         }
-        
+
+        // Get the current employee count for this NGO
+        $employeeCount = NgoStaff::where('ngo_id', $staff->ngo_id)->count();
+
+        // Add employee count to the NGO data
+        $ngoData = $staff->ngo->toArray();
+        $ngoData['current_employee_count'] = $employeeCount;
+
         return response()->json([
             'ngo_id' => $staff->ngo_id,
             'role' => 'ngo_staff',
             'designation' => $staff->designation,
             'privilege_role' => $staff->privilege_role,
-            'ngo' => $staff->ngo
+            'ngo' => $ngoData
         ]);
     }
 

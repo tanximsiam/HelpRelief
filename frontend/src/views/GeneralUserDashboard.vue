@@ -2,7 +2,6 @@
 import PrimaryButton from '@/components/PrimaryButton.vue'
 import OngoingDisasters from '@/components/OngoingDisasters.vue'
 import OngoingCampaigns from '@/components/OngoingCampaigns.vue'
-import ProfileView from '@/components/ProfileView.vue'
 import Modal from '@/components/Modal.vue'
 import AidRequestForm from '@/components/AidRequestForm.vue'
 import VolunteerRegistrationForm from '@/components/VolunteerRegistrationForm.vue'
@@ -50,10 +49,7 @@ const closeAidSupport = () => showAidSupport.value = false
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="height:600px;">
-        <div class="lg:col-span-1" style="height:600px;">
-          <ProfileView class="h-full" />
-        </div>
+      <div class="grid grid-cols-1 gap-6" style="height:600px;">
         <div class="lg:col-span-1" style="height:600px;">
           <div class="space-y-6 h-full overflow-y-auto">
             <OngoingDisasters />

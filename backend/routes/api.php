@@ -24,8 +24,8 @@ use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
 use App\Http\Controllers\CampaignController;
-use App\Http\Controllers\TaskController;
 
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\DisasterAlertController;
 
@@ -33,9 +33,7 @@ use App\Http\Controllers\AidNeedController;
 use App\Http\Controllers\ReportController;
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum');
 
 // TEST ROUTES
 Route::get('/users', [UserController::class, 'index']);
