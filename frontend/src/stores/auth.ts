@@ -7,7 +7,7 @@ type User = {
   name: string;
   email: string;
   role: "general" | "ngo_staff" | "admin";
-  volunteer?: boolean;
+  volunteer: boolean;
   ngo_id?: number | null;
 };
 

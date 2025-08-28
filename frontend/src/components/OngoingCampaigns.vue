@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/lib/api'
 import CampaignListModal from '@/components/CampaignListModal.vue'
+import { useRouter } from 'vue-router'
 
 interface Campaign {
   id: number;
@@ -19,6 +20,7 @@ const errorMessage = ref<string>('');
 const isNgoStaff = ref(false);
 const ngoId = ref<number | null>(null);
 const showCampaignListModal = ref(false);
+const router = useRouter();
 
 // Computed property for top 3 priority campaigns
 const topPriorityCampaigns = computed(() => {
@@ -103,6 +105,14 @@ const getPriorityColor = (priority: string) => {
               </div>
               <p class="text-sm text-gray-600">by {{ campaign.ngo_name || 'Unknown NGO' }}</p>
               <p class="text-xs text-gray-500 mt-1">{{ campaign.disaster_name }}</p>
+            </div>
+            <div v-if="isNgoStaff">
+              <button
+                @click="router.push({ path: '/tasks', query: { campaign_id: campaign.id } })"
+                class="ml-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Create Tasks
+              </button>
             </div>
           </div>
         </li>

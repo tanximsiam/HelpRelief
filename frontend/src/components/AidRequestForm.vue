@@ -23,7 +23,7 @@ const urgencyOptions = [
 
 // ---- Reactive state ----
 const form = reactive<FormState>({ campaign_id: '', aid_type: null, urgency: null, description: '' })
-const campaigns = ref<Campaign[]>([])
+const campaign = ref<Campaign | null>(null)
 const loadingCampaigns = ref(false)
 const volunteerOnlyError = ref<string | null>(null)
 // Start as not a volunteer; flip to true only if API confirms access
@@ -38,27 +38,21 @@ const emit = defineEmits<{ (e: 'submit', payload: any): void; (e:'open-volunteer
 async function loadVolunteerCampaigns() {
   loadingCampaigns.value = true
   try {
-  const { data } = await api.get('/campaigns/volunteer')
-  isVolunteer.value = true
-    // Deduplicate by id in case backend returns accidental duplicates
-    // First collapse by composite (disaster_id + ngo_id) to avoid legacy duplicates
-    const composite = new Map<string, Campaign>()
-    for (const c of data as Campaign[]) {
-      const key = `${c.disaster_id}:${c.ngo_id}`
-      if (!composite.has(key)) composite.set(key, c)
-    }
-    campaigns.value = Array.from(composite.values())
-    if (!campaigns.value.length) {
-      volunteerOnlyError.value = 'No active campaigns found for your volunteer NGOs.'
-    } else if (!form.campaign_id) {
-      form.campaign_id = String(campaigns.value[0].id)
+    const { data } = await api.get('/campaigns/volunteer')
+    isVolunteer.value = true
+    // Pick the first campaign (assuming only one per volunteer)
+    if (Array.isArray(data) && data.length) {
+      campaign.value = data[0]
+      form.campaign_id = String(data[0].id)
+    } else {
+      volunteerOnlyError.value = 'No active campaign found for your volunteer membership.'
     }
   } catch (e: any) {
     if (e.response?.status === 403) {
       volunteerOnlyError.value = 'Only active volunteers can submit aid requests.'
       isVolunteer.value = false
     } else {
-      errors.root = 'Failed to load campaigns'
+      errors.root = 'Failed to load campaign'
     }
   } finally {
     loadingCampaigns.value = false
@@ -83,9 +77,9 @@ async function submit() {
   if (!validate()) return
   submitting.value = true
   try {
-    const selected = campaigns.value.find(c => String(c.id) === form.campaign_id)
+    const selected = campaign.value
     if (!selected) {
-      errors.campaign_id = 'Select a valid campaign'
+      errors.campaign_id = 'No campaign found for your volunteer membership.'
       submitting.value = false
       return
     }
@@ -124,23 +118,13 @@ async function submit() {
     <div v-if="successMessage" class="rounded-md bg-green-50 p-3 text-sm text-green-700">{{ successMessage }}</div>
 
     <div class="grid gap-8 md:grid-cols-2">
-      <!-- Campaign selection -->
+      <!-- Campaign info (read-only) -->
       <div class="md:col-span-2">
-  <label for="campaign" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Active Campaign</label>
-        <div class="relative">
-          <select id="campaign" v-model="form.campaign_id" :disabled="loadingCampaigns || !campaigns.length || volunteerOnlyError" class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 pr-10 text-base font-medium text-slate-800 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 disabled:cursor-not-allowed disabled:bg-slate-100">
-            <option value="" disabled>Select active campaign</option>
-            <option v-for="c in campaigns" :key="c.id" :value="String(c.id)">{{ c.name }} – {{ c.disaster_location }} ({{ c.ngo_name }})</option>
-          </select>
-          <span v-if="loadingCampaigns" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400">⏳</span>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Your Campaign</label>
+        <div class="rounded-md border p-3 bg-slate-50 text-base font-medium text-slate-800">
+          <span v-if="campaign">{{ campaign.name }} – {{ campaign.disaster_location }} ({{ campaign.ngo_name }})</span>
+          <span v-else>No campaign found.</span>
         </div>
-        <p v-if="volunteerOnlyError" class="mt-1 text-sm text-red-600">{{ volunteerOnlyError }}</p>
-        <!-- Fallback inline registration button in case older cached template still shows form for non-volunteers -->
-        <div v-if="volunteerOnlyError && !isVolunteer" class="mt-3 flex justify-end">
-          <button type="button" @click="emit('open-volunteer-registration')" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Register as Volunteer</button>
-        </div>
-        <p v-else-if="!loadingCampaigns && !campaigns.length" class="mt-1 text-sm text-slate-500">No active campaigns available.</p>
-        <p v-if="errors.campaign_id" class="mt-1 text-sm text-red-600">{{ errors.campaign_id }}</p>
       </div>
 
       <!-- Aid Type -->
@@ -170,7 +154,7 @@ async function submit() {
     </div>
 
     <div class="flex justify-end">
-  <PrimaryButton type="submit" :disabled="submitting || !form.campaign_id" variant="primary" class="px-8 py-3 text-lg min-w-[8rem]">
+      <PrimaryButton type="submit" :disabled="submitting || !form.campaign_id" variant="primary" class="px-8 py-3 text-lg min-w-[8rem]">
         <span v-if="!submitting">Submit</span>
         <span v-else>Submitting...</span>
       </PrimaryButton>

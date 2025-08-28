@@ -5,11 +5,11 @@ import PrimaryButton from '@/components/PrimaryButton.vue'
 import RadioGroup from '@/components/RadioGroup.vue'
 import { api } from '@/lib/api'
 
-interface FormState { campaign_id: string; ngo_id: string; availability: boolean; skills: string }
+interface FormState { campaign_id: string; ngo_id: string; skills: string }
 interface Campaign { id: number; name: string; ngo_id?: number }
 interface Ngo { id: number; name: string }
 
-const form = reactive<FormState>({ campaign_id: '', ngo_id: '', availability: true, skills: '' })
+const form = reactive<FormState>({ campaign_id: '', ngo_id: '', skills: '' })
 const campaigns = ref<Campaign[]>([])
 const ngos = ref<Ngo[]>([])
 const loading = ref(false)
@@ -79,7 +79,7 @@ async function submit() {
   if (!validate()) return
   submitting.value = true
   try {
-    const payload = { campaign_id: Number(form.campaign_id), ngo_id: Number(form.ngo_id), availability: form.availability, skills: form.skills }
+    const payload = { campaign_id: Number(form.campaign_id), ngo_id: Number(form.ngo_id), skills: form.skills }
     const { data } = await api.post('/volunteer-registrations', payload)
     emit('submit', data)
     successMessage.value = 'Volunteer registration submitted.'
@@ -126,13 +126,6 @@ async function submit() {
         <p v-if="!loading && !filteredCampaigns.length" class="mt-1 text-sm text-slate-500">No campaigns available for the selected NGO.</p>
         <p v-if="errors.campaign_id" class="mt-1 text-sm text-red-600">{{ errors.campaign_id }}</p>
       </div>
-
-    <div>
-      <p class="mb-2 text-lg font-semibold">Availability</p>
-      <div class="rounded-lg border p-4">
-        <RadioGroup v-model="form.availability" :options="[{ label: 'Available', value: true }, { label: 'Not available', value: false }]" />
-      </div>
-    </div>
 
     <div>
       <label class="block text-lg font-semibold mb-2">Skills (optional)</label>

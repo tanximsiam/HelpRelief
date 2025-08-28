@@ -2,11 +2,12 @@
   <div class="p-6">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-xl font-bold">Pending Aid Requests</h2>
-      <RouterLink to="/tasks/create">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          + Create Standalone Task
-        </button>
-      </RouterLink>
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        @click="router.push({ path: '/tasks/create', query: { campaign_id: props.campaignId } })"
+      >
+        + Create Standalone Task
+      </button>
     </div>
 
     <div v-if="pendingRequests.length === 0" class="text-gray-500">No pending requests.</div>
@@ -17,7 +18,6 @@
       class="border rounded-lg p-4 mb-4 shadow-sm bg-white"
     >
       <p><strong>ID:</strong> {{ request.id }}</p>
-  <p><strong>Campaign:</strong> {{ request.campaign?.name || 'N/A' }}</p>
       <p><strong>Type:</strong> {{ request.aid_type }}</p>
       <p><strong>Urgency:</strong> {{ request.urgency }}</p>
       <p><strong>Description:</strong> {{ request.description }}</p>
@@ -50,7 +50,6 @@
       class="border rounded-lg p-4 mb-4 shadow-sm bg-gray-100"
     >
       <p><strong>ID:</strong> {{ request.id }}</p>
-  <p><strong>Campaign:</strong> {{ request.campaign?.name || 'N/A' }}</p>
       <p><strong>Type:</strong> {{ request.aid_type }}</p>
       <p><strong>Urgency:</strong> {{ request.urgency }}</p>
       <p><strong>Description:</strong> {{ request.description }}</p>
@@ -83,9 +82,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 
+const props = defineProps<{ campaignId: number }>()
 const router = useRouter()
 
 const pendingRequests = ref<any[]>([])
@@ -117,8 +117,14 @@ const handleAccept = async (request: any) => {
     }
   } else {
     router.push({
-      name: 'TaskCreate',
-      query: { aid_request_id: request.id, aid_request_aid_type: request.aid_type, aid_request_urgency: request.urgency, aid_request_description: request.description },
+      path: '/tasks/create',
+      query: {
+        campaign_id: props.campaignId,
+        aid_request_id: request.id,
+        aid_request_aid_type: request.aid_type,
+        aid_request_urgency: request.urgency,
+        aid_request_description: request.description
+      }
     })
   }
 }

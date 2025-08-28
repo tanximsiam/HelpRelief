@@ -75,7 +75,6 @@ const router = createRouter({
       component: OathHandler,
 
     },
-
     {
       path: '/aid-support',
       name: 'AidSupport',
@@ -92,11 +91,13 @@ const router = createRouter({
       path: '/tasks',
       name: 'TaskController',
       component: () => import('../views/TaskCont.vue'),
+      props: route => ({ campaignId: route.query.campaign_id })
     },
     {
       path: '/tasks/create',
       name: 'TaskCreate',
       component: () => import('../components/TaskController.vue'),
+      props: route => ({ campaignId: route.query.campaign_id, aidRequestId: route.query.aid_request_id })
     },
     {
       path: '/tasktest',
