@@ -116,9 +116,11 @@ class MapController extends Controller
             ->count();
 
         // Count aid distributed (received aid supports) for disasters in this state for this NGO
-        $aidDistributed = AidSupport::whereIn('disaster_id', $disasterIds)
-            ->where('ngo_id', $ngoId)
-            ->where('status', 'received')
+        // Note: `aid_supports` does not contain an `ngo_id` column; filter by joining to disaster_campaign_assignments
+        $aidDistributed = \App\Models\AidSupport::join('disaster_campaign_assignments as dca', 'aid_supports.campaign_id', '=', 'dca.id')
+            ->whereIn('dca.disaster_id', $disasterIds)
+            ->where('dca.ngo_id', $ngoId)
+            ->where('aid_supports.status', 'received')
             ->count();
 
         // Count beneficiaries reached (completed aid requests) for disasters in this state
@@ -347,36 +349,45 @@ class MapController extends Controller
             'Kurigram' => 'Rangpur',
         ];
 
-        // Get aid requests by location for this NGO's volunteer area
-        $aidRequests = \App\Models\AidRequest::join('users', 'aid_requests.requester_id', '=', 'users.id')
-            ->join('volunteer_registrations', 'users.id', '=', 'volunteer_registrations.user_id')
-            ->where('volunteer_registrations.ngo_id', $ngoId)
+        // Get aid requests by location for this NGO by aggregating requests under this NGO's campaigns
+        $aidRequests = \App\Models\AidRequest::join('disaster_campaign_assignments as dca', 'aid_requests.campaign_id', '=', 'dca.id')
+            ->join('disasters', 'dca.disaster_id', '=', 'disasters.id')
+            ->where('dca.ngo_id', $ngoId)
             ->select(
-                'aid_requests.location',
+                'disasters.location',
                 DB::raw('COUNT(*) as request_count'),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='low' THEN 1 ELSE 0 END) as low_count"),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='medium' THEN 1 ELSE 0 END) as medium_count"),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='high' THEN 1 ELSE 0 END) as high_count"),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='critical' THEN 1 ELSE 0 END) as critical_count")
             )
-            ->groupBy('aid_requests.location')
+            ->groupBy('disasters.location')
             ->get();
 
-        // Get aid support (tasks) by location for this NGO
-        $aidSupport = \App\Models\AidSupport::where('ngo_id', $ngoId)
-            ->select(
-                'disaster_id',
-                DB::raw('COUNT(*) as support_count')
-            )
-            ->groupBy('disaster_id')
+        // Get aid support (tasks) by campaign for this NGO (campaign_id is the correct mapping)
+        // (aid_supports does not have an ngo_id column so we use the campaign -> assignment mapping)
+        $aidSupport = \App\Models\AidSupport::join('disaster_campaign_assignments as dca', 'aid_supports.campaign_id', '=', 'dca.id')
+            ->where('dca.ngo_id', $ngoId)
+            ->select('aid_supports.campaign_id', DB::raw('COUNT(*) as support_count'))
+            ->groupBy('aid_supports.campaign_id')
             ->get()
-            ->keyBy('disaster_id');
+            ->keyBy('campaign_id');
 
-        // Get disaster locations for aid support
-        $disasterLocations = \App\Models\Disaster::whereIn('id', $aidSupport->keys())
-            ->select('id', 'location')
+        // Resolve campaign assignments to discover disaster ids (campaign -> disaster)
+        $campaignAssignments = \App\Models\DisasterCampaignAssignment::whereIn('id', $aidSupport->keys())
+            ->select('id', 'disaster_id')
             ->get()
             ->keyBy('id');
+
+        // Get disaster locations for the disasters referenced by these campaign assignments
+        $disasterIds = $campaignAssignments->pluck('disaster_id')->unique()->filter()->values()->all();
+        $disasterLocations = [];
+        if (!empty($disasterIds)) {
+            $disasterLocations = \App\Models\Disaster::whereIn('id', $disasterIds)
+                ->select('id', 'location')
+                ->get()
+                ->keyBy('id');
+        }
 
         // Aggregate aid requests by division
         $requestBuckets = [];
@@ -405,10 +416,13 @@ class MapController extends Controller
             $requestBuckets[$division]['critical'] += (int)$row->critical_count;
         }
 
-        // Aggregate aid support by division
+        // Aggregate aid support by division by mapping campaign -> disaster -> division
         $supportBuckets = [];
-        foreach ($aidSupport as $disasterId => $support) {
-            $disaster = $disasterLocations->get($disasterId);
+        foreach ($aidSupport as $campaignId => $support) {
+            $assignment = $campaignAssignments->get($campaignId);
+            if (!$assignment) continue;
+
+            $disaster = $disasterLocations->get($assignment->disaster_id);
             if (!$disaster) continue;
 
             $original = $disaster->location;
@@ -672,16 +686,5 @@ class MapController extends Controller
         ];
 
         return $taskTypes[$priorityLevel] ?? ['general_support'];
-    }
-
-    /**
-     * Get estimated task duration based on aid needed
-     */
-    private function getEstimatedTaskDuration($aidNeeded)
-    {
-        if ($aidNeeded >= 20) return '3-5 days';
-        if ($aidNeeded >= 10) return '2-3 days';
-        if ($aidNeeded >= 5) return '1-2 days';
-        return '1 day';
     }
 }
