@@ -166,7 +166,7 @@
             <li><strong>Phone:</strong> {{ report.phone }}</li>
             <li><strong>Website:</strong> <a :href="report.website" target="_blank" class="text-blue-600">{{ report.website }}</a></li>
             <li><strong>Director:</strong> {{ report.director_name }} ({{ report.director_phone }})</li>
-            <li><strong>Employees:</strong> {{ report.num_employees ?? '-' }}</li>
+            <li><strong>Office Employees:</strong> {{ report.num_employees ?? '-' }}</li>
           </ul>
         </div>
 

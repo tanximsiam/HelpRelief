@@ -166,7 +166,7 @@ class MapController extends Controller
         }
         $ngoId = $staff->ngo_id;
 
-        $bangladeshStates = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur'];
+        $bangladeshStates = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur', 'Mymensingh'];
 
         // Map district / city names to their division for normalization
         $districtToDivision = [
@@ -275,7 +275,7 @@ class MapController extends Controller
         }
         $ngoId = $staff->ngo_id;
 
-        $allowed = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur'];
+        $allowed = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur', 'Mymensingh'];
         $match = null;
         foreach ($allowed as $a) { if (strcasecmp($a, $stateName) === 0) { $match = $a; break; } }
         if (!$match) {
@@ -324,7 +324,7 @@ class MapController extends Controller
         }
 
         $ngoId = $staff->ngo_id;
-        $bangladeshStates = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur'];
+        $bangladeshStates = ['Dhaka','Chittagong','Rajshahi','Khulna','Barisal','Sylhet','Rangpur', 'Mymensingh'];
 
         // Map district / city names to their division for normalization
         $districtToDivision = [
