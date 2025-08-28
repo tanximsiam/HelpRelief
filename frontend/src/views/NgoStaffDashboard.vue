@@ -52,7 +52,6 @@ const ngoId = ref<number | null>(null)
 const ngoName = ref<string | null>(null)
 const route = useRoute()
 const router = useRouter()
-const showNgoReport = ref(false)
 
 onMounted(async () => {
   if (auth.token && !auth.user) {
@@ -74,10 +73,7 @@ onMounted(async () => {
     console.warn('Failed to fetch ngo staff details', e)
   }
 
-  // Open modal if route query contains openNgoReport=1
-  if (String(route.query.openNgoReport) === '1') {
-    showNgoReport.value = true
-  }
+  // no modal open logic; report will be rendered inline
 
   // make sure alerts appear
   loadAlerts()
@@ -98,16 +94,7 @@ const handleCampaignCreated = (payload:any) => {
   if (campaignsRef.value?.append) { campaignsRef.value.append(payload) } else { campaignsRef.value?.refresh?.() }
   flash('success','Campaign registered')
 }
-const openNgoReport = () => {
-  showNgoReport.value = true
-  router.replace({ query: { ...route.query, openNgoReport: '1' } })
-}
-const closeNgoReport = () => {
-  showNgoReport.value = false
-  const q = { ...route.query }
-  delete q.openNgoReport
-  router.replace({ query: q })
-}
+// removed open/close modal helpers for NGO report; inline render used instead
 </script>
 
 <template>
@@ -133,13 +120,7 @@ const closeNgoReport = () => {
             Report a disaster
           </button>
 
-          <button
-            type="button"
-            @click="openNgoReport"
-            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
-          >
-            NGO Report
-          </button>
+          <!-- NGO Report is displayed inline at the bottom; button removed -->
 
           <PrimaryButton
             variant="primary"
@@ -182,7 +163,10 @@ const closeNgoReport = () => {
       @close="closeRegisterCampaign"
       @created="handleCampaignCreated"
     />
-    <NgoReportModal :show="showNgoReport" @close="closeNgoReport" />
+    <!-- Inline NGO report always visible at the bottom -->
+    <div class="px-8 pb-12">
+      <NgoReportModal inline />
+    </div>
 
     <div
       v-if="banner"

@@ -17,7 +17,7 @@
       class="border rounded-lg p-4 mb-4 shadow-sm bg-white"
     >
       <p><strong>ID:</strong> {{ request.id }}</p>
-      <p><strong>Disaster:</strong> {{ request.disaster?.name || 'N/A' }}</p>
+  <p><strong>Campaign:</strong> {{ request.campaign?.name || 'N/A' }}</p>
       <p><strong>Type:</strong> {{ request.aid_type }}</p>
       <p><strong>Urgency:</strong> {{ request.urgency }}</p>
       <p><strong>Description:</strong> {{ request.description }}</p>
@@ -50,7 +50,7 @@
       class="border rounded-lg p-4 mb-4 shadow-sm bg-gray-100"
     >
       <p><strong>ID:</strong> {{ request.id }}</p>
-      <p><strong>Disaster:</strong> {{ request.disaster?.name || 'N/A' }}</p>
+  <p><strong>Campaign:</strong> {{ request.campaign?.name || 'N/A' }}</p>
       <p><strong>Type:</strong> {{ request.aid_type }}</p>
       <p><strong>Urgency:</strong> {{ request.urgency }}</p>
       <p><strong>Description:</strong> {{ request.description }}</p>

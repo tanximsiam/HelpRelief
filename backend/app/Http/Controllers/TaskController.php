@@ -23,7 +23,6 @@ class TaskController extends Controller
         $tasks = $query->get()->map(function ($task) {
             return [
                 'id' => $task->id,
-                'task_type' => $task->task_type,
                 'status' => $task->status,
                 'urgency' => $task->urgency,
                 'aid_type' => $task->aid_type,

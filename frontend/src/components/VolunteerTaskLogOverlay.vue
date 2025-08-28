@@ -11,7 +11,7 @@ interface VolunteerTaskLog {
   report: string
   check_in?: string
   check_out?: string
-  task?: { task_type?: string }
+  task?: { aid_type?: string }
   volunteer?: { name?: string }
   placeholder?: boolean
 }
@@ -94,7 +94,7 @@ const displayLogs = computed<VolunteerTaskLog[]>(() => {
       task_id: t.id,
       status: 'unstarted',
       report: '-',
-  task: { task_type: t.task_type || t.type || 'task' },
+  task: { aid_type: t.aid_type || t.type || 'task' },
   volunteer: t.assigned_to_name ? { name: t.assigned_to_name } : undefined,
       placeholder: true
     }))
