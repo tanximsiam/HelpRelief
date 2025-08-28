@@ -97,6 +97,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
 
     // Aid Requests
     Route::get('/aid-requests', [AidRequestController::class, 'index']);
+    Route::get('/aid-requests/{id}', [AidRequestController::class, 'show']);
     Route::post('/submit-aid-requests', [AidRequestController::class, 'store']);
     Route::get('/my-requests', [AidRequestController::class, 'myRequests']);
     Route::post('/aid-requests/{aid_request}/verify', [AidRequestController::class, 'verifyByRequester']);

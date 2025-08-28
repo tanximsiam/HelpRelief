@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 
@@ -82,9 +82,7 @@ const route = useRoute()
 const router = useRouter()
 
 const aidRequestId = route.query.aid_request_id ?? null
-const aidRequestAidType = route.query.aid_request_aid_type ?? null
-const aidRequestUrgency = route.query.aid_request_urgency ?? null
-const aidRequestDescription = route.query.aid_request_description ?? null
+const aidRequestData = ref<any | null>(null)
 
 const disasters = ref<any[]>([])
 const campaigns = ref<any[]>([])
@@ -112,9 +110,27 @@ const fetchCampaigns = async () => {
   campaigns.value = res.data
 }
 
-const fetchVolunteers = async () => {
-  const res = await api.get('/volunteers')
+const fetchVolunteers = async (campaignId: string | null = null) => {
+  const params: any = {}
+  if (campaignId) params.campaign_id = campaignId
+
+  const res = await api.get('/volunteers', { params })
   volunteers.value = res.data
+}
+
+const fetchAidRequest = async (id: string) => {
+  try {
+    const res = await api.get(`/aid-requests/${id}`)
+    aidRequestData.value = res.data
+
+    // populate form with authoritative aid-request data
+    form.value.campaign_id = res.data.campaign_id ?? ''
+    form.value.aid_type = res.data.aid_type ?? form.value.aid_type
+    form.value.urgency = res.data.urgency ?? form.value.urgency
+    form.value.description = res.data.description ?? form.value.description
+  } catch (err) {
+    console.error('Error fetching aid request:', err)
+  }
 }
 
 const submitTask = async () => {
@@ -157,6 +173,16 @@ const submitTask = async () => {
 onMounted(() => {
   fetchDisasters()
   fetchCampaigns()
-  fetchVolunteers()
+  if (aidRequestId) {
+    fetchAidRequest(String(aidRequestId)).then(() => {
+      fetchVolunteers(form.value.campaign_id || null)
+    })
+  } else {
+    fetchVolunteers()
+  }
+})
+
+watch(() => form.value.campaign_id, (newVal) => {
+  if (newVal) fetchVolunteers(newVal)
 })
 </script>

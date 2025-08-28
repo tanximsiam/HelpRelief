@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\VolunteerTaskLog;
 use App\Models\AidRequest;
+use App\Models\VolunteerRegistration;
 
 
 class VolunteerTaskController extends Controller
@@ -135,6 +136,20 @@ class VolunteerTaskController extends Controller
         $aidRequest->status = 'assigned';
         $aidRequest->save();
 
+        // Mark the volunteer registration as unavailable so they won't appear in future searches
+        try {
+            $volReg = VolunteerRegistration::where('user_id', $request->volunteer_id)
+                ->where('campaign_id', $request->campaign_id)
+                ->first();
+
+            if ($volReg) {
+                $volReg->availability = false;
+                $volReg->save();
+            }
+        } catch (\Exception $e) {
+            // Non-fatal - keep going
+        }
+
         return response()->json([
             'message' => 'Aid request assigned and task created successfully!',
             'task' => $task,
@@ -189,6 +204,20 @@ class VolunteerTaskController extends Controller
             'description' => $request->description,
             'status' => 'pending',
         ]);
+
+        // Mark volunteer unavailable after assignment
+        try {
+            $volReg = VolunteerRegistration::where('user_id', $request->volunteer_id)
+                ->where('campaign_id', $request->campaign_id)
+                ->first();
+
+            if ($volReg) {
+                $volReg->availability = false;
+                $volReg->save();
+            }
+        } catch (\Exception $e) {
+            // non-fatal
+        }
 
         return response()->json([
             'message' => 'Standalone task created successfully!',

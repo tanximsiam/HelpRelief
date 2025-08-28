@@ -44,18 +44,22 @@ class VolunteerRegistrationController extends Controller
 
     public function index()
     {
-        $volunteers = VolunteerRegistration::with('user')
+        $query = VolunteerRegistration::with('user')
             ->where('status', 'approved')
-            ->where('availability', true)
-            ->get()
-            ->map(function ($v) {
-                return [
-                    'id' => $v->user->id,
-                    'name' => $v->user->name,
-                    'email' => $v->user->email,
-                    'skills' => $v->skills,
-                ];
-            });
+            ->where('availability', true);
+
+        if (request()->has('campaign_id')) {
+            $query->where('campaign_id', request()->get('campaign_id'));
+        }
+
+        $volunteers = $query->get()->map(function ($v) {
+            return [
+                'id' => $v->user->id,
+                'name' => $v->user->name,
+                'email' => $v->user->email,
+                'skills' => $v->skills,
+            ];
+        });
 
         return response()->json($volunteers);
     }
