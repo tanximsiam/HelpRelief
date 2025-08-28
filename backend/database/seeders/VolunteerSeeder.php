@@ -54,7 +54,7 @@ class VolunteerSeeder extends Seeder
             'user_id' => 10, // volunteer2
             'campaign_id' => 1,
             'ngo_id' => 1,
-            'status' => 'rejected',
+            'status' => 'approved',
             'registered_at' => now()->subDays(3),
             'availability' => false,
             'skills' => 'Basic first aid',
@@ -88,7 +88,7 @@ class VolunteerSeeder extends Seeder
             'user_id' => 13, // volunteer5
             'campaign_id' => 2,
             'ngo_id' => 1,
-            'status' => 'pending',
+            'status' => 'approved',
             'registered_at' => now()->subHours(12),
             'availability' => true,
             'skills' => 'Food distribution, logistics',
@@ -99,7 +99,7 @@ class VolunteerSeeder extends Seeder
             'user_id' => 14, // volunteer6
             'campaign_id' => 2,
             'ngo_id' => 1,
-            'status' => 'completed',
+            'status' => 'approved',
             'registered_at' => now()->subDays(5),
             'availability' => false,
             'skills' => 'Medical aid, evacuation assistance',
@@ -144,7 +144,7 @@ class VolunteerSeeder extends Seeder
             'user_id' => 9, // volunteer1 (cross-registering)
             'campaign_id' => 3,
             'ngo_id' => 1,
-            'status' => 'rejected',
+            'status' => 'approved',
             'registered_at' => now()->subDays(2),
             'availability' => false,
             'skills' => 'Basic assistance',
@@ -155,7 +155,7 @@ class VolunteerSeeder extends Seeder
             'user_id' => 3, // general2 (cross-registering from NGO 2 to NGO 1)
             'campaign_id' => 3,
             'ngo_id' => 1,
-            'status' => 'completed',
+            'status' => 'approved',
             'registered_at' => now()->subDays(4),
             'availability' => false,
             'skills' => 'Emergency coordination, resource management',
@@ -166,7 +166,7 @@ class VolunteerSeeder extends Seeder
             'user_id' => 11, // volunteer3 (cross-registering)
             'campaign_id' => 3,
             'ngo_id' => 1,
-            'status' => 'pending',
+            'status' => 'approved',
             'registered_at' => now()->subHours(6),
             'availability' => true,
             'skills' => 'Emergency response, medical assistance',

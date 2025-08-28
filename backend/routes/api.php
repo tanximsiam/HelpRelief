@@ -134,6 +134,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // Volunteer Reports
     Route::get('/reports/volunteers/aggregate', [VolunteerReportController::class, 'aggregate']);
     Route::get('/reports/volunteers/individual', [VolunteerReportController::class, 'individual']);
+    Route::post('/reports/volunteers/flag', [VolunteerReportController::class, 'flagVolunteer']);
 
 
     // NGO Profile Update

@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignId('campaign_id')->constrained('disaster_campaign_assignments');
             $table->foreignId('ngo_id')->constrained('ngos');
             $table->enum('status', [
-                'pending', 'approved', 'rejected', 'active', 'inactive', 'completed'
-            ])->default('pending');
+                'approved', 'flagged'
+            ])->default('approved');
             $table->timestamp('registered_at')->nullable();
             $table->boolean('availability')->default(true);
             $table->text('skills')->nullable();
