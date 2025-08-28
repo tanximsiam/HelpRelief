@@ -142,4 +142,22 @@ class AidRequestController extends Controller
         ]);
     }
 
+    // Return a single aid request (NGO staff scoped)
+    public function show(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        $ngoId = $user->ngoStaff->ngo_id ?? null;
+        if (!$ngoId) {
+            return response()->json(['message' => 'You are not authorized to view aid requests'], 403);
+        }
+
+        $aidRequest = AidRequest::with('requester.volunteerRegistration.ngo', 'campaign')->findOrFail($id);
+
+        if ($aidRequest->campaign && ($aidRequest->campaign->ngo_id ?? null) !== $ngoId) {
+            return response()->json(['message' => 'Not authorized to view this aid request'], 403);
+        }
+
+        return response()->json($aidRequest);
+    }
+
 }
