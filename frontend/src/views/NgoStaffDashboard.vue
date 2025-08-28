@@ -145,6 +145,12 @@ const handleCampaignCreated = (payload:any) => {
           <CampaignMap class="h-full" />
         </div>
       </div>
+      <div class="w-full pb-12">
+        <h2 class="text-xl font-semibold mb-4">NGO Report</h2>
+        <div class="w-full">
+        <NgoReportModal inline />
+        </div>
+      </div>
     </main>
 
     <!-- Modals + banner live beside the main wrapper -->
@@ -159,9 +165,6 @@ const handleCampaignCreated = (payload:any) => {
       @created="handleCampaignCreated"
     />
     <!-- Inline NGO report always visible at the bottom -->
-    <div class="px-8 pb-12">
-      <NgoReportModal inline />
-    </div>
 
     <div
       v-if="banner"

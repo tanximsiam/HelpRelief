@@ -97,7 +97,7 @@
   </Modal>
 
   <!-- Inline/embed rendering when used in-page (not as a modal) -->
-  <div v-else class="max-w-3xl w-full">
+  <div v-else class="w-full p-6 bg-white rounded-lg shadow">
     <div v-if="loading" class="text-sm text-gray-500">Loading...</div>
     <div v-if="error" class="text-sm text-red-600">{{ error }}</div>
 
