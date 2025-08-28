@@ -190,17 +190,24 @@ class MapController extends Controller
             'Kurigram' => 'Rangpur',
         ];
 
-    // Raw aggregation by original stored location (district OR division)
-        $raw = AidRequest::join('users', 'aid_requests.requester_id', '=', 'users.id')
-            ->join('volunteer_registrations', 'users.id', '=', 'volunteer_registrations.user_id')
-            ->where('volunteer_registrations.ngo_id', $ngoId)
+        // Raw aggregation by original stored location (district OR division)
+        // NOTE: We intentionally avoid joining volunteer_registrations directly because
+        // multiple volunteer registrations for a single user (across disasters) would
+        // duplicate each aid request row and inflate counts. Instead we filter by a
+        // distinct subquery of eligible user_ids for the NGO.
+        $eligibleUsersSub = DB::table('volunteer_registrations')
+            ->select('user_id')
+            ->where('ngo_id', $ngoId)
+            ->distinct();
+
+        $raw = AidRequest::whereIn('requester_id', $eligibleUsersSub)
             ->select(
                 'aid_requests.location',
                 DB::raw('COUNT(*) as request_count'),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='low' THEN 1 ELSE 0 END) as low_count"),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='medium' THEN 1 ELSE 0 END) as medium_count"),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='high' THEN 1 ELSE 0 END) as high_count"),
-        DB::raw("SUM(CASE WHEN aid_requests.urgency='critical' THEN 1 ELSE 0 END) as critical_count")
+                DB::raw("SUM(CASE WHEN aid_requests.urgency='critical' THEN 1 ELSE 0 END) as critical_count")
             )
             ->groupBy('aid_requests.location')
             ->get();
@@ -281,14 +288,15 @@ class MapController extends Controller
             return response()->json(['error' => 'Invalid state name'], 422);
         }
 
+        // Avoid duplicate rows caused by multiple volunteer_registrations per user
+        // by filtering with a subquery instead of joining volunteer_registrations.
         $requests = AidRequest::with(['requester:id,name'])
-            ->join('users', 'aid_requests.requester_id', '=', 'users.id')
-            ->join('volunteer_registrations', 'users.id', '=', 'volunteer_registrations.user_id')
-            ->where('volunteer_registrations.ngo_id', $ngoId)
-            ->where('aid_requests.location', $match)
-            ->select('aid_requests.*')
+            ->where('location', $match)
+            ->whereIn('requester_id', function($q) use ($ngoId) {
+                $q->select('user_id')->from('volunteer_registrations')->where('ngo_id', $ngoId);
+            })
             ->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
-            ->orderBy('aid_requests.created_at','desc')
+            ->orderBy('created_at','desc')
             ->limit(200)
             ->get()
             ->map(function($r){ return [
