@@ -94,7 +94,6 @@ function handleAidRequestSubmit() {
         <!-- Action Buttons -->
         <div class="flex gap-6 items-center">
           <button
-            v-if="isVolunteer"
             @click="openAidRequestModal"
             class="text-2xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
           >
@@ -142,7 +141,7 @@ function handleAidRequestSubmit() {
       title="Aid Request"
       @close="closeAidRequestModal"
     >
-      <AidRequestForm @submit="handleAidRequestSubmit" />
+      <AidRequestForm @submit="handleAidRequestSubmit" @open-volunteer-registration="closeAidRequestModal(); /* route to volunteer page */ $router.push('/offer-help')" />
     </Modal>
   </div>
 </template>

@@ -64,7 +64,7 @@ const closeAidSupport = () => showAidSupport.value = false
     </main>
 
     <Modal :show="showAidRequestModal" title="Aid Request" @close="closeAidRequestModal">
-      <AidRequestForm @submit="handleAidRequestSubmit" />
+      <AidRequestForm @submit="handleAidRequestSubmit" @open-volunteer-registration="closeAidRequestModal(); openVolunteerModal()" />
     </Modal>
     <Modal :show="showVolunteerModal" title="Volunteer registration" @close="closeVolunteerModal">
       <VolunteerRegistrationForm @submit="handleVolunteerSubmit" />
