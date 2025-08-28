@@ -11,18 +11,15 @@
       </div>
 
       <div class="mb-4">
-        <label class="block text-sm text-gray-700 font-semibold">Disaster</label>
-        <select v-model="form.disaster_id" required class="w-full border rounded p-2">
-          <option v-for="disaster in disasters" :value="disaster.id" :key="disaster.id">
-            {{ disaster.name }}
+        <label class="block text-sm text-gray-700 font-semibold">Campaign</label>
+        <select v-model="form.campaign_id" required class="w-full border rounded p-2">
+          <option v-for="campaign in campaigns" :value="campaign.id" :key="campaign.id">
+            {{ campaign.name }}
           </option>
         </select>
       </div>
 
-      <div class="mb-4">
-        <label class="block text-sm text-gray-700 font-semibold">Task Type</label>
-        <input v-model="form.task_type" class="w-full border rounded p-2" required />
-      </div>
+  <!-- task_type removed from form - field intentionally omitted -->
 
       <div class="mb-4">
         <label class="block text-sm text-gray-700 font-semibold">Location</label>
@@ -90,11 +87,12 @@ const aidRequestUrgency = route.query.aid_request_urgency ?? null
 const aidRequestDescription = route.query.aid_request_description ?? null
 
 const disasters = ref<any[]>([])
+const campaigns = ref<any[]>([])
 const volunteers = ref<any[]>([])
 
-const form = ref({
+  const form = ref({
   disaster_id: '',
-  task_type: '',
+  campaign_id: '',
   location: '',
   start_time: '',
   end_time: '',
@@ -109,6 +107,11 @@ const fetchDisasters = async () => {
   disasters.value = res.data
 }
 
+const fetchCampaigns = async () => {
+  const res = await api.get('/campaigns')
+  campaigns.value = res.data
+}
+
 const fetchVolunteers = async () => {
   const res = await api.get('/volunteers')
   volunteers.value = res.data
@@ -117,7 +120,9 @@ const fetchVolunteers = async () => {
 const submitTask = async () => {
   const payload = {
     ...form.value,
-    status: 'pending'
+    status: 'pending',
+    // support legacy 'disaster_id' if present
+    campaign_id: form.value.campaign_id || (form.value as any).disaster_id || null
   }
 
   try {
@@ -128,9 +133,8 @@ const submitTask = async () => {
         start_time: payload.start_time,
         end_time: payload.end_time,
         location: payload.location,
-        disaster_id: payload.disaster_id,
-        task_type: payload.task_type
-        
+        campaign_id: payload.campaign_id
+
       })
 
       alert('Task created and aid request assigned successfully!')
@@ -152,6 +156,7 @@ const submitTask = async () => {
 
 onMounted(() => {
   fetchDisasters()
+  fetchCampaigns()
   fetchVolunteers()
 })
 </script>
