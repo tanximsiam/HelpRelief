@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             TaskSeeder::class,
             AidSupportSeeder::class,
             VolunteerSeeder::class,
-            VolunteerTaskLogsSeeder::class,
+            // VolunteerTaskLogsSeeder::class,
             DonationReportSeeder::class,
 
         ]);

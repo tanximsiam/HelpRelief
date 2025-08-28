@@ -73,6 +73,9 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // Volunteer resign route
+    Route::post('/volunteer/resign', [VolunteerRegistrationController::class, 'resign']);
+
     // NGO applications
     Route::post('/ngo-applications/{id}/approve', [NgoApplicationController::class, 'approve']);
     Route::post('/ngo-applications/{id}/reject', [NgoApplicationController::class, 'reject']);
