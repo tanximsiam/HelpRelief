@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
+  <div>
+    <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -135,8 +136,11 @@
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Help Needed
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created Date
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -170,6 +174,22 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {{ formatDate(campaign.created_at) }}
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                      <button
+                        @click="viewVolunteerReports(campaign.id)"
+                        class="text-blue-600 hover:text-blue-900 text-xs font-medium px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-md transition"
+                      >
+                        View Reports
+                      </button>
+                      <button
+                        @click="viewTaskLogs(campaign.id)"
+                        class="text-green-600 hover:text-green-900 text-xs font-medium px-3 py-1 bg-green-50 hover:bg-green-100 rounded-md transition"
+                      >
+                        Task Logs
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -200,6 +220,23 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <!-- Volunteer Report Modal -->
+    <VolunteerReportModal
+      v-if="showVolunteerReportModal && selectedCampaign"
+      :campaign="selectedCampaign"
+      :show="showVolunteerReportModal"
+      @close="closeVolunteerReportModal"
+    />
+
+    <!-- Task Logs Overlay -->
+    <VolunteerTaskLogOverlay
+      v-if="showTaskLogs && selectedCampaign"
+      :open="showTaskLogs"
+      :campaign-id="selectedCampaign.id"
+      @close="closeTaskLogsModal"
+    />
   </div>
 </template>
 
@@ -208,6 +245,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 import SecondaryButton from '@/components/SecondaryButton.vue'
+import VolunteerReportModal from '@/components/VolunteerReportModal.vue'
+import VolunteerTaskLogOverlay from '@/components/VolunteerTaskLogOverlay.vue'
 
 // Interfaces
 interface Campaign {
@@ -243,6 +282,11 @@ const stateName = ref(route.params.stateName as string)
 const stateData = ref<StateData | null>(null)
 const loading = ref(false)
 const error = ref('')
+
+// Modal state
+const showVolunteerReportModal = ref(false)
+const showTaskLogs = ref(false)
+const selectedCampaign = ref<Campaign | null>(null)
 
 // Fetch state details
 const fetchStateDetails = async () => {
@@ -302,6 +346,36 @@ const formatDate = (dateString: string) => {
     month: 'short',
     day: 'numeric'
   })
+}
+
+// New methods for campaign actions
+const viewVolunteerReports = (campaignId: number) => {
+  // Find the campaign by ID
+  const campaign = stateData.value?.campaigns.find(c => c.id === campaignId)
+  if (campaign) {
+    selectedCampaign.value = campaign
+    showVolunteerReportModal.value = true
+  }
+}
+
+const viewTaskLogs = (campaignId: number) => {
+  // Find the campaign by ID
+  const campaign = stateData.value?.campaigns.find(c => c.id === campaignId)
+  if (campaign) {
+    selectedCampaign.value = campaign
+    showTaskLogs.value = true
+  }
+}
+
+// Function to close modals
+const closeVolunteerReportModal = () => {
+  showVolunteerReportModal.value = false
+  selectedCampaign.value = null
+}
+
+const closeTaskLogsModal = () => {
+  showTaskLogs.value = false
+  selectedCampaign.value = null
 }
 
 // Lifecycle

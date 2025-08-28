@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import PrimaryButton from '@/components/PrimaryButton.vue'
-import VolunteerReportModal from '@/components/VolunteerReportModal.vue'
-import VolunteerTaskLogOverlay from '@/components/VolunteerTaskLogOverlay.vue'
 
 interface Campaign {
   id: number;
@@ -25,17 +22,6 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-// State
-const showVolunteerReportModal = ref(false);
-const selectedCampaign = ref<Campaign | null>(null);
-const showTaskLogs = ref(false);
-const taskLogCampaign = ref<Campaign | null>(null);
-
-function openTaskLogs(campaign: Campaign) {
-  taskLogCampaign.value = campaign;
-  showTaskLogs.value = true;
-}
-
 // Computed property to sort campaigns by priority
 const sortedCampaigns = computed(() => {
   const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
@@ -53,18 +39,6 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
-// Function to view volunteer reports
-const viewVolunteerReports = (campaign: Campaign) => {
-  selectedCampaign.value = campaign;
-  showVolunteerReportModal.value = true;
-};
-
-// Function to close volunteer report modal
-const closeVolunteerReportModal = () => {
-  showVolunteerReportModal.value = false;
-  selectedCampaign.value = null;
-};
-
 // Function to close main modal
 const closeModal = () => {
   emit('close');
@@ -72,12 +46,12 @@ const closeModal = () => {
 </script>
 
 <template>
-  <!-- Modal Backdrop (hidden while viewing task logs) -->
-  <div
-    v-if="!showTaskLogs"
-  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-    @click.self="closeModal"
-  >
+  <div>
+    <!-- Modal Backdrop -->
+    <div
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      @click.self="closeModal"
+    >
     <!-- Modal Content -->
     <div
       class="rounded-xl shadow-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-white backdrop-blur-sm"
@@ -130,21 +104,7 @@ const closeModal = () => {
                 </p>
               </div>
 
-              <!-- Action Button (only for NGO staff) -->
-        <div v-if="isNgoStaff" class="ml-4 flex flex-col gap-2 w-40">
-                <PrimaryButton
-                  variant="primary"
-                  @click="viewVolunteerReports(campaign)"
-          class="px-4 py-2 text-xs w-full tracking-wide"
-                >
-                  View Reports
-                </PrimaryButton>
-                <button
-                  type="button"
-                  @click="openTaskLogs(campaign)"
-          class="bg-blue-600 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-700 text-xs w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 tracking-wide"
-                >View Task Logs</button>
-              </div>
+              <!-- Action buttons removed - using new flow: map->state->campaign->reports only -->
             </div>
           </div>
         </div>
@@ -163,18 +123,8 @@ const closeModal = () => {
         </button>
       </div>
     </div>
-  </div>
+    </div>
 
-  <!-- Volunteer Report Modal -->
-  <VolunteerReportModal
-    v-if="showVolunteerReportModal && selectedCampaign"
-    :campaign="selectedCampaign"
-    @close="closeVolunteerReportModal"
-  />
-  <VolunteerTaskLogOverlay
-    v-if="showTaskLogs"
-    :open="showTaskLogs"
-    :campaign-id="taskLogCampaign?.id || null"
-    @close="() => { showTaskLogs = false; taskLogCampaign = null }"
-  />
+    <!-- Task logs and volunteer reports now only available through new flow: map->state->campaign->reports -->
+  </div>
 </template>

@@ -104,13 +104,6 @@ const getPriorityColor = (priority: string) => {
               <p class="text-sm text-gray-600">by {{ campaign.ngo_name || 'Unknown NGO' }}</p>
               <p class="text-xs text-gray-500 mt-1">{{ campaign.disaster_name }}</p>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-blue-500 cursor-pointer hover:text-blue-700" title="View Details">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </span>
-            </div>
           </div>
         </li>
       </ul>
