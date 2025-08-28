@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('aid_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('disaster_id')->nullable()->constrained('disasters')->onDelete('set null');
+            // Direct campaign reference (replaces legacy disaster_id)
+            $table->foreignId('campaign_id')->nullable()->constrained('disaster_campaign_assignments')->onDelete('set null');
             $table->foreignId('requester_id')->constrained('users')->onDelete('cascade');
             $table->string('location');
             $table->enum('aid_type', ['financial', 'medical', 'resource']);
@@ -26,7 +27,7 @@ return new class extends Migration
 
             // Foreign key constraints
             $table->foreign('requester_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index(['disaster_id', 'status']);
+            $table->index(['campaign_id', 'status']);
             $table->index(['requester_id']);
             $table->index(['urgency']);
         });

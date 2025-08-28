@@ -18,7 +18,6 @@ class Task extends Model
     'campaign_id',
         'assigned_to',
         'created_by',
-        'task_type',
         'aid_request_id',
         'location',
         'start_time',

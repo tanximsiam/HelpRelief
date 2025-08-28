@@ -8,7 +8,7 @@ interface VolunteerTaskLog {
   report: string
   check_in?: string
   check_out?: string
-  task?: { task_type?: string }
+  task?: { aid_type?: string }
   volunteer?: { name?: string }
   placeholder?: boolean
 }
@@ -54,7 +54,7 @@ function volunteerName(log: VolunteerTaskLog) {
           </tr>
           <tr v-for="log in logs" :key="log.id" class="border-t border-slate-200 hover:bg-slate-50">
             <td class="px-4 py-2 font-medium text-slate-800">#{{ log.task_id }}</td>
-            <td class="px-4 py-2">{{ log.task?.task_type || '-' }}</td>
+            <td class="px-4 py-2">{{ log.task?.aid_type || '-' }}</td>
             <td class="px-4 py-2">{{ volunteerName(log) }}</td>
             <td class="px-4 py-2">
               <span :class="[

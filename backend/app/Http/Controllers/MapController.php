@@ -122,8 +122,8 @@ class MapController extends Controller
             ->count();
 
         // Count beneficiaries reached (completed aid requests) for disasters in this state
-        $beneficiariesReached = AidRequest::whereIn('disaster_id', $disasterIds)
-            ->where('status', 'completed')
+        $beneficiariesReached = AidRequest::whereHas('campaign', function($q) use ($disasterIds){ $q->whereIn('disaster_id',$disasterIds); })
+            ->where('status','completed')
             ->count();
 
         // Get basic statistics
@@ -190,19 +190,20 @@ class MapController extends Controller
             'Kurigram' => 'Rangpur',
         ];
 
-    // Raw aggregation by original stored location (district OR division)
-        $raw = AidRequest::join('users', 'aid_requests.requester_id', '=', 'users.id')
-            ->join('volunteer_registrations', 'users.id', '=', 'volunteer_registrations.user_id')
-            ->where('volunteer_registrations.ngo_id', $ngoId)
+        // Filter strictly by campaigns that belong to this NGO (not by volunteer registrations)
+        // Ensures only aid requests under this NGO's assigned campaigns are counted.
+        $raw = AidRequest::join('disaster_campaign_assignments as dca', 'aid_requests.campaign_id', '=', 'dca.id')
+            ->join('disasters', 'dca.disaster_id', '=', 'disasters.id')
+            ->where('dca.ngo_id', $ngoId)
             ->select(
-                'aid_requests.location',
+                'disasters.location',
                 DB::raw('COUNT(*) as request_count'),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='low' THEN 1 ELSE 0 END) as low_count"),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='medium' THEN 1 ELSE 0 END) as medium_count"),
                 DB::raw("SUM(CASE WHEN aid_requests.urgency='high' THEN 1 ELSE 0 END) as high_count"),
-        DB::raw("SUM(CASE WHEN aid_requests.urgency='critical' THEN 1 ELSE 0 END) as critical_count")
+                DB::raw("SUM(CASE WHEN aid_requests.urgency='critical' THEN 1 ELSE 0 END) as critical_count")
             )
-            ->groupBy('aid_requests.location')
+            ->groupBy('disasters.location')
             ->get();
 
         // Fold into division buckets
@@ -281,11 +282,12 @@ class MapController extends Controller
             return response()->json(['error' => 'Invalid state name'], 422);
         }
 
+        // Filter by campaigns belonging to this NGO whose disaster location matches the requested division
         $requests = AidRequest::with(['requester:id,name'])
-            ->join('users', 'aid_requests.requester_id', '=', 'users.id')
-            ->join('volunteer_registrations', 'users.id', '=', 'volunteer_registrations.user_id')
-            ->where('volunteer_registrations.ngo_id', $ngoId)
-            ->where('aid_requests.location', $match)
+            ->join('disaster_campaign_assignments as dca', 'aid_requests.campaign_id', '=', 'dca.id')
+            ->join('disasters', 'dca.disaster_id', '=', 'disasters.id')
+            ->where('dca.ngo_id', $ngoId)
+            ->where('disasters.location', $match)
             ->select('aid_requests.*')
             ->orderByRaw("(urgency='critical') DESC, (urgency='high') DESC, (urgency='medium') DESC, (urgency='low') DESC")
             ->orderBy('aid_requests.created_at','desc')
@@ -293,7 +295,7 @@ class MapController extends Controller
             ->get()
             ->map(function($r){ return [
                 'id' => $r->id,
-                'disaster_id' => $r->disaster_id,
+                'campaign_id' => $r->campaign_id,
                 'requester' => [ 'id' => $r->requester?->id, 'name' => $r->requester?->name ],
                 'aid_type' => $r->aid_type,
                 'urgency' => $r->urgency,

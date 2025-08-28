@@ -26,17 +26,20 @@ const form = reactive<FormState>({ campaign_id: '', aid_type: null, urgency: nul
 const campaigns = ref<Campaign[]>([])
 const loadingCampaigns = ref(false)
 const volunteerOnlyError = ref<string | null>(null)
+// Start as not a volunteer; flip to true only if API confirms access
+const isVolunteer = ref<boolean>(false)
 const submitting = ref(false)
 const errors = reactive<Record<string,string>>({})
 const successMessage = ref<string | null>(null)
 
-const emit = defineEmits<{ (e: 'submit', payload: any): void }>()
+const emit = defineEmits<{ (e: 'submit', payload: any): void; (e:'open-volunteer-registration'): void }>()
 
 // ---- Data loading ----
 async function loadVolunteerCampaigns() {
   loadingCampaigns.value = true
   try {
-    const { data } = await api.get('/campaigns/volunteer')
+  const { data } = await api.get('/campaigns/volunteer')
+  isVolunteer.value = true
     // Deduplicate by id in case backend returns accidental duplicates
     // First collapse by composite (disaster_id + ngo_id) to avoid legacy duplicates
     const composite = new Map<string, Campaign>()
@@ -53,6 +56,7 @@ async function loadVolunteerCampaigns() {
   } catch (e: any) {
     if (e.response?.status === 403) {
       volunteerOnlyError.value = 'Only active volunteers can submit aid requests.'
+      isVolunteer.value = false
     } else {
       errors.root = 'Failed to load campaigns'
     }
@@ -108,7 +112,14 @@ async function submit() {
 </script>
 
 <template>
-  <form class="space-y-8" @submit.prevent="submit">
+  <div v-if="!isVolunteer" class="p-6">
+    <h3 class="text-xl font-semibold">Volunteer registration required</h3>
+    <p class="mt-2 text-sm text-slate-600">You must register as a volunteer before submitting aid requests.</p>
+    <div class="mt-6 flex justify-end">
+      <button type="button" @click="emit('open-volunteer-registration')" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Register as Volunteer</button>
+    </div>
+  </div>
+  <form v-else class="space-y-8" @submit.prevent="submit">
     <div v-if="errors.root" class="rounded-md bg-red-50 p-3 text-sm text-red-700">{{ errors.root }}</div>
     <div v-if="successMessage" class="rounded-md bg-green-50 p-3 text-sm text-green-700">{{ successMessage }}</div>
 
@@ -124,6 +135,10 @@ async function submit() {
           <span v-if="loadingCampaigns" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400">⏳</span>
         </div>
         <p v-if="volunteerOnlyError" class="mt-1 text-sm text-red-600">{{ volunteerOnlyError }}</p>
+        <!-- Fallback inline registration button in case older cached template still shows form for non-volunteers -->
+        <div v-if="volunteerOnlyError && !isVolunteer" class="mt-3 flex justify-end">
+          <button type="button" @click="emit('open-volunteer-registration')" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Register as Volunteer</button>
+        </div>
         <p v-else-if="!loadingCampaigns && !campaigns.length" class="mt-1 text-sm text-slate-500">No active campaigns available.</p>
         <p v-if="errors.campaign_id" class="mt-1 text-sm text-red-600">{{ errors.campaign_id }}</p>
       </div>
@@ -155,7 +170,7 @@ async function submit() {
     </div>
 
     <div class="flex justify-end">
-      <PrimaryButton type="submit" :disabled="submitting || !form.disaster_id" variant="primary" class="px-8 py-3 text-lg min-w-[8rem]">
+  <PrimaryButton type="submit" :disabled="submitting || !form.campaign_id" variant="primary" class="px-8 py-3 text-lg min-w-[8rem]">
         <span v-if="!submitting">Submit</span>
         <span v-else>Submitting...</span>
       </PrimaryButton>

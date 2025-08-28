@@ -14,7 +14,8 @@ class VolunteerTaskLogController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = VolunteerTaskLog::with([
-            'task:id,disaster_id,task_type,location',
+            // include aid_type instead of removed task_type column
+            'task:id,disaster_id,aid_type,location',
             'volunteer:id,name',
             'startVerifiedBy:id,name',
             'endVerifiedBy:id,name'
@@ -65,7 +66,7 @@ class VolunteerTaskLogController extends Controller
                     'start_verified_by' => $user->id,
                 ]);
             }
-            $taskLog->load(['task:id,disaster_id,task_type,location','volunteer:id,name','startVerifiedBy:id,name','endVerifiedBy:id,name']);
+            $taskLog->load(['task:id,disaster_id,aid_type,location','volunteer:id,name','startVerifiedBy:id,name','endVerifiedBy:id,name']);
             return response()->json(['log' => $taskLog], 200);
 
         } catch (ValidationException $e) {
@@ -95,7 +96,7 @@ class VolunteerTaskLogController extends Controller
                     'report' => $validated['report'] ?? 'normal'
                 ]);
             }
-            $taskLog->load(['task:id,disaster_id,task_type,location','volunteer:id,name','startVerifiedBy:id,name','endVerifiedBy:id,name']);
+            $taskLog->load(['task:id,disaster_id,aid_type,location','volunteer:id,name','startVerifiedBy:id,name','endVerifiedBy:id,name']);
             return response()->json(['log' => $taskLog], 200);
 
         } catch (ValidationException $e) {
