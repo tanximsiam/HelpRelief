@@ -159,7 +159,7 @@
 import { SvgMap } from "vue3-svg-map"
 import bdMap from "@/assets/maps/bdMap.json"
 import "vue3-svg-map/style.css"
-import { ref, onMounted, defineEmits } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 import AidRequestsOverlay from '@/components/AidRequestsOverlay.vue'

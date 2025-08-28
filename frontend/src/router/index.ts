@@ -42,10 +42,11 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       meta: { requiresAuth: true },
-      redirect: (to) => {
-        // role-based redirect will also happen in global guard once user loaded
-        return { name: 'dashboard-role' }
-      }
+      component: {
+        render() {
+          return null
+        }
+      },
     },
     // Internal role resolution route (kept separate to avoid infinite redirect loops)
     {
@@ -147,7 +148,7 @@ router.beforeEach(async (to, from, next) => {
 
   // Ensure user loaded if we have a token but no user yet (for hard refresh)
   if (auth.token && !auth.user) {
-    try { await auth.fetchUser() } catch (e) { /* ignore */ }
+    try { await auth.fetchUser() } catch (e) { console.warn('fetchUser failed in router guard:', e) }
   }
 
   if (guestOnly && auth.isAuthenticated) {
@@ -159,8 +160,18 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // Role-based dashboard routing
-  if (to.name === 'dashboard' || to.name === 'dashboard-role') {
-    if (auth.isNGO) return next({ name: 'dashboard-ngo' })
+  if (to.name === 'dashboard') {
+    if (auth.isNGO) {return next({ name: 'dashboard-ngo' })}
+    return next({ name: 'dashboard-general' })
+  }
+
+  // Block NGO from visiting general dashboard directly
+  if (to.name === 'dashboard-general' && auth.isNGO) {
+    return next({ name: 'dashboard-ngo' })
+  }
+
+  // Block general users from visiting NGO dashboard
+  if (to.name === 'dashboard-ngo' && auth.isGeneral) {
     return next({ name: 'dashboard-general' })
   }
 

@@ -36,10 +36,10 @@ const options = computed<AidOption[]>(() => store.defaultAidOptions)
 function select(opt: AidOption) {
   store.setAidType(opt)
 }
-import { defineProps, defineEmits } from 'vue'
+import { defineProps } from 'vue'
 
-const props = defineProps<{ selected: string | null }>()
-const emit = defineEmits<{ (e: 'update:selected', value: string): void }>()
+defineProps<{ selected: string | null }>()
+defineEmits<{ (e: 'update:selected', value: string): void }>()
 
 const aidTypes = [
   { label: 'FINANCIAL', description: 'Monetary help', value: 'financial' },

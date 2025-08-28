@@ -5,7 +5,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173'], // or '*' for all
+    'allowed_origins' => ['http://localhost:5173', '*'], // or '*' for all
 
     'allowed_origins_patterns' => [],
 
