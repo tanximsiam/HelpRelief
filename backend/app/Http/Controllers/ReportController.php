@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Ngo;
 use App\Models\AidSupport;
+use App\Models\AidRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,13 +33,10 @@ class ReportController extends Controller
             ->with('disasterCampaignAssignments.disaster:id,title')
             ->findOrFail($ngoId);
 
-        // Manually calculate aid_requested
-        $aidRequested = 0;
-        foreach ($ngo->volunteers as $volunteer) {
-            if (method_exists($volunteer, 'aidRequests')) {
-                $aidRequested += $volunteer->aidRequests()->count();
-            }
-        }
+        // Count aid requests where requester is a volunteer registered under this NGO
+        $aidRequested = AidRequest::whereHas('requester.volunteerRegistration', function ($q) use ($ngoId) {
+            $q->where('ngo_id', $ngoId);
+        })->count();
         
         // Count all aid supplied to campaigns under this NGO (map by campaign_id)
         $campaignIds = $ngo->disasterCampaignAssignments->pluck('id')->all();
@@ -88,12 +86,10 @@ class ReportController extends Controller
 
         // Manually calculate aid_requested count via related users
         $report = $ngos->map(function ($ngo) {
-            // Count aid_requests via users who belong to this NGO
-            $aidRequested = 0;
-
-            foreach ($ngo->volunteers as $volunteer) {
-                $aidRequested += $volunteer->aidRequests()->count();
-            }
+            // Count aid requests where requester is a volunteer registered under this NGO
+            $aidRequested = AidRequest::whereHas('requester.volunteerRegistration', function ($q) use ($ngo) {
+                $q->where('ngo_id', $ngo->id);
+            })->count();
 
             // Count all aid supplied to campaigns under this NGO
             $campaignIds = $ngo->disasterCampaignAssignments->pluck('id')->all();
