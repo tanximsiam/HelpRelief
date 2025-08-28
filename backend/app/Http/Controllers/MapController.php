@@ -122,8 +122,8 @@ class MapController extends Controller
             ->count();
 
         // Count beneficiaries reached (completed aid requests) for disasters in this state
-        $beneficiariesReached = AidRequest::whereIn('disaster_id', $disasterIds)
-            ->where('status', 'completed')
+        $beneficiariesReached = AidRequest::whereHas('campaign', function($q) use ($disasterIds){ $q->whereIn('disaster_id',$disasterIds); })
+            ->where('status','completed')
             ->count();
 
         // Get basic statistics
@@ -301,7 +301,7 @@ class MapController extends Controller
             ->get()
             ->map(function($r){ return [
                 'id' => $r->id,
-                'disaster_id' => $r->disaster_id,
+                'campaign_id' => $r->campaign_id,
                 'requester' => [ 'id' => $r->requester?->id, 'name' => $r->requester?->name ],
                 'aid_type' => $r->aid_type,
                 'urgency' => $r->urgency,

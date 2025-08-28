@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use App\Models\Disaster; // added
+use App\Models\DisasterCampaignAssignment;
 
 class AidRequestController extends Controller
 {
@@ -38,8 +39,8 @@ class AidRequestController extends Controller
             $query->byUrgency($request->urgency);
         }
 
-        if ($request->has('disaster_id')) {
-            $query->where('disaster_id', $request->disaster_id);
+        if ($request->has('campaign_id')) {
+            $query->where('campaign_id', $request->campaign_id);
         }
 
         $aidRequests = $query
@@ -63,20 +64,30 @@ class AidRequestController extends Controller
         }
 
         try {
-            $validatedData = $request->validate([
-                'disaster_id' => 'required|exists:disasters,id',
-                // location removed; will be auto-populated from disaster
+            $validated = $request->validate([
+                'campaign_id' => 'required|exists:disaster_campaign_assignments,id',
                 'aid_type' => 'required|in:financial,medical,resource',
                 'urgency' => 'required|in:low,medium,high,critical',
                 'description' => 'required|string|max:1000',
             ]);
 
-            $disaster = Disaster::find($validatedData['disaster_id']);
-            $validatedData['location'] = $disaster?->location ?? '';
-            $validatedData['requester_id'] = $user->id;
-            $validatedData['status'] = 'pending';
+            $campaign = DisasterCampaignAssignment::with('disaster:id,location')->find($validated['campaign_id']);
+            if (!$campaign) {
+                return response()->json(['message' => 'Campaign not found'], 422);
+            }
+            $disaster = $campaign->disaster; // for location only
 
-            $aidRequest = AidRequest::create($validatedData);
+            $payload = [
+                'campaign_id' => $campaign->id,
+                'location' => $disaster?->location ?? '',
+                'aid_type' => $validated['aid_type'],
+                'urgency' => $validated['urgency'],
+                'description' => $validated['description'],
+                'requester_id' => $user->id,
+                'status' => 'pending',
+            ];
+
+            $aidRequest = AidRequest::create($payload);
 
             return response()->json([
                 'message' => 'Aid request submitted successfully.',
