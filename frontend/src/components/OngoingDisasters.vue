@@ -109,9 +109,6 @@ const closeAllDisastersModal = () => {
               </span>
             </div>
           </div>
-          <div class="mt-2 flex justify-end">
-            <a :href="`/disasters/${disaster.id}`" class="text-blue-500 text-sm hover:underline">View Details</a>
-          </div>
         </li>
       </ul>
     </div>
