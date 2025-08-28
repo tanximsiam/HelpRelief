@@ -53,10 +53,31 @@ class MapController extends Controller
         // Prepare response data for all states
         $stateData = [];
         foreach ($bangladeshStates as $state) {
+            $campaignCount = $campaignIntensity->get($state)?->campaign_count ?? 0;
+
+            // Get campaign IDs for this state and NGO
+            $campaignIds = DisasterCampaignAssignment::join('disasters', 'disaster_campaign_assignments.disaster_id', '=', 'disasters.id')
+                ->where('disaster_campaign_assignments.ngo_id', $ngoId)
+                ->where('disasters.location', $state)
+                ->where('disaster_campaign_assignments.status', 'active')
+                ->pluck('disaster_campaign_assignments.id');
+
+            // Count approved volunteers for campaigns in this state for this NGO
+            $activeVolunteers = VolunteerRegistration::whereIn('campaign_id', $campaignIds)
+                ->where('ngo_id', $ngoId)
+                ->where('status', 'approved')
+                ->count();
+
+            // Count aid supplied for campaigns in this state for this NGO
+            $aidDistributed = AidSupport::whereIn('campaign_id', $campaignIds)
+                ->count();
+
             $stateData[] = [
                 'name' => $state,
-                'campaign_count' => $campaignIntensity->get($state)?->campaign_count ?? 0,
-                'intensity' => $this->calculateIntensity($campaignIntensity->get($state)?->campaign_count ?? 0)
+                'campaign_count' => $campaignCount,
+                'intensity' => $this->calculateIntensity($campaignCount),
+                'active_volunteers' => $activeVolunteers,
+                'aid_distributed' => $aidDistributed
             ];
         }
 
@@ -94,6 +115,7 @@ class MapController extends Controller
             ->map(function ($assignment) {
                 return [
                     'id' => $assignment->id,
+                    'campaign_name' => $assignment->disaster->name . ' Relief Campaign',
                     'disaster_name' => $assignment->disaster->name,
                     'disaster_type' => $assignment->disaster->type,
                     'severity' => $assignment->disaster->severity,
@@ -103,29 +125,21 @@ class MapController extends Controller
                 ];
             });
 
-        // Get disaster IDs for this state and NGO
-        $disasterIds = DisasterCampaignAssignment::join('disasters', 'disaster_campaign_assignments.disaster_id', '=', 'disasters.id')
+        // Get campaign IDs for this state and NGO
+        $campaignIds = DisasterCampaignAssignment::join('disasters', 'disaster_campaign_assignments.disaster_id', '=', 'disasters.id')
             ->where('disaster_campaign_assignments.ngo_id', $ngoId)
             ->where('disasters.location', $stateName)
-            ->pluck('disaster_campaign_assignments.disaster_id');
+            ->where('disaster_campaign_assignments.status', 'active')
+            ->pluck('disaster_campaign_assignments.id');
 
-        // Count active volunteers for disasters in this state for this NGO
-        $activeVolunteers = VolunteerRegistration::whereIn('disaster_id', $disasterIds)
+        // Count approved volunteers for campaigns in this state for this NGO
+        $activeVolunteers = VolunteerRegistration::whereIn('campaign_id', $campaignIds)
             ->where('ngo_id', $ngoId)
-            ->whereIn('status', ['approved', 'active'])
+            ->where('status', 'approved')
             ->count();
 
-        // Count aid distributed (received aid supports) for disasters in this state for this NGO
-        // Note: `aid_supports` does not contain an `ngo_id` column; filter by joining to disaster_campaign_assignments
-        $aidDistributed = \App\Models\AidSupport::join('disaster_campaign_assignments as dca', 'aid_supports.campaign_id', '=', 'dca.id')
-            ->whereIn('dca.disaster_id', $disasterIds)
-            ->where('dca.ngo_id', $ngoId)
-            ->where('aid_supports.status', 'received')
-            ->count();
-
-        // Count beneficiaries reached (completed aid requests) for disasters in this state
-        $beneficiariesReached = AidRequest::whereHas('campaign', function($q) use ($disasterIds){ $q->whereIn('disaster_id',$disasterIds); })
-            ->where('status','completed')
+        // Count aid supplied for campaigns in this state for this NGO
+        $aidDistributed = AidSupport::whereIn('campaign_id', $campaignIds)
             ->count();
 
         // Get basic statistics
@@ -133,7 +147,6 @@ class MapController extends Controller
             'total_campaigns' => $campaigns->count(),
             'active_volunteers' => $activeVolunteers,
             'aid_distributed' => $aidDistributed,
-            'beneficiaries_reached' => $beneficiariesReached,
         ];
 
         return response()->json([
@@ -146,13 +159,14 @@ class MapController extends Controller
 
     /**
      * Calculate intensity level based on campaign count
+     * Low: 1, Medium: 2-4, High: 5+
      */
     private function calculateIntensity($campaignCount)
     {
         if ($campaignCount == 0) return 0;
-        if ($campaignCount <= 2) return 0.3;
-        if ($campaignCount <= 5) return 0.6;
-        return 1.0;
+        if ($campaignCount == 1) return 0.3;  // Low: 1
+        if ($campaignCount <= 4) return 0.6;  // Medium: 2-4
+        return 1.0;  // High: 5+
     }
 
     /**

@@ -35,7 +35,7 @@
       <!-- Content -->
       <div v-else-if="stateData">
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
@@ -83,118 +83,16 @@
               </div>
             </div>
           </div>
-
-          <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
-                  <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-sm font-medium text-gray-500">Beneficiaries Reached</h3>
-                <p class="text-2xl font-semibold text-gray-900">{{ stateData.statistics.beneficiaries_reached }}</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Campaigns List -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Active Campaigns</h2>
-          </div>
-
-          <div v-if="stateData.campaigns.length === 0" class="p-6 text-center text-gray-500">
-            <div class="mb-4">
-              <svg class="w-16 h-16 mx-auto text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No Active Campaigns</h3>
-            <p class="text-gray-500">There are currently no active disaster relief campaigns in {{ stateName }}.</p>
-          </div>
-
-          <div v-else class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Campaign
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Disaster Type
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Severity
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Help Needed
-                  </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created Date
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="campaign in stateData.campaigns" :key="campaign.id" class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ campaign.disaster_name }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{{ campaign.disaster_type }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                      :class="getSeverityColor(campaign.severity)"
-                    >
-                      {{ campaign.severity }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                      :class="getStatusColor(campaign.status)"
-                    >
-                      {{ campaign.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ campaign.help_needed || 'General aid' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ formatDate(campaign.created_at) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex space-x-2">
-                      <button
-                        @click="viewVolunteerReports(campaign.id)"
-                        class="text-blue-600 hover:text-blue-900 text-xs font-medium px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-md transition"
-                      >
-                        View Reports
-                      </button>
-                      <button
-                        @click="viewTaskLogs(campaign.id)"
-                        class="text-green-600 hover:text-green-900 text-xs font-medium px-3 py-1 bg-green-50 hover:bg-green-100 rounded-md transition"
-                      >
-                        Task Logs
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <StateCampaignList
+          :campaigns="stateData.campaigns"
+          :state-name="stateName"
+          :is-ngo-staff="isNgoStaff"
+          @view-volunteer-reports="viewVolunteerReports"
+          @toggle-campaign-status="toggleCampaignStatus"
+        />
 
         <!-- Placeholder for Future Features -->
         <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -229,28 +127,21 @@
       :show="showVolunteerReportModal"
       @close="closeVolunteerReportModal"
     />
-
-    <!-- Task Logs Overlay -->
-    <VolunteerTaskLogOverlay
-      v-if="showTaskLogs && selectedCampaign"
-      :open="showTaskLogs"
-      :campaign-id="selectedCampaign.id"
-      @close="closeTaskLogsModal"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { api } from '@/lib/api'
-import SecondaryButton from '@/components/SecondaryButton.vue'
-import VolunteerReportModal from '@/components/VolunteerReportModal.vue'
-import VolunteerTaskLogOverlay from '@/components/VolunteerTaskLogOverlay.vue'
+import { api } from '../lib/api'
+import SecondaryButton from '../components/SecondaryButton.vue'
+import VolunteerReportModal from '../components/VolunteerReportModal.vue'
+import StateCampaignList from '../components/StateCampaignList.vue'
 
 // Interfaces
 interface Campaign {
   id: number
+  campaign_name: string
   disaster_name: string
   disaster_type: string
   severity: string
@@ -263,7 +154,6 @@ interface Statistics {
   total_campaigns: number
   active_volunteers: number
   aid_distributed: number
-  beneficiaries_reached: number
 }
 
 interface StateData {
@@ -282,10 +172,10 @@ const stateName = ref(route.params.stateName as string)
 const stateData = ref<StateData | null>(null)
 const loading = ref(false)
 const error = ref('')
+const isNgoStaff = ref(false)
 
 // Modal state
 const showVolunteerReportModal = ref(false)
-const showTaskLogs = ref(false)
 const selectedCampaign = ref<Campaign | null>(null)
 
 // Fetch state details
@@ -314,40 +204,6 @@ const goBack = () => {
   router.push('/dashboard')
 }
 
-const getSeverityColor = (severity: string) => {
-  switch (severity?.toLowerCase()) {
-    case 'high':
-      return 'bg-red-100 text-red-800'
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'low':
-      return 'bg-green-100 text-green-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
-
-const getStatusColor = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case 'active':
-      return 'bg-green-100 text-green-800'
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'completed':
-      return 'bg-blue-100 text-blue-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
 // New methods for campaign actions
 const viewVolunteerReports = (campaignId: number) => {
   // Find the campaign by ID
@@ -358,28 +214,41 @@ const viewVolunteerReports = (campaignId: number) => {
   }
 }
 
-const viewTaskLogs = (campaignId: number) => {
-  // Find the campaign by ID
-  const campaign = stateData.value?.campaigns.find(c => c.id === campaignId)
-  if (campaign) {
-    selectedCampaign.value = campaign
-    showTaskLogs.value = true
-  }
-}
-
 // Function to close modals
 const closeVolunteerReportModal = () => {
   showVolunteerReportModal.value = false
   selectedCampaign.value = null
 }
 
-const closeTaskLogsModal = () => {
-  showTaskLogs.value = false
-  selectedCampaign.value = null
+// Function to toggle campaign status
+const toggleCampaignStatus = async (campaign: Campaign) => {
+  try {
+    const newStatus = campaign.status === 'active' ? 'inactive' : 'active'
+    await api.patch(`/campaigns/${campaign.id}/status`, { status: newStatus })
+
+    // Update the campaign status in local state
+    campaign.status = newStatus
+  } catch (error) {
+    console.error('Failed to update campaign status:', error)
+    // You could add a toast notification here
+  }
+}
+
+// Function to check NGO staff status
+const checkNgoStaffStatus = async () => {
+  try {
+    const staffRes = await api.get('/ngo-staff')
+    const staffData = staffRes.data
+    isNgoStaff.value = staffData.role === 'ngo_staff' && staffData.ngo_id
+  } catch (error) {
+    console.log('User is not NGO staff:', error)
+    isNgoStaff.value = false
+  }
 }
 
 // Lifecycle
 onMounted(() => {
+  checkNgoStaffStatus()
   fetchStateDetails()
 })
 </script>

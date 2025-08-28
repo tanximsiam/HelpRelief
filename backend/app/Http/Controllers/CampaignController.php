@@ -314,4 +314,48 @@ class CampaignController extends Controller
             return response()->json(['error' => 'Failed to fetch volunteer campaigns'], 500);
         }
     }
+
+    /**
+     * Update campaign status (active/inactive)
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $user = $request->user();
+
+            // Find the NGO staff record for the user
+            $staff = NgoStaff::where('user_id', $user->id)->first();
+
+            if (!$staff) {
+                return response()->json(['error' => 'Unauthorized. User is not an NGO staff member.'], 403);
+            }
+
+            $ngoId = $staff->ngo_id;
+
+            // Find the campaign and verify it belongs to the user's NGO
+            $campaign = DisasterCampaignAssignment::where('id', $id)
+                ->where('ngo_id', $ngoId)
+                ->first();
+
+            if (!$campaign) {
+                return response()->json(['error' => 'Campaign not found or access denied'], 404);
+            }
+
+            // Validate the status
+            $request->validate([
+                'status' => 'required|in:active,inactive'
+            ]);
+
+            // Update the status
+            $campaign->status = $request->status;
+            $campaign->save();
+
+            return response()->json([
+                'message' => 'Campaign status updated successfully',
+                'campaign' => $this->formatCampaignData($campaign->load(['disaster', 'ngo']))
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update campaign status'], 500);
+        }
+    }
 }

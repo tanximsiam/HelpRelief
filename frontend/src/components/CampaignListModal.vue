@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { api } from '../lib/api'
+import VolunteerTaskLogOverlay from './VolunteerTaskLogOverlay.vue'
 
 interface Campaign {
   id: number;
@@ -22,6 +24,10 @@ const emit = defineEmits<{
   close: [];
 }>();
 
+// Task logs state
+const showTaskLogs = ref(false);
+const selectedCampaignForLogs = ref<Campaign | null>(null);
+
 // Computed property to sort campaigns by priority
 const sortedCampaigns = computed(() => {
   const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
@@ -36,6 +42,32 @@ const getPriorityColor = (priority: string) => {
     case 'medium': return 'bg-yellow-100 text-yellow-800';
     case 'low': return 'bg-green-100 text-green-800';
     default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// Function to open task logs
+const openTaskLogs = (campaign: Campaign) => {
+  selectedCampaignForLogs.value = campaign;
+  showTaskLogs.value = true;
+};
+
+// Function to close task logs
+const closeTaskLogs = () => {
+  showTaskLogs.value = false;
+  selectedCampaignForLogs.value = null;
+};
+
+// Function to toggle campaign status
+const toggleCampaignStatus = async (campaign: Campaign) => {
+  try {
+    const newStatus = campaign.status === 'active' ? 'inactive' : 'active';
+    await api.patch(`/campaigns/${campaign.id}/status`, { status: newStatus });
+    
+    // Update the campaign status in the local state
+    campaign.status = newStatus;
+  } catch (error) {
+    console.error('Failed to update campaign status:', error);
+    // You could add a toast notification here
   }
 };
 
@@ -104,7 +136,22 @@ const closeModal = () => {
                 </p>
               </div>
 
-              <!-- Action buttons removed - using new flow: map->state->campaign->reports only -->
+              <!-- Action buttons for NGO staff -->
+              <div v-if="isNgoStaff" class="flex gap-2 ml-4">
+                <button
+                  @click="openTaskLogs(campaign)"
+                  class="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600 transition-colors"
+                >
+                  View Task Log
+                </button>
+                <button
+                  @click="toggleCampaignStatus(campaign)"
+                  :class="campaign.status === 'active' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'"
+                  class="text-white px-3 py-1 rounded-md text-xs transition-colors"
+                >
+                  {{ campaign.status === 'active' ? 'Inactive' : 'Activate' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -125,6 +172,11 @@ const closeModal = () => {
     </div>
     </div>
 
-    <!-- Task logs and volunteer reports now only available through new flow: map->state->campaign->reports -->
+    <!-- Use existing VolunteerTaskLogOverlay component -->
+    <VolunteerTaskLogOverlay
+      :open="showTaskLogs"
+      :campaignId="selectedCampaignForLogs?.id || null"
+      @close="closeTaskLogs"
+    />
   </div>
 </template>

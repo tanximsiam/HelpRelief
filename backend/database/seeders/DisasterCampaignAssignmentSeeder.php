@@ -16,11 +16,20 @@ class DisasterCampaignAssignmentSeeder extends Seeder
     Task::query()->delete();
     DisasterCampaignAssignment::query()->delete();
 
-        // One unique campaign per disaster (assign different NGOs if available)
+        // Multiple campaigns per disaster to support one-volunteer-per-campaign constraint
         $rows = [
+            // Disaster 1 (Cyclone Remal in Chittagong) - NGO 1 - Multiple campaigns
             ['disaster_id' => 1, 'ngo_id' => 1, 'help_needed' => 'high', 'status' => 'active'],
+            ['disaster_id' => 1, 'ngo_id' => 1, 'help_needed' => 'medium', 'status' => 'active'],
+            ['disaster_id' => 1, 'ngo_id' => 1, 'help_needed' => 'low', 'status' => 'active'],
+
+            // Disaster 2 (Flood in Sylhet) - NGO 1 - Multiple campaigns
+            ['disaster_id' => 2, 'ngo_id' => 1, 'help_needed' => 'high', 'status' => 'active'],
             ['disaster_id' => 2, 'ngo_id' => 1, 'help_needed' => 'medium', 'status' => 'active'],
-            ['disaster_id' => 3, 'ngo_id' => 1, 'help_needed' => 'medium', 'status' => 'inactive'],
+            ['disaster_id' => 2, 'ngo_id' => 2, 'help_needed' => 'medium', 'status' => 'active'],
+
+            // Disaster 3 (Earthquake in Dhaka) - NGO 1 - Multiple campaigns
+            ['disaster_id' => 3, 'ngo_id' => 1, 'help_needed' => 'high', 'status' => 'active'],
         ];
 
         foreach ($rows as $r) {
