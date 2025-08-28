@@ -33,9 +33,7 @@ use App\Http\Controllers\AidNeedController;
 use App\Http\Controllers\ReportController;
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum');
 
 // TEST ROUTES
 Route::get('/users', [UserController::class, 'index']);

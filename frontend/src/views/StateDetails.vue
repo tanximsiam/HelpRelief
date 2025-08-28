@@ -8,12 +8,15 @@
             <h1 class="text-3xl font-bold text-gray-900">{{ stateName }} Operations</h1>
             <p class="text-gray-600 mt-1">Detailed view of campaigns and activities</p>
           </div>
-          <button
+          <SecondaryButton
             @click="goBack"
-            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+            class="px-4 py-2"
           >
-            ← Back to Dashboard
-          </button>
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Dashboard
+          </SecondaryButton>
         </div>
       </div>
 
@@ -204,6 +207,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/lib/api'
+import SecondaryButton from '@/components/SecondaryButton.vue'
 
 // Interfaces
 interface Campaign {

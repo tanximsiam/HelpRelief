@@ -6,7 +6,6 @@ import CampaignMap from '@/components/CampaignMap.vue'
 import ReportDisasterModal from '@/components/ReportDisasterModal.vue'
 import RegisterCampaignModal from '@/components/RegisterCampaignModal.vue'
 import NgoReportModal from '@/components/NgoReportModal.vue'
-import ProfileView from '@/components/ProfileView.vue'
 import { useAuth } from '@/stores/auth'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -153,11 +152,7 @@ const closeNgoReport = () => {
 
       <DisasterAlerts v-if="alerts.length" :alerts="alerts" @refresh="loadAlerts" />
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" style="height:600px;">
-        <div class="lg:col-span-1" style="height:600px;">
-          <ProfileView class="h-full" />
-        </div>
-
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="height:600px;">
         <div class="lg:col-span-1" style="height:600px;">
           <div class="space-y-6 h-full overflow-y-auto">
             <OngoingDisasters ref="disastersRef" />

@@ -3,13 +3,21 @@ import { useAuth } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 
-import UserDashboard from '../views/UserDashboard.vue' // legacy / shared if needed
 import GeneralUserDashboard from '../views/GeneralUserDashboard.vue'
 import NgoStaffDashboard from '../views/NgoStaffDashboard.vue'
 import OathHandler from '../views/OathHandler.vue'
 import DonationReportsView from '@/views/DonationReportsView.vue'
 import MyRequestsView from '@/views/MyRequestsView.vue'
 import StateDetails from '@/views/StateDetails.vue'
+
+// Extend RouteMeta to include our custom properties
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+    guestOnly?: boolean
+    requiresRole?: 'general' | 'ngo_staff' | 'admin'
+  }
+}
 
 
 
@@ -42,29 +50,22 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       meta: { requiresAuth: true },
-      component: {
-        render() {
-          return null
-        }
-      },
-    },
-    // Internal role resolution route (kept separate to avoid infinite redirect loops)
-    {
-      path: '/dashboard/role',
-      name: 'dashboard-role',
-      meta: { requiresAuth: true },
-      component: UserDashboard, // temporary shell; replaced in guard
+      redirect: () => {
+        // This redirect will be overridden by the router guard for role-based routing
+        // But it serves as a fallback and ensures the route exists
+        return { name: 'dashboard-general' }
+      }
     },
     {
       path: '/dashboard/general',
       name: 'dashboard-general',
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, requiresRole: 'general' },
       component: GeneralUserDashboard,
     },
     {
       path: '/dashboard/ngo',
       name: 'dashboard-ngo',
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, requiresRole: 'ngo_staff' },
       component: NgoStaffDashboard,
     },
 
@@ -134,6 +135,12 @@ const router = createRouter({
       props: true,
       meta: { requiresAuth: true }
     },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: () => import('../views/ProfileView.vue'),
+      meta: { requiresAuth: true }
+    },
 
 
   ],
@@ -146,10 +153,18 @@ router.beforeEach(async (to, from, next) => {
 
   const requiresAuth = to.meta.requiresAuth
   const guestOnly = to.meta.guestOnly
+  const requiresRole = to.meta.requiresRole
 
   // Ensure user loaded if we have a token but no user yet (for hard refresh)
   if (auth.token && !auth.user) {
-    try { await auth.fetchUser() } catch (e) { console.warn('fetchUser failed in router guard:', e) }
+    try {
+      await auth.fetchUser()
+    } catch (e) {
+      console.error('Failed to fetch user in router guard:', e)
+      // If fetch fails, clear invalid token and redirect to login
+      auth.logout()
+      return next({ name: 'login' })
+    }
   }
 
   if (guestOnly && auth.isAuthenticated) {
@@ -160,19 +175,33 @@ router.beforeEach(async (to, from, next) => {
     return next({ name: 'login', query: { redirect: to.fullPath } })
   }
 
-  // Role-based dashboard routing
-  if (to.name === 'dashboard') {
-    if (auth.isNGO) {return next({ name: 'dashboard-ngo' })}
-    return next({ name: 'dashboard-general' })
+  // Role-based access control
+  if (requiresRole && auth.isAuthenticated) {
+    const userRole = auth.user?.role
+
+    // Check if user has the required role
+    if (requiresRole === 'general' && userRole !== 'general') {
+      // NGO staff or admin trying to access general dashboard - redirect to their dashboard
+      if (userRole === 'ngo_staff') {
+        return next({ name: 'dashboard-ngo' })
+      }
+      // For other roles, redirect to home or appropriate page
+      return next({ name: 'home' })
+    }
+
+    if (requiresRole === 'ngo_staff' && userRole !== 'ngo_staff') {
+      // General user trying to access NGO dashboard - redirect to general dashboard
+      if (userRole === 'general') {
+        return next({ name: 'dashboard-general' })
+      }
+      // For other roles, redirect to home or appropriate page
+      return next({ name: 'home' })
+    }
   }
 
-  // Block NGO from visiting general dashboard directly
-  if (to.name === 'dashboard-general' && auth.isNGO) {
-    return next({ name: 'dashboard-ngo' })
-  }
-
-  // Block general users from visiting NGO dashboard
-  if (to.name === 'dashboard-ngo' && auth.isGeneral) {
+  // Role-based dashboard routing for /dashboard
+  if (to.name === 'dashboard' || to.name === 'dashboard-role') {
+    if (auth.isNGO) return next({ name: 'dashboard-ngo' })
     return next({ name: 'dashboard-general' })
   }
 
