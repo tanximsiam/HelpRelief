@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('task_id')->constrained('tasks');
             $table->foreignId('volunteer_id')->constrained('users');
-            $table->foreignId('disaster_id')->constrained('disasters');
+            $table->foreignId('campaign_id')->constrained('disaster_campaign_assignments');
             $table->enum('status', ['assigned', 'accepted', 'started', 'ended', 'verified', 'abandoned', 'failed']);
             $table->timestamp('check_in')->nullable();
             $table->timestamp('check_out')->nullable();

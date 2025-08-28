@@ -24,6 +24,7 @@ use App\Http\Controllers\VolunteerTaskLogController;
 
 use App\Http\Controllers\DonationReportController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\TaskController;
 
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\DisasterAlertController;
@@ -148,10 +149,13 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // Campaign routes
     Route::get('/campaigns', [CampaignController::class, 'index']);
     Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
+    Route::get('/campaigns/volunteer', [CampaignController::class, 'volunteerCampaigns']);
     Route::get('/campaigns/stats', [CampaignController::class, 'campaignStats']);
     Route::get('/campaigns/{campaignId}/volunteers', [CampaignController::class, 'campaignVolunteers']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
     Route::post('/campaigns', [CampaignController::class, 'store']);
+    // Tasks for a campaign
+    Route::get('/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
 
     // Map routes for NGO dashboard
     Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']);
@@ -182,4 +186,9 @@ Route::get('/alerts', [DisasterAlertController::class, 'new']);
 Route::get('/alerts-all', [DisasterAlertController::class, 'index']);
 // Test route outside auth middleware for development (REMOVE IN PRODUCTION)
 Route::get('/test/aid-need', [MapController::class, 'testAidNeed']);
+
+// TEMP: expose campaign tasks without auth for local debugging (auto-disabled outside local)
+if (app()->environment('local')) {
+    Route::get('/debug/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
+}
 

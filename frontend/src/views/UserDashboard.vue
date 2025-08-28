@@ -20,6 +20,9 @@ const showAidRequestModal = ref(false);
 const isNgoStaff = ref(false);
 const ngoId = ref<number | null>(null);
 
+// Volunteer state
+const isVolunteer = ref(false);
+
 // Fetch user data and check NGO staff status when component mounts
 onMounted(async () => {
   if (auth.token && !auth.user) {
@@ -41,6 +44,14 @@ onMounted(async () => {
   } catch (error) {
     console.log('User is not NGO staff or error checking status:', error);
     isNgoStaff.value = false;
+  }
+
+  // Check if user is a volunteer by attempting to fetch volunteer campaigns
+  try {
+    await api.get('/campaigns/volunteer');
+    isVolunteer.value = true;
+  } catch (e:any) {
+    isVolunteer.value = false;
   }
 });
 
@@ -83,9 +94,9 @@ function handleAidRequestSubmit() {
         <!-- Action Buttons -->
         <div class="flex gap-6 items-center">
           <button
+            v-if="isVolunteer"
             @click="openAidRequestModal"
-            class="text-2xl font-medium inline-flex items-center gap-1 transition-colors
-                  text-blue-600 hover:text-blue-700 underline underline-offset-4"
+            class="text-2xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
           >
             Request for Aid
           </button>

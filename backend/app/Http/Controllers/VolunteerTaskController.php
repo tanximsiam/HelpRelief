@@ -14,13 +14,13 @@ class VolunteerTaskController extends Controller
     {
         $user = $request->user();
 
-        $tasks = Task::where('assigned_to', $user->id)
-            ->with('disaster')
+    $tasks = Task::where('assigned_to', $user->id)
+        ->with('campaign.disaster')
             ->get()
             ->map(function ($task) use ($user) {
                 return [
                     'task_id' => $task->id,
-                    'disaster' => $task->disaster->name ?? '',
+            'disaster' => $task->campaign->disaster->name ?? '',
                     'location' => $task->location,
                     'aid_type' => $task->aid_type,
                     'urgency' => $task->urgency,
@@ -108,6 +108,7 @@ class VolunteerTaskController extends Controller
             'start_time'   => 'required|date',
             'end_time'     => 'required|date|after:start_time',
             'location'     => 'required|string',
+            'campaign_id'  => 'required|exists:disaster_campaign_assignments,id'
         ]);
 
         if ($aidRequest->status === 'assigned') {
@@ -118,7 +119,7 @@ class VolunteerTaskController extends Controller
         $user = $request->user();
         $ngo_id = $user->ngoStaff->ngo_id;
         $task = Task::create([
-            'disaster_id'    => $request->disaster_id,
+            'campaign_id'    => $request->campaign_id,
             'aid_request_id' => $aidRequest->id,
             'assigned_to'    => $request->volunteer_id,
             'created_by'     => $ngo_id, // NGO user
@@ -166,9 +167,9 @@ class VolunteerTaskController extends Controller
     {
 
         $request->validate([
-            'disaster_id' => 'required|exists:disasters,id',
+            'campaign_id' => 'required|exists:disaster_campaign_assignments,id',
             'volunteer_id' => 'required|exists:users,id',
-            'task_type' => 'required|in:aid_request,delivery', // Can be aid request or delivery
+            'task_type' => 'required|in:aid_request,delivery',
             'location' => 'required|string',
             'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
@@ -180,7 +181,7 @@ class VolunteerTaskController extends Controller
         $user = $request->user();
         $ngo_id = $user->ngoStaff->ngo_id;
         $task = Task::create([
-            'disaster_id' => $request->disaster_id,
+            'campaign_id' => $request->campaign_id,
             'assigned_to' => $request->volunteer_id,
             'created_by' => $ngo_id,
             'task_type' => $request->task_type,

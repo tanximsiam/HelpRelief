@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import PrimaryButton from '@/components/PrimaryButton.vue'
 import VolunteerReportModal from '@/components/VolunteerReportModal.vue'
+import VolunteerTaskLogOverlay from '@/components/VolunteerTaskLogOverlay.vue'
 
 interface Campaign {
   id: number;
@@ -27,6 +28,13 @@ const emit = defineEmits<{
 // State
 const showVolunteerReportModal = ref(false);
 const selectedCampaign = ref<Campaign | null>(null);
+const showTaskLogs = ref(false);
+const taskLogCampaign = ref<Campaign | null>(null);
+
+function openTaskLogs(campaign: Campaign) {
+  taskLogCampaign.value = campaign;
+  showTaskLogs.value = true;
+}
 
 // Computed property to sort campaigns by priority
 const sortedCampaigns = computed(() => {
@@ -64,24 +72,25 @@ const closeModal = () => {
 </script>
 
 <template>
-  <!-- Modal Backdrop -->
+  <!-- Modal Backdrop (hidden while viewing task logs) -->
   <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    @click="closeModal"
+    v-if="!showTaskLogs"
+  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    @click.self="closeModal"
   >
     <!-- Modal Content -->
     <div
-      class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+      class="rounded-xl shadow-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-white backdrop-blur-sm"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 class="text-2xl font-bold">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white/70 backdrop-blur-sm rounded-t-xl">
+        <h2 class="text-xl font-semibold tracking-tight text-slate-800">
           {{ isNgoStaff ? 'My NGO Campaigns' : 'All Ongoing Campaigns' }}
         </h2>
         <button
           @click="closeModal"
-          class="text-gray-400 hover:text-gray-600 text-xl"
+          class="text-slate-400 hover:text-slate-600 transition"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -90,60 +99,65 @@ const closeModal = () => {
       </div>
 
       <!-- Modal Body -->
-      <div class="px-6 py-4">
+      <div class="px-6 py-5">
         <div v-if="sortedCampaigns.length" class="space-y-4">
           <div
             v-for="campaign in sortedCampaigns"
             :key="campaign.id"
-            class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            class="p-5 bg-white/80 backdrop-blur rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition group"
           >
             <div class="flex justify-between items-start">
               <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="text-lg font-semibold text-gray-900">{{ campaign.name }}</h3>
+                <div class="flex flex-wrap items-center gap-3 mb-2">
+                  <h3 class="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition">{{ campaign.name }}</h3>
                   <span
-                    :class="['px-2 py-1 text-xs rounded-full', getPriorityColor(campaign.help_needed)]"
+                    :class="['px-2 py-0.5 text-[11px] rounded-full font-medium', getPriorityColor(campaign.help_needed)]"
                   >
                     {{ campaign.help_needed.toUpperCase() }} PRIORITY
                   </span>
-                  <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                  <span class="px-2 py-0.5 text-[11px] bg-blue-100 text-blue-800 rounded-full font-medium">
                     {{ campaign.status.toUpperCase() }}
                   </span>
                 </div>
-                <p class="text-gray-600 mb-1">
+                <p class="text-slate-600 mb-1 text-sm">
                   <strong>Disaster:</strong> {{ campaign.disaster_name }}
                 </p>
-                <p class="text-gray-600 mb-1">
+                <p class="text-slate-600 mb-1 text-sm">
                   <strong>Managed by:</strong> {{ campaign.ngo_name || 'Unknown NGO' }}
                 </p>
-                <p class="text-sm text-gray-500">
-                  Campaign ID: {{ campaign.id }}
+                <p class="text-xs text-slate-500 font-mono">
+                  #ID {{ campaign.id }}
                 </p>
               </div>
 
               <!-- Action Button (only for NGO staff) -->
-              <div v-if="isNgoStaff" class="ml-4">
+        <div v-if="isNgoStaff" class="ml-4 flex flex-col gap-2 w-40">
                 <PrimaryButton
                   variant="primary"
                   @click="viewVolunteerReports(campaign)"
-                  class="px-4 py-2 text-sm"
+          class="px-4 py-2 text-xs w-full tracking-wide"
                 >
                   View Reports
                 </PrimaryButton>
+                <button
+                  type="button"
+                  @click="openTaskLogs(campaign)"
+          class="bg-blue-600 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-700 text-xs w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 tracking-wide"
+                >View Task Logs</button>
               </div>
             </div>
           </div>
         </div>
         <div v-else class="text-center py-8">
-          <p class="text-gray-500 text-lg">No campaigns found.</p>
+      <p class="text-slate-500 text-sm">No campaigns found.</p>
         </div>
       </div>
 
       <!-- Modal Footer -->
-      <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+    <div class="px-6 py-4 border-t border-slate-200 flex justify-end bg-white/70 backdrop-blur rounded-b-xl">
         <button
           @click="closeModal"
-          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+      class="px-4 py-2 text-xs font-medium text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           Close
         </button>
@@ -156,5 +170,11 @@ const closeModal = () => {
     v-if="showVolunteerReportModal && selectedCampaign"
     :campaign="selectedCampaign"
     @close="closeVolunteerReportModal"
+  />
+  <VolunteerTaskLogOverlay
+    v-if="showTaskLogs"
+    :open="showTaskLogs"
+    :campaign-id="taskLogCampaign?.id || null"
+    @close="() => { showTaskLogs = false; taskLogCampaign = null }"
   />
 </template>

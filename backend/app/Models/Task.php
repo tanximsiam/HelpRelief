@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\AidRequest;
 use App\Models\VolunteerTaskLog;
+use App\Models\DisasterCampaignAssignment;
 
 class Task extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'disaster_id',
+    'campaign_id',
         'assigned_to',
         'created_by',
         'task_type',
@@ -35,9 +36,9 @@ class Task extends Model
     ];
 
     // Relationships
-    public function disaster(): BelongsTo
+    public function campaign(): BelongsTo
     {
-        return $this->belongsTo(Disaster::class);
+        return $this->belongsTo(DisasterCampaignAssignment::class, 'campaign_id');
     }
 
     public function assignedTo(): BelongsTo

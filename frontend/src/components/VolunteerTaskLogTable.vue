@@ -10,15 +10,23 @@ interface VolunteerTaskLog {
   check_out?: string
   task?: { task_type?: string }
   volunteer?: { name?: string }
+  placeholder?: boolean
 }
 
 const props = defineProps<{ logs: VolunteerTaskLog[], loading: boolean, search: string }>()
-const emit = defineEmits<{ (e:'checkOut', log: VolunteerTaskLog): void }>()
+const emit = defineEmits<{ (e:'checkOut', log: VolunteerTaskLog): void; (e:'checkIn', log: VolunteerTaskLog): void }>()
 
 function formatDate(dt?: string) {
   if (!dt) return '-'
   const d = new Date(dt)
   return d.toLocaleString()
+}
+
+function volunteerName(log: VolunteerTaskLog) {
+  return log.volunteer?.name
+    || (log as any).assigned_to_name
+    || (log as any).task?.assigned_to_name
+    || '-'
 }
 </script>
 
@@ -47,13 +55,18 @@ function formatDate(dt?: string) {
           <tr v-for="log in logs" :key="log.id" class="border-t border-slate-200 hover:bg-slate-50">
             <td class="px-4 py-2 font-medium text-slate-800">#{{ log.task_id }}</td>
             <td class="px-4 py-2">{{ log.task?.task_type || '-' }}</td>
-            <td class="px-4 py-2">{{ log.volunteer?.name || '-' }}</td>
+            <td class="px-4 py-2">{{ volunteerName(log) }}</td>
             <td class="px-4 py-2">
-              <span class="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold capitalize text-blue-700 ring-1 ring-inset ring-blue-600/10">{{ log.status }}</span>
+              <span :class="[
+                'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ring-inset',
+                log.placeholder ? 'bg-slate-50 text-slate-600 ring-slate-500/10' :
+                (log.check_out ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' :
+                 (log.check_in ? 'bg-blue-50 text-blue-700 ring-blue-600/10' : 'bg-amber-50 text-amber-700 ring-amber-600/10'))
+              ]">{{ log.status }}</span>
             </td>
             <td class="px-4 py-2 whitespace-nowrap">
               <template v-if="log.check_in">{{ formatDate(log.check_in) }}</template>
-              <span v-else class="text-xs text-slate-400">—</span>
+              <button v-else @click="$emit('checkIn', log)" class="text-xs font-semibold text-emerald-600 hover:underline">Check In</button>
             </td>
             <td class="px-4 py-2 whitespace-nowrap">
               <template v-if="log.check_out">{{ formatDate(log.check_out) }}</template>

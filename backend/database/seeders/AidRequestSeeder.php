@@ -23,7 +23,7 @@ class AidRequestSeeder extends Seeder
         }
 
         $now = Carbon::now();
-        $aidTypes = ['medical','financial','physical','food'];
+        $aidTypes = ['medical','financial','resource'];
         $requesterIds = [1,3]; // volunteer users from UserSeeder
 
         // Severity → target counts per urgency profile

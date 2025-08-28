@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { api } from '@/lib/api'
 import Modal from '@/components/Modal.vue'
 import VolunteerTaskLogTable from '@/components/VolunteerTaskLogTable.vue'
@@ -13,23 +13,23 @@ interface VolunteerTaskLog {
   check_out?: string
   task?: { task_type?: string }
   volunteer?: { name?: string }
+  placeholder?: boolean
 }
 
-const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{ (e:'close'): void }>()
+const props = defineProps<{ open: boolean; campaignId?: number | null }>()
+defineEmits<{ (e:'close'): void }>()
 
 const logs = ref<VolunteerTaskLog[]>([])
 const loading = ref(false)
-const search = ref('')
-const newTaskId = ref<string>('')
-const starting = ref(false)
-const startError = ref<string | null>(null)
-const startMessage = ref<string | null>(null)
+const campaignName = ref<string>('')
+const tasks = ref<any[]>([])
 
 async function fetchLogs() {
   loading.value = true
   try {
-    const { data } = await api.get<VolunteerTaskLog[]>('/task-logs')
+    const params: Record<string, any> = {}
+    if (props.campaignId) params.campaign_id = props.campaignId
+    const { data } = await api.get<VolunteerTaskLog[]>('/task-logs', { params })
     logs.value = data
   } catch (e) {
     console.error('Failed to fetch task logs', e)
@@ -38,47 +38,16 @@ async function fetchLogs() {
   }
 }
 
-function refresh() { fetchLogs() }
-
-watch(() => props.open, (val) => { if (val) fetchLogs() })
-
-const filteredLogs = computed(() => {
-  if (!search.value) return logs.value
-  const q = search.value.toLowerCase()
-  return logs.value.filter(l =>
-    (l.volunteer?.name || '').toLowerCase().includes(q) ||
-    (l.task?.task_type || '').toLowerCase().includes(q) ||
-    String(l.task_id).includes(q)
-  )
-})
-
-function formatDate(dt?: string) {
-  if (!dt) return '-'
-  const d = new Date(dt)
-  return d.toLocaleString()
-}
-
-async function startTask() {
-  if (!newTaskId.value) return
-  starting.value = true
-  startError.value = null
-  startMessage.value = null
+async function fetchTasks() {
+  if (!props.campaignId) { tasks.value = []; return }
   try {
-    const taskIdNum = Number(newTaskId.value)
-    if (isNaN(taskIdNum)) return
-    const { data } = await api.post('/task-log/checkin', { task_id: taskIdNum })
-    if (data.log) {
-      const idx = logs.value.findIndex(l => l.id === data.log.id)
-      if (idx !== -1) logs.value[idx] = data.log
-      else logs.value.unshift(data.log)
-      newTaskId.value = ''
-      startMessage.value = data.message || 'Task started.'
-    }
-  } catch (e: any) {
-    console.error('Failed to start task', e)
-    startError.value = e?.response?.data?.message || 'Failed to start task'
+    const { data } = await api.get(`/campaigns/${props.campaignId}/tasks`)
+    const arr = Array.isArray(data) ? data : (Array.isArray(data?.tasks) ? data.tasks : [])
+    tasks.value = arr
+  } catch (e) {
+    console.error('Failed to fetch tasks for placeholders', e)
+    tasks.value = []
   }
-  finally { starting.value = false }
 }
 
 async function checkOut(log: VolunteerTaskLog) {
@@ -90,6 +59,54 @@ async function checkOut(log: VolunteerTaskLog) {
     }
   } catch (e) { console.error('Check-out failed', e) }
 }
+
+async function checkIn(log: VolunteerTaskLog) {
+  try {
+    const { data } = await api.post('/task-log/checkin', { task_id: log.task_id })
+    if (data.log) {
+      const idx = logs.value.findIndex(l => l.id === data.log.id)
+      if (idx !== -1) logs.value[idx] = data.log
+      else logs.value.unshift(data.log)
+    }
+  } catch (e) { console.error('Check-in failed', e) }
+}
+
+async function fetchCampaignName() {
+  if (!props.campaignId) { campaignName.value = ''; return }
+  try {
+    const { data } = await api.get(`/campaigns/${props.campaignId}`)
+    campaignName.value = data?.disaster?.name || data?.disaster_name || data?.name || `Campaign #${props.campaignId}`
+  } catch { campaignName.value = `Campaign #${props.campaignId}` }
+}
+
+watch(() => props.open, (val) => { if (val) { fetchLogs(); fetchTasks(); fetchCampaignName() } })
+watch(() => props.campaignId, (newId, oldId) => { if (props.open && newId && newId !== oldId) { fetchLogs(); fetchTasks(); fetchCampaignName() } })
+onMounted(() => { if (props.open) { fetchLogs(); fetchTasks(); fetchCampaignName() } })
+
+// Merge real logs with placeholder rows for tasks that have no log yet.
+const displayLogs = computed<VolunteerTaskLog[]>(() => {
+  if (!tasks.value.length) return logs.value
+  const withLogTaskIds = new Set(logs.value.map(l => l.task_id))
+  const placeholders: VolunteerTaskLog[] = tasks.value
+    .filter(t => !withLogTaskIds.has(t.id))
+    .map(t => ({
+      id: -t.id, // negative sentinel
+      task_id: t.id,
+      status: 'unstarted',
+      report: '-',
+  task: { task_type: t.task_type || t.type || 'task' },
+  volunteer: t.assigned_to_name ? { name: t.assigned_to_name } : undefined,
+      placeholder: true
+    }))
+  return [...logs.value, ...placeholders].sort((a,b) => {
+    // Sort: placeholders last, newest (by check_in) first
+    if (a.placeholder && !b.placeholder) return 1
+    if (!a.placeholder && b.placeholder) return -1
+    const at = a.check_in || ''
+    const bt = b.check_in || ''
+    return at === bt ? 0 : (at > bt ? -1 : 1)
+  })
+})
 </script>
 
 <style scoped>
@@ -99,34 +116,26 @@ async function checkOut(log: VolunteerTaskLog) {
 </style>
 
 <template>
-  <Modal :show="open" title="Volunteer Task Logs" maxWidth="max-w-6xl" @close="$emit('close')">
+  <Modal :show="open" :title="'Task Logs' + (campaignId ? ' – ' + (campaignName || ('Campaign #' + campaignId)) : '')" maxWidth="max-w-4xl" zIndex="z-60" @close="$emit('close')">
     <div class="space-y-6">
-      <!-- Controls -->
-      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div class="flex flex-wrap gap-3 items-center">
-          <form @submit.prevent="startTask" class="flex items-stretch gap-2">
-            <input v-model="newTaskId" placeholder="Task ID" class="w-32 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20" />
-            <button type="submit" :disabled="starting || !newTaskId" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">{{ starting ? 'Starting...' : 'Start Task' }}</button>
-          </form>
-          <input v-model="search" placeholder="Search task type / volunteer / id" class="w-72 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20" />
-          <button @click="refresh" type="button" class="rounded-md border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-600 hover:text-white">Refresh</button>
-        </div>
-        <p class="text-sm text-slate-500" v-if="!loading">Showing {{ filteredLogs.length }} of {{ logs.length }} logs</p>
+      <div class="rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 shadow-sm flex items-center justify-between">
+        <p class="text-xs text-slate-600">
+          <span v-if="!loading">Showing <span class="font-semibold text-slate-800">{{ logs.length }}</span> logs</span>
+          <span v-else class="italic">Loading logs...</span>
+        </p>
       </div>
-      <div v-if="startError || startMessage" class="-mt-2">
-        <p v-if="startError" class="text-sm text-red-600 font-medium">{{ startError }}</p>
-        <p v-else-if="startMessage" class="text-sm text-green-600 font-medium">{{ startMessage }}</p>
+      <div class="rounded-xl border border-slate-200 shadow-sm overflow-hidden bg-white">
+        <VolunteerTaskLogTable
+          :logs="displayLogs"
+          :loading="loading"
+          search=""
+          @checkOut="checkOut"
+          @checkIn="checkIn"
+        />
       </div>
-
-      <VolunteerTaskLogTable
-        :logs="filteredLogs"
-        :loading="loading"
-        :search="search"
-        @checkOut="checkOut"
-      />
-
-      <div class="flex justify-end">
-        <button type="button" @click="$emit('close')" class="rounded-md bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white">Close</button>
+      <div class="flex justify-between items-center gap-4 pt-2 border-t border-slate-200">
+        <p class="text-xs text-slate-400">Updated {{ new Date().toLocaleTimeString() }}</p>
+        <button type="button" @click="$emit('close')" class="rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white">Close</button>
       </div>
     </div>
   </Modal>
