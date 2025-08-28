@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AidRequest;
-use App\Models\Disaster;
+use App\Models\DisasterCampaignAssignment;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
 
@@ -14,11 +14,11 @@ class AidRequestSeeder extends Seeder
      */
     public function run(): void
     {
-        // Dynamically seed aid requests based on existing disasters
-        // Uses each disaster's location (district or division); MapController normalizes districts.
-        // Only seed aid requests for ACTIVE disasters
-        $disasters = Disaster::where('status', 'active')->get();
-        if ($disasters->isEmpty()) {
+        // Dynamically seed aid requests based on active campaigns (disaster_campaign_assignments)
+        $campaigns = DisasterCampaignAssignment::with('disaster')
+            ->where('status', 'active')
+            ->get();
+        if ($campaigns->isEmpty()) {
             return; // nothing active to seed against
         }
 
@@ -33,12 +33,14 @@ class AidRequestSeeder extends Seeder
             'high' =>   ['critical' => 3, 'high' => 4, 'medium' => 4, 'low' => 2],
         ];
 
-        foreach ($disasters as $disaster) {
+        foreach ($campaigns as $campaign) {
+            $disaster = $campaign->disaster; // related disaster for severity + location
+            if (!$disaster) { continue; }
             $profile = $severityProfiles[$disaster->severity] ?? $severityProfiles['medium'];
             foreach ($profile as $urgency => $count) {
                 for ($i = 0; $i < $count; $i++) {
                     AidRequest::create([
-                        'disaster_id' => $disaster->id,
+                        'campaign_id' => $campaign->id,
                         'requester_id' => $requesterIds[$i % count($requesterIds)],
                         'location' => $disaster->location, // raw location, mapping handled later
                         'aid_type' => $aidTypes[array_rand($aidTypes)],

@@ -10,7 +10,7 @@ class AidRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'disaster_id',
+    'campaign_id',
         'requester_id',
         'location',
         'aid_type',
@@ -25,6 +25,11 @@ class AidRequest extends Model
     public function requester()
     {
         return $this->belongsTo(User::class, 'requester_id');
+    }
+
+    public function campaign()
+    {
+        return $this->belongsTo(DisasterCampaignAssignment::class, 'campaign_id');
     }
 
     //Scope a query to only include requests with a specific urgency level.
