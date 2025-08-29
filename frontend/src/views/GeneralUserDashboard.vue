@@ -72,11 +72,27 @@ async function handleResignVolunteer() {
             <span class="text-2xl font-normal">people are depending on you.</span>
           </h1>
         </div>
-        <div class="flex gap-6 items-center">
-          <button v-if="auth.user && auth.user.volunteer && volunteerTaskStore.hasActiveTask" @click="openAidRequestModal" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Request for Aid</button>
-          <button v-if="auth.user && !auth.user.volunteer" @click="openVolunteerModal" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Volunteer registrations</button>
-          <button v-if="auth.user && auth.user.volunteer" @click="handleResignVolunteer" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-red-600 hover:text-red-700 underline underline-offset-4">Resign as Volunteer</button>
-          <PrimaryButton variant="primary" @click="openAidSupport" class="px-8 py-4 text-l">Offer Help</PrimaryButton>
+        <div class="flex gap-4 items-center">
+          <button
+            v-if="auth.user && auth.user.volunteer && volunteerTaskStore.hasActiveTask"
+            @click="openAidRequestModal"
+            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
+          >Request Aid</button>
+          <button
+            v-if="auth.user && !auth.user.volunteer"
+            @click="openVolunteerModal"
+            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
+          >Volunteer Registration</button>
+          <button
+            v-if="auth.user && auth.user.volunteer"
+            @click="handleResignVolunteer"
+            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-red-600 hover:text-red-700 underline underline-offset-4"
+          >Resign as Volunteer</button>
+          <PrimaryButton
+            variant="primary"
+            @click="openAidSupport"
+            class="px-5 py-2 text-sm font-medium"
+          >Offer Help</PrimaryButton>
           <Modal :show="!!resignError || !!resignSuccess" title="Volunteer Resignation" @close="() => { resignError = ''; resignSuccess = '' }">
             <div v-if="resignError" class="text-red-600 text-lg">{{ resignError }}</div>
             <div v-if="resignSuccess" class="text-green-600 text-lg">{{ resignSuccess }}</div>
