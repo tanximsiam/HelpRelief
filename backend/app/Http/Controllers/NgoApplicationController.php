@@ -5,6 +5,8 @@ use App\Models\NgoApplication;
 use App\Models\Ngo;
 use App\Models\NgoInviteLink;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NgoOnboardingMail;
 
 use Illuminate\Http\Request;
 
@@ -24,10 +26,34 @@ class NgoApplicationController extends Controller
         ]);
 
         $application = NgoApplication::create($validated);
+        $application->status = 'approved';
+        $application->save();
+
+        // Create NGO from application
+        $ngo = Ngo::create([
+            'name' => $application->organization,
+            'description' => $application->description,
+            'email' => $application->email,
+            'phone' => $application->phone,
+            'based_in' => $application->based_in,
+            'approved' => true,
+        ]);
+
+        $invite = \App\Models\NgoInviteLink::create([
+            'ngo_id' => $ngo->id,
+            'token' => \Illuminate\Support\Str::random(32),
+            'privilege_role' => 'ngo_admin',
+            'is_primary' => true,
+        ]);
+
+        $inviteLink = url('api/auth/redirect?token=' . $invite->token);
+        Mail::to($ngo->email)->send(new NgoOnboardingMail($inviteLink));
 
         return response()->json([
-            'message' => 'Application submitted successfully',
-            'data' => $application,
+            'message' => 'NGO Application submitted, approved, and NGO created',
+            'ngo_id' => $ngo->id,
+            'invite_link' => $inviteLink,
+            'application' => $application,
         ], 201);
     }
 
@@ -62,10 +88,14 @@ class NgoApplicationController extends Controller
             'is_primary' => true,
         ]);
 
+        $inviteLink = url('api/auth/redirect?token=' . $invite->token);
+        // Send onboarding mail
+        Mail::to($ngo->email)->send(new NgoOnboardingMail($inviteLink));
+
         return response()->json([
             'message' => 'NGO Application approved and NGO created',
             'ngo_id' => $ngo->id,
-            'invite_link' => url('api/auth/redirect?token=' . $invite->token)
+            'invite_link' => $inviteLink
         ]);
     }
 

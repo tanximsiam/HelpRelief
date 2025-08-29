@@ -46,6 +46,22 @@ class NgoStaffController extends Controller
         ]);
     }
 
+    /**
+     * Get privilege_role for logged-in NGO staff
+     */
+    public function privilegeRole(Request $request)
+    {
+        $user = $request->user();
+        $ngoStaff = NgoStaff::where('user_id', $user->id)->first();
+        if (!$ngoStaff) {
+            return response()->json(['error' => 'Not an NGO staff'], 404);
+        }
+        return response()->json([
+            'privilege_role' => $ngoStaff->privilege_role,
+            'ngo_id' => $ngoStaff->ngo_id,
+        ]);
+    }
+
     public function destroy($id)
     {
         NgoStaff::findOrFail($id)->delete();

@@ -24,6 +24,7 @@ export const useAuth = defineStore("auth", {
     user: null as User | null,
     token: localStorage.getItem("hr_token") || "",
     loading: false,
+    ngoPrivilegeRole: null as string | null,
   }),
   getters: {
     isAuthenticated: (s) => !!s.token && !!s.user,
@@ -47,10 +48,15 @@ export const useAuth = defineStore("auth", {
       this.loading = true;
       try {
         const { data } = await api.post("/login", payload);
-        // expect { token, user }
         this.token = data.token;
         localStorage.setItem("hr_token", this.token);
         this.user = data.user as User;
+        // Fetch NGO privilege role if user is NGO staff
+        if (this.user?.role === 'ngo_staff') {
+          await this.fetchNgoPrivilegeRole();
+        } else {
+          this.ngoPrivilegeRole = null;
+        }
       } finally {
         this.loading = false;
       }
@@ -64,6 +70,21 @@ export const useAuth = defineStore("auth", {
       if (!this.token) return;
       const { data } = await api.get("/user");
       this.user = data as User;
+      if (this.isNGO) {
+        await this.fetchNgoPrivilegeRole();
+      } else {
+        this.ngoPrivilegeRole = null;
+      }
+    },
+    async fetchNgoPrivilegeRole() {
+      try {
+        const { data } = await api.get('/ngo-staff/privilege-role');
+        this.ngoPrivilegeRole = data.privilege_role || null;
+        // Optionally store ngo_id if needed:
+        if (data.ngo_id) this.user = { ...this.user, ngo_id: data.ngo_id };
+      } catch {
+        this.ngoPrivilegeRole = null;
+      }
     },
     async logout() {
       try { await api.post("/logout"); } catch {}

@@ -29,12 +29,18 @@
         <div class="flex items-center gap-8">
           <!-- Center: Links (desktop) -->
           <NavBarButtons
-            v-for="l in links"
+            v-for="l in (auth.isAuthenticated ? authedLinks : guestLinks)"
             :key="l.to"
             :label="l.label"
             :to="l.to"
           />
-
+          <NavBarButtons
+            v-if="auth.isAuthenticated && auth.ngoPrivilegeRole === 'ngo_admin'"
+            v-for="l in adminLinks"
+            :key="l.to"
+            :label="l.label"
+            :to="l.to"
+          />
           <!-- Right: Login pill OR Username -->
           <LoginButton v-if="!auth.isAuthenticated" variant="primary"/>
           <ProfileButton
@@ -94,12 +100,19 @@ const auth = useAuth()
 
 // const open = ref(false)
 
-const links = props.links ?? [
-  { label: 'For Users', to: '/for-users' },
-  { label: 'My NGO', to: '/dashboard' },
-  { label: 'About Us', to: '/about' },
-  { label: 'Our partners', to: '/partners' },
+const guestLinks = [
+  { label: 'Home', to: '/' },
+  { label: 'For NGOs', to: '/ngo-apply' }
 ]
+const authedLinks = [
+  { label: 'Home', to: '/' },
+  { label: 'Dashboard', to: '/dashboard' }
+]
+
+const adminLinks = [
+  { label: 'Onboarding', to: '/onboarding' }
+]
+
 
 onMounted(() => { if (auth.token && !auth.user) auth.fetchUser() })
 

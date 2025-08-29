@@ -32,11 +32,11 @@ class VolunteerReportController extends Controller
             $campaign = \App\Models\DisasterCampaignAssignment::where('id', $campaignId)
                 ->where('ngo_id', $ngoId)
                 ->first();
-            
+
             if (!$campaign) {
                 return response()->json(['error' => 'Campaign not found or unauthorized'], 404);
             }
-            
+
             $disasterId = $campaign->disaster_id;
         } elseif (!$disasterId) {
             return response()->json(['error' => 'Either campaign_id or disaster_id is required'], 400);
@@ -91,14 +91,14 @@ class VolunteerReportController extends Controller
         } else {
             // Enhanced logic - all registered volunteers + task statistics
             $volunteerQuery = VolunteerRegistration::where('ngo_id', $ngoId);
-            
+
             if ($campaignId) {
                 $volunteerQuery->where('campaign_id', $campaignId);
             } else {
                 // Fallback to disaster_id filter if no campaign_id
                 $volunteerQuery->where('disaster_id', $disasterId);
             }
-            
+
             $volunteerStats = $volunteerQuery->selectRaw('
                     COUNT(*) as total_volunteers,
                     SUM(CASE WHEN status = "approved" THEN 1 ELSE 0 END) as active_volunteers,
@@ -149,7 +149,7 @@ class VolunteerReportController extends Controller
                 'active_volunteers' => $volunteerStats->active_volunteers ?? 0,
                 'flagged_volunteers' => $volunteerStats->flagged_volunteers ?? 0,
                 'pending_volunteers' => 0, // No longer used
-                'rejected_volunteers' => 0, // No longer used  
+                'rejected_volunteers' => 0, // No longer used
                 'completed_volunteers' => 0, // No longer used
                 'volunteers_with_tasks' => $volunteersWithTasks,
                 'tasks_assigned' => $tasksAssigned,
@@ -181,11 +181,11 @@ class VolunteerReportController extends Controller
             $campaign = \App\Models\DisasterCampaignAssignment::where('id', $campaignId)
                 ->where('ngo_id', $ngoId)
                 ->first();
-            
+
             if (!$campaign) {
                 return response()->json(['error' => 'Campaign not found or unauthorized'], 404);
             }
-            
+
             $disasterId = $campaign->disaster_id;
         } elseif (!$disasterId) {
             return response()->json(['error' => 'Either campaign_id or disaster_id is required'], 400);
@@ -241,14 +241,14 @@ class VolunteerReportController extends Controller
         } else {
             // Enhanced logic - all registered volunteers with task data if available
             $volunteerQuery = VolunteerRegistration::where('ngo_id', $ngoId);
-            
+
             if ($campaignId) {
                 $volunteerQuery->where('campaign_id', $campaignId);
             } else {
                 // Fallback to disaster_id filter if no campaign_id
                 $volunteerQuery->where('disaster_id', $disasterId);
             }
-            
+
             $volunteers = $volunteerQuery->with(['user:id,name,email,phone'])
                 ->get()
                 ->map(function ($registration) use ($disasterId) {
@@ -317,7 +317,7 @@ class VolunteerReportController extends Controller
         $campaign = \App\Models\DisasterCampaignAssignment::where('id', $campaignId)
             ->where('ngo_id', $ngoId)
             ->first();
-        
+
         if (!$campaign) {
             return response()->json(['error' => 'Campaign not found or unauthorized'], 404);
         }

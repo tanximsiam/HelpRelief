@@ -19,6 +19,7 @@ const showAidSupport = ref(false)
 const showVolunteerModal = ref(false)
 const resignError = ref('')
 const resignSuccess = ref('')
+const taskActivityRef = ref<{ refreshData: () => Promise<void> } | null>(null)
 
 onMounted(async () => {
   if (auth.token && !auth.user) {
@@ -36,10 +37,12 @@ const closeAidRequestModal = () => showAidRequestModal.value = false
 const handleAidRequestSubmit = () => { alert('Aid request submitted successfully!'); closeAidRequestModal() }
 const openVolunteerModal = () => showVolunteerModal.value = true
 const closeVolunteerModal = () => showVolunteerModal.value = false
+
 const handleVolunteerSubmit = () => {
   alert('Volunteer registration submitted successfully!')
   if (auth.user) auth.user.volunteer = true
   closeVolunteerModal()
+
 }
 const openAidSupport = () => showAidSupport.value = true
 const closeAidSupport = () => showAidSupport.value = false
@@ -57,9 +60,11 @@ async function handleResignVolunteer() {
       volunteerTaskStore.hasActiveTask = false
     }
   } catch (err: any) {
+
     const resp = (err as any)?.response
     if (resp?.data?.error) {
       resignError.value = resp.data.error
+
     } else {
       resignError.value = 'Failed to resign. Please try again.'
     }
@@ -105,6 +110,7 @@ async function handleResignVolunteer() {
         </div>
       </div>
 
+
       <div class="space-y-10">
         <!-- Volunteer task panel (full width) -->
         <TaskActivityComponent v-if="auth.user && auth.user.volunteer" />
@@ -112,6 +118,7 @@ async function handleResignVolunteer() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <OngoingDisasters />
           <OngoingCampaigns />
+
         </div>
       </div>
     </main>

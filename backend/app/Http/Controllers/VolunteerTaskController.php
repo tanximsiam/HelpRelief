@@ -27,8 +27,6 @@ class VolunteerTaskController extends Controller
                     'urgency' => $task->urgency,
                     'start_time' => $task->start_time,
                     'status' => $task->status,
-                    // 'status' => $task->logs->first()->status ?? 'unassigned', // Default to 'unassigned' if no logs exist
-
                 ];
             });
 
@@ -202,7 +200,7 @@ class VolunteerTaskController extends Controller
             'aid_type' => $request->aid_type,
             'urgency' => $request->urgency,
             'description' => $request->description,
-            'status' => 'pending',
+            'status' => 'assigned',
         ]);
 
         // Mark volunteer unavailable after assignment
