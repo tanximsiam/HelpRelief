@@ -13,15 +13,32 @@ class VolunteerTaskController extends Controller
 {
     public function index(Request $request)
     {
+        $assignedTo = $request->query('assigned_to');
+        if ($assignedTo) {
+            $tasks = Task::where('assigned_to', $assignedTo)
+                ->with('campaign.disaster')
+                ->get()
+                ->map(function ($task) {
+                    return [
+                        'task_id' => $task->id,
+                        'disaster' => $task->campaign->disaster->name ?? '',
+                        'location' => $task->location,
+                        'aid_type' => $task->aid_type,
+                        'urgency' => $task->urgency,
+                        'start_time' => $task->start_time,
+                        'status' => $task->status,
+                    ];
+                });
+            return response()->json($tasks);
+        }
         $user = $request->user();
-
-    $tasks = Task::where('assigned_to', $user->id)
-        ->with('campaign.disaster')
+        $tasks = Task::where('assigned_to', $user->id)
+            ->with('campaign.disaster')
             ->get()
             ->map(function ($task) use ($user) {
                 return [
                     'task_id' => $task->id,
-            'disaster' => $task->campaign->disaster->name ?? '',
+                    'disaster' => $task->campaign->disaster->name ?? '',
                     'location' => $task->location,
                     'aid_type' => $task->aid_type,
                     'urgency' => $task->urgency,
@@ -29,7 +46,6 @@ class VolunteerTaskController extends Controller
                     'status' => $task->status,
                 ];
             });
-
         return response()->json($tasks);
     }
 
@@ -61,7 +77,7 @@ class VolunteerTaskController extends Controller
         ];
 
         if (!isset($allowedTransitions[$currentStatus]) || !in_array($newStatus, $allowedTransitions[$currentStatus])) {
-            return response()->json(['error' => 'Invalid transition'], 403);
+            return response()->json(['error' => 'Invalid transition', 'current' => $currentStatus, 'new' => $newStatus], 403);
         }
 
         $log->status = $newStatus;
