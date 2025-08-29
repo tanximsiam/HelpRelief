@@ -86,9 +86,10 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // NGO Staff
     Route::get('/ngo-staff', [NgoStaffController::class, 'me']);
     Route::delete('/ngo-staffs/{id}', [NgoStaffController::class, 'destroy']);
+    Route::get('/ngo-staff/privilege-role', [NgoStaffController::class, 'privilegeRole']);
 
     // Invite Accept (WIP)
-    Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
+    // Route::post('/ngo-invite/accept', [NgoInviteLinkController::class, 'accept']);
     Route::post('/ngo-invites', [NgoInviteLinkController::class, 'store']);
 
 
@@ -183,7 +184,9 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/map/aid-need', [MapController::class, 'getAidNeedByState']);
     Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
 
-    // Donation Reports by Campaign
+    // Invite Links
+    Route::post('/ngo-invite-links', [NgoInviteLinkController::class, 'store']);
+    Route::get('/ngo-invite-links', [NgoInviteLinkController::class, 'activeLinks']);
 });
 
 
@@ -194,8 +197,5 @@ Route::get('/alerts-all', [DisasterAlertController::class, 'index']);
 // Test route outside auth middleware for development (REMOVE IN PRODUCTION)
 Route::get('/test/aid-need', [MapController::class, 'testAidNeed']);
 
-// TEMP: expose campaign tasks without auth for local debugging (auto-disabled outside local)
-if (app()->environment('local')) {
-    Route::get('/debug/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
-}
+
 

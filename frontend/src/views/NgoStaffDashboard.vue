@@ -103,9 +103,9 @@ const handleCampaignCreated = (payload:any) => {
         <div>
           <h1 class="text-4xl font-bold text-black-800">
             Welcome {{ userName }}
-            <span v-if="ngoName" class="text-lg font-normal ml-2 text-gray-500">
+            <!-- <span v-if="ngoName" class="text-lg font-normal ml-2 text-gray-500">
               ({{ ngoName }})
-            </span>,
+            </span>, -->
             <span class="text-2xl font-normal">your impact extends across regions.</span>
           </h1>
         </div>

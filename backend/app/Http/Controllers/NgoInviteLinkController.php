@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\NgoInviteLink;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use App\Http\Controllers\AuthController;
-use App\Models\NgoStaff;
+
 
 class NgoInviteLinkController extends Controller
 {
@@ -50,4 +48,25 @@ class NgoInviteLinkController extends Controller
         $invite->save();
     }
 
+    public function activeLinks(Request $request)
+    {
+        $user = $request->user();
+        $ngoStaff = $user->ngoStaff;
+        $ngoId = $ngoStaff ? $ngoStaff->ngo_id : null;
+        if (!$ngoId) return response()->json(['error' => 'No ngo_id found for user', 'user' => $user], 400);
+        $links = NgoInviteLink::where('ngo_id', $ngoId)
+            ->where('is_primary', false)
+            ->get()
+            ->map(function ($l) {
+                return [
+                    'id' => $l->id,
+                    'link' => url('api/auth/redirect?token=' . $l->token),
+                    'expiry_date' => $l->expiry_date,
+                    'usage_limit' => $l->usage_limit,
+                    'used_count' => $l->used_count,
+                    'active' => $l->active,
+                ];
+            });
+        return response()->json($links);
+    }
 }

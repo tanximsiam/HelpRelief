@@ -147,6 +147,12 @@ const router = createRouter({
       name: 'ForNGO',
       component: () => import('@/views/ForNGOView.vue'),
     },
+    {
+      path: '/onboarding',
+      name: 'Onboarding',
+      component: () => import('@/views/OnboardingView.vue'),
+      meta: { requiresAuth: true }
+    },
 
   ],
 })

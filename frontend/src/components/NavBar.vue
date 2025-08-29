@@ -34,7 +34,13 @@
             :label="l.label"
             :to="l.to"
           />
-
+          <NavBarButtons
+            v-if="auth.isAuthenticated && auth.ngoPrivilegeRole === 'ngo_admin'"
+            v-for="l in adminLinks"
+            :key="l.to"
+            :label="l.label"
+            :to="l.to"
+          />
           <!-- Right: Login pill OR Username -->
           <LoginButton v-if="!auth.isAuthenticated" variant="primary"/>
           <ProfileButton
@@ -101,6 +107,10 @@ const guestLinks = [
 const authedLinks = [
   { label: 'Home', to: '/' },
   { label: 'Dashboard', to: '/dashboard' }
+]
+
+const adminLinks = [
+  { label: 'Onboarding', to: '/onboarding' }
 ]
 
 
