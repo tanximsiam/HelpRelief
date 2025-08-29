@@ -133,16 +133,13 @@ const handleCampaignCreated = (payload:any) => {
 
       <DisasterAlerts v-if="alerts.length" :alerts="alerts" @refresh="loadAlerts" />
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="height:600px;">
-        <div class="lg:col-span-1" style="height:600px;">
-          <div class="space-y-6 h-full overflow-y-auto">
-            <OngoingDisasters ref="disastersRef" />
-            <OngoingCampaigns ref="campaignsRef" />
-          </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-6">
+          <OngoingDisasters ref="disastersRef" />
+          <OngoingCampaigns ref="campaignsRef" />
         </div>
-
-        <div class="lg:col-span-1" style="height:600px;">
-          <CampaignMap class="h-full" />
+        <div>
+          <CampaignMap class="w-full" />
         </div>
       </div>
       <div class="w-full pb-12">

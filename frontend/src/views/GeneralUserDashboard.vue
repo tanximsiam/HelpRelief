@@ -84,14 +84,13 @@ async function handleResignVolunteer() {
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-6" style="height:600px;">
-        <div class="lg:col-span-1" style="height:600px;">
-          <div class="space-y-6 h-full overflow-y-auto">
-            <!-- Show TaskActivityComponent for volunteers with assigned tasks -->
-            <TaskActivityComponent v-if="auth.user && auth.user.volunteer" />
-            <OngoingDisasters />
-            <OngoingCampaigns />
-          </div>
+      <div class="space-y-10">
+        <!-- Volunteer task panel (full width) -->
+        <TaskActivityComponent v-if="auth.user && auth.user.volunteer" />
+        <!-- Two-column section: disasters & campaigns -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <OngoingDisasters />
+          <OngoingCampaigns />
         </div>
       </div>
     </main>

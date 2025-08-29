@@ -39,6 +39,9 @@ const sortedCampaigns = computed(() => {
     });
 });
 
+// Only show top 3 in dashboard card
+const topThreeCampaigns = computed(() => sortedCampaigns.value.slice(0,3));
+
 // Computed property for filtered campaigns in modal
 const filteredCampaigns = computed(() => {
   if (!searchQuery.value.trim()) return sortedCampaigns.value;
@@ -145,9 +148,9 @@ const formatDate = (dateString: string) => {
     <div v-if="isLoading" class="text-center text-gray-500">Loading campaigns...</div>
     <div v-else-if="errorMessage" class="text-center text-red-500">{{ errorMessage }}</div>
     <div v-else-if="sortedCampaigns.length">
-      <!-- Scrollable campaign list -->
-      <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-        <div v-for="campaign in sortedCampaigns" :key="campaign.id" class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+  <!-- Campaign list (no inner scrollbar; page scrolls instead) -->
+      <div class="space-y-3">
+        <div v-for="campaign in topThreeCampaigns" :key="campaign.id" class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
           <div class="flex justify-between items-start">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
@@ -183,7 +186,7 @@ const formatDate = (dateString: string) => {
         @click="openCampaignList"
         class="text-blue-500 hover:text-blue-700 mt-4 inline-block font-medium"
       >
-        View More
+        See More
       </button>
     </div>
     <p v-else class="text-gray-500">No ongoing campaigns found.</p>
@@ -210,7 +213,7 @@ const formatDate = (dateString: string) => {
         </div>
 
         <!-- Campaign List -->
-        <div v-if="filteredCampaigns.length" class="space-y-4 max-h-96 overflow-y-auto">
+  <div v-if="filteredCampaigns.length" class="space-y-4">
           <div
             v-for="campaign in filteredCampaigns"
             :key="campaign.id"
