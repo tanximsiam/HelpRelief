@@ -48,8 +48,6 @@ Route::get('/run-migrations', function () {
         'ngo_applications',
         'ngo_staff',
         'ngo_email_domains',
-        'cause_focuses',
-        'ngo_cause_focus',
         'disasters',
         'disaster_campaign_assignments',
         'ngo_invite_links',
