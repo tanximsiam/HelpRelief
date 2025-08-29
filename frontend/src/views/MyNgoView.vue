@@ -1,6 +1,7 @@
 <template>
   <div>
-    <NgoReportModal :show="show" @close="handleExplicitClose" />
+    <!-- empty shell; modal opens on mount -->
+    <NgoReportModal :show="show" @close="handleClose" />
   </div>
 </template>
 
@@ -12,12 +13,13 @@ import NgoReportModal from '@/components/NgoReportModal.vue'
 const show = ref(true)
 const router = useRouter()
 
-function handleExplicitClose() {
-  show.value = false
+function handleClose() {
+  // navigate back to previous page when modal closes
   router.back()
 }
 
 onMounted(() => {
+  // ensure modal is shown
   show.value = true
 })
 </script>
