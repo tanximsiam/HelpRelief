@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: helprelief-backend
+    env: php
+    plan: free
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php artisan key:generate --force
+      php artisan storage:link || true
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache
+    startCommand: heroku-php-apache2 public/
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      # The following 5 will auto-fill when you attach the DB in Render UI:
+      - key: DB_HOST
+        fromDatabase:
+          name: helprelief-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: helprelief-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: helprelief-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: helprelief-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: helprelief-db
+          property: password
+databases:
+  - name: helprelief-db
+    plan: free
