@@ -89,7 +89,7 @@
                 </PrimaryButton>
                 <SecondaryButton
                   v-if="isNgoStaff && campaign.status.toLowerCase() === 'active'"
-                  @click="toggleCampaignStatus(campaign)"
+                  @click="openReportModal(campaign)"
                   class="text-xs font-medium px-3 py-1"
                 >
                   Complete
@@ -100,12 +100,24 @@
         </tbody>
       </table>
     </div>
+    <Modal :show="showReportModal" title="Submit Donation Report" @close="closeReportModal">
+      <DonationReportForm
+        v-if="selectedCampaign"
+        :campaignId="selectedCampaign.id"
+        :onSubmit="handleDonationReportSubmit"
+      />
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { api } from '@/lib/api'
 import PrimaryButton from './PrimaryButton.vue'
 import SecondaryButton from './SecondaryButton.vue'
+
+import Modal from './Modal.vue'
+import DonationReportForm from './DonationReportForm.vue'
 
 // Interfaces
 interface Campaign {
@@ -132,7 +144,7 @@ defineProps<{
 // Emits
 const emit = defineEmits<{
   viewVolunteerReports: [campaignId: number]
-  toggleCampaignStatus: [campaign: Campaign]
+
 }>()
 
 // Utility functions
@@ -218,11 +230,35 @@ const formatDate = (dateString: string) => {
   })
 }
 
+const showReportModal = ref(false)
+const selectedCampaign = ref<Campaign | null>(null)
+
+const openReportModal = (campaign: Campaign) => {
+  selectedCampaign.value = campaign
+  showReportModal.value = true
+}
+
+const closeReportModal = () => {
+  selectedCampaign.value = null
+  showReportModal.value = false
+}
+
+
 const viewVolunteerReports = (campaignId: number) => {
   emit('viewVolunteerReports', campaignId)
 }
 
-const toggleCampaignStatus = (campaign: Campaign) => {
-  emit('toggleCampaignStatus', campaign)
+const handleDonationReportSubmit = async (payload: DonationReportPayload) => {
+  if (!selectedCampaign.value) return
+  try {
+    await api.post('/donation-reports/store', {
+      ...payload,
+      campaign_id: selectedCampaign.value.id
+    })
+    selectedCampaign.value.status = 'inactive'
+  } catch (err) {
+    console.error('Failed to submit donation report:', err)
+  }
+  closeReportModal()
 }
 </script>

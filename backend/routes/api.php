@@ -202,7 +202,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/campaigns/{campaignId}/volunteers', [CampaignController::class, 'campaignVolunteers']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
     Route::post('/campaigns', [CampaignController::class, 'store']);
-    // Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
+    Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
     // Tasks for a campaign
     Route::get('/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
 

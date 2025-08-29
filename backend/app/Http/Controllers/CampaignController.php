@@ -193,11 +193,11 @@ class CampaignController extends Controller
                     // Count volunteers with correct status logic
                     $volunteerStats = VolunteerRegistration::where('campaign_id', $assignment->id)
                         ->where('ngo_id', $ngoId)
-                        ->selectRaw('
-                            COUNT(*) as total_registrations,
-                            SUM(CASE WHEN status = "approved" THEN 1 ELSE 0 END) as approved_volunteers,
-                            SUM(CASE WHEN status = "flagged" THEN 1 ELSE 0 END) as flagged_volunteers
-                        ')
+                        ->selectRaw(
+                            "COUNT(*) as total_registrations,
+                            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_volunteers,
+                            SUM(CASE WHEN status = 'flagged' THEN 1 ELSE 0 END) as flagged_volunteers
+                        ")
                         ->first();
 
                     // Count currently active volunteers (approved + user.volunteer = true)
@@ -363,7 +363,7 @@ class CampaignController extends Controller
 
             // If campaign is ending, update volunteer registrations and users
             if ($request->status === 'inactive') {
-                $volRegs = \App\Models\VolunteerRegistration::where('disaster_id', $campaign->disaster_id)
+                $volRegs = VolunteerRegistration::where('campaign_id', $campaign->id)
                     ->where('ngo_id', $ngoId)
                     ->get();
                 foreach ($volRegs as $reg) {
@@ -386,7 +386,10 @@ class CampaignController extends Controller
                 'campaign' => $this->formatCampaignData($campaign->load(['disaster', 'ngo']))
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update campaign status'], 500);
+            return response()->json([
+                'error' => 'Failed to update campaign status',
+                'details' => $e->getMessage() // 👈 add this for now
+            ], 500);
         }
     }
 }
