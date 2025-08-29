@@ -32,10 +32,17 @@ use App\Http\Controllers\DisasterAlertController;
 use App\Http\Controllers\AidNeedController;
 use App\Http\Controllers\ReportController;
 
+use Illuminate\Support\Facades\File;
+
 
 Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum');
 
 // TEST ROUTES
+
+Route::get('/debug-log', function () {
+    $log = File::get(storage_path('logs/laravel.log'));
+    return response("<pre>$log</pre>");
+});
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/ngos', [NgoController::class, 'index']);
 Route::get('/ngo-staffs', [NgoStaffController::class, 'index']);
