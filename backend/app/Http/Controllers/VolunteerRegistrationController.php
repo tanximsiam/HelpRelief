@@ -14,16 +14,6 @@ class VolunteerRegistrationController extends Controller
     {
         $user = $request->user();
 
-        // Moderation: block registration if user has any flagged volunteer_registrations
-        $flagged = VolunteerRegistration::where('user_id', $user->id)
-            ->where('status', 'flagged')
-            ->exists();
-        if ($flagged) {
-            return response()->json([
-                'error' => 'Registration denied. A previous affiliated NGO flagged you as a volunteer. Please contact support.'
-            ], 403);
-        }
-
         $data = $request->validate([
             'ngo_id'      => ['required', 'exists:ngos,id'],
             'campaign_id' => [
@@ -101,7 +91,6 @@ class VolunteerRegistrationController extends Controller
 
         $volunteer = VolunteerRegistration::where('user_id', $user->id)
             ->where('status', 'approved')
-            ->orderByDesc('created_at')
             ->first();
 
         if (!$volunteer) {
@@ -120,13 +109,9 @@ class VolunteerRegistrationController extends Controller
             return response()->json(['error' => 'Cannot resign while you have active tasks. Please contact with your NGO task validator.'], 403);
         }
 
-        // Set user.volunteer to false
+        // Only set user.volunteer to false, do not change registration status
         $user->volunteer = false;
         $user->save();
-
-        // Set latest registration's availability to false
-        $volunteer->availability = false;
-        $volunteer->save();
 
         return response()->json(['message' => 'You have successfully resigned from volunteering.']);
     }

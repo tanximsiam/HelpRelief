@@ -117,7 +117,7 @@ class MapController extends Controller
                     'id' => $assignment->id,
                     'campaign_name' => $assignment->disaster->name . ' Relief Campaign',
                     'disaster_name' => $assignment->disaster->name,
-                    'disaster_type' => $assignment->disaster->type,
+                    'disaster_type' => $assignment->disaster->disaster_type,
                     'severity' => $assignment->disaster->severity,
                     'status' => $assignment->status,
                     'help_needed' => $assignment->help_needed,

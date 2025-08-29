@@ -6,8 +6,8 @@
       'rounded-lg px-4 py-2 text-2xl font-medium transition-colors',
       disabled && 'opacity-60 cursor-not-allowed',
       variant === 'primary'
-        ? 'bg-blue-600 text-white hover:bg-blue-700'
-        : 'bg-slate-900 text-white hover:bg-slate-700'
+        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg'
+        : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg'
     ]"
   >
     <slot>Button</slot>

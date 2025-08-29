@@ -58,6 +58,14 @@ async function handleResignVolunteer() {
         auth.user.volunteer = false
       }
       volunteerTaskStore.hasActiveTask = false
+<<<<<<< HEAD
+=======
+
+      // Refresh TaskActivityComponent to show registration card
+      if (taskActivityRef.value) {
+        await taskActivityRef.value.refreshData()
+      }
+>>>>>>> 917bc90 (report has been solved)
     }
   } catch (err: any) {
 
