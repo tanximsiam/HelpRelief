@@ -1,6 +1,6 @@
 <template>
-  <Modal 
-    :show="isOpen" 
+  <Modal
+    :show="isOpen"
     title="Your Contribution History"
     max-width="max-w-4xl"
     z-index="z-50"
@@ -10,11 +10,11 @@
       <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
       Loading history...
     </div>
-    <div v-else-if="contributionHistory.length === 0" class="text-center py-8 text-gray-500">
+    <div v-else-if="contributions.length === 0" class="text-center py-8 text-gray-500">
       No contribution history found.
     </div>
     <div v-else class="space-y-4">
-      <div v-for="contribution in contributionHistory" :key="contribution.id" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 p-6">
+      <div v-for="contribution in contributions" :key="contribution.id" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 p-6">
         <div class="flex items-start justify-between mb-4">
           <div>
             <h5 class="text-lg font-bold text-gray-900 mb-1">{{ contribution.campaign_name }}</h5>
@@ -26,7 +26,7 @@
             ✓ COMPLETED
           </span>
         </div>
-        
+
         <div class="bg-white rounded-lg p-4 border border-green-100">
           <h6 class="text-sm font-semibold text-gray-700 mb-3">Service Duration</h6>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -58,7 +58,7 @@ interface ContributionHistory {
 
 interface Props {
   isOpen: boolean
-  contributionHistory: ContributionHistory[]
+  contributions: ContributionHistory[]
   loading: boolean
 }
 
