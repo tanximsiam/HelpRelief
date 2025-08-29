@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign key constraints
-            $table->foreign('requester_id')->references('id')->on('users')->onDelete('cascade');
+
             $table->index(['campaign_id', 'status']);
             $table->index(['requester_id']);
             $table->index(['urgency']);

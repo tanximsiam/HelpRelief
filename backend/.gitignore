@@ -22,3 +22,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+backend/.env.pg
+backend/.env.sqlite
+.env.pg
+.env.sqlite
