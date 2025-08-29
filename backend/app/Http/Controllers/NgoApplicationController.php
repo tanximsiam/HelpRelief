@@ -5,6 +5,8 @@ use App\Models\NgoApplication;
 use App\Models\Ngo;
 use App\Models\NgoInviteLink;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NgoOnboardingMail;
 
 use Illuminate\Http\Request;
 
@@ -62,10 +64,14 @@ class NgoApplicationController extends Controller
             'is_primary' => true,
         ]);
 
+        $inviteLink = url('api/auth/redirect?token=' . $invite->token);
+        // Send onboarding mail
+        Mail::to($ngo->email)->send(new NgoOnboardingMail($inviteLink));
+
         return response()->json([
             'message' => 'NGO Application approved and NGO created',
             'ngo_id' => $ngo->id,
-            'invite_link' => url('api/auth/redirect?token=' . $invite->token)
+            'invite_link' => $inviteLink
         ]);
     }
 
