@@ -24,6 +24,8 @@ const form = ref({
   based_in: ''
 })
 
+const showToast = ref(false)
+
 const closeModal = () => {
   emit('update:show', false)
 }
@@ -34,6 +36,7 @@ const submitForm = async () => {
   try {
     await api.post('/ngo-apply', form.value)
     success.value = true
+    showToast.value = true
     form.value = {
       organization: '',
       contact_person: '',
@@ -43,7 +46,7 @@ const submitForm = async () => {
       description: '',
       based_in: ''
     }
-    emit('update:show', false)
+    setTimeout(() => { showToast.value = false }, 3000)
   } catch (e: unknown) {
     error.value = (e as any)?.response?.data?.message || 'Submission failed.'
   }
@@ -55,6 +58,7 @@ const submitForm = async () => {
   <Modal :show="props.show" title="NGO Registration" @close="closeModal">
     <form @submit.prevent="submitForm" class="space-y-4">
       <div v-if="success" class="text-green-600 font-semibold mb-4">Application submitted successfully!</div>
+      <!-- <div v-if="showToast" class="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">Application submitted successfully!</div> -->
       <div v-if="error" class="text-red-600 font-semibold mb-4">{{ error }}</div>
       <div class="mb-2">
         <label class="block font-medium mb-1">Organization Name <span class="text-red-600">*</span></label>
