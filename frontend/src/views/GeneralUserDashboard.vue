@@ -2,6 +2,7 @@
 import PrimaryButton from '@/components/PrimaryButton.vue'
 import OngoingDisasters from '@/components/OngoingDisasters.vue'
 import OngoingCampaigns from '@/components/OngoingCampaigns.vue'
+import TaskActivityComponent from '../components/TaskActivityComponent.vue'
 import Modal from '@/components/Modal.vue'
 import AidRequestForm from '@/components/AidRequestForm.vue'
 import VolunteerRegistrationForm from '@/components/VolunteerRegistrationForm.vue'
@@ -86,6 +87,8 @@ async function handleResignVolunteer() {
       <div class="grid grid-cols-1 gap-6" style="height:600px;">
         <div class="lg:col-span-1" style="height:600px;">
           <div class="space-y-6 h-full overflow-y-auto">
+            <!-- Show TaskActivityComponent for volunteers with assigned tasks -->
+            <TaskActivityComponent v-if="auth.user && auth.user.volunteer" />
             <OngoingDisasters />
             <OngoingCampaigns />
           </div>
