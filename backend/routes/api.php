@@ -185,12 +185,9 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/map/aid-need', [MapController::class, 'getAidNeedByState']);
         Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
 
-<<<<<<< HEAD
     // Invite Links
     Route::post('/ngo-invite-links', [NgoInviteLinkController::class, 'store']);
     Route::get('/ngo-invite-links', [NgoInviteLinkController::class, 'activeLinks']);
-=======
->>>>>>> 8b37020 (bug fixed on general user task activity panel)
 });
 
 
