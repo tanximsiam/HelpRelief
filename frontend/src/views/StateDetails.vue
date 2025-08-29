@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="min-h-screen bg-gray-50 p-6">
+    <div class="bg-gray-50 p-6 h-screen overflow-auto">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -93,29 +93,6 @@
           @view-volunteer-reports="viewVolunteerReports"
           @toggle-campaign-status="toggleCampaignStatus"
         />
-
-        <!-- Placeholder for Future Features -->
-        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Volunteer Activity</h3>
-            <div class="text-center text-gray-500 py-8">
-              <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <p>Volunteer tracking coming soon</p>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Resource Distribution</h3>
-            <div class="text-center text-gray-500 py-8">
-              <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-              </svg>
-              <p>Resource tracking coming soon</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
     </div>
