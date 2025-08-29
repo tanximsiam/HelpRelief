@@ -1,17 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 
-interface VolunteerTaskLog {
-  id: number
-  task_id: number
-  status: string
-  report: string
-  check_in?: string
-  check_out?: string
-  task?: { aid_type?: string }
-  volunteer?: { name?: string }
-  placeholder?: boolean
-}
+interface VolunteerTaskLog { id: number; task_id: number; status: string; report: string; check_in?: string; check_out?: string; task?: { aid_type?: string }; volunteer?: { name?: string } }
 
 const props = defineProps<{ logs: VolunteerTaskLog[], loading: boolean, search: string }>()
 const emit = defineEmits<{ (e:'checkOut', log: VolunteerTaskLog): void; (e:'checkIn', log: VolunteerTaskLog): void }>()
@@ -59,9 +49,8 @@ function volunteerName(log: VolunteerTaskLog) {
             <td class="px-4 py-2">
               <span :class="[
                 'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ring-inset',
-                log.placeholder ? 'bg-slate-50 text-slate-600 ring-slate-500/10' :
-                (log.check_out ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' :
-                 (log.check_in ? 'bg-blue-50 text-blue-700 ring-blue-600/10' : 'bg-amber-50 text-amber-700 ring-amber-600/10'))
+                log.check_out ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' :
+                (log.check_in ? 'bg-blue-50 text-blue-700 ring-blue-600/10' : 'bg-amber-50 text-amber-700 ring-amber-600/10')
               ]">{{ log.status }}</span>
             </td>
             <td class="px-4 py-2 whitespace-nowrap">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, defineExpose } from 'vue'
 import { api } from '../lib/api'
 import Modal from './Modal.vue'
 import VolunteerTaskLogOverlay from './VolunteerTaskLogOverlay.vue'
@@ -39,6 +39,9 @@ const sortedCampaigns = computed(() => {
     });
 });
 
+// Only show top 3 in dashboard card
+const topThreeCampaigns = computed(() => sortedCampaigns.value.slice(0,3));
+
 // Computed property for filtered campaigns in modal
 const filteredCampaigns = computed(() => {
   if (!searchQuery.value.trim()) return sortedCampaigns.value;
@@ -51,10 +54,42 @@ const filteredCampaigns = computed(() => {
   );
 });
 
-// Fetch user role and dashboard data on mount
+// Internal loader reused by refresh
+const loadCampaigns = async () => {
+  try {
+    // Fetch campaigns based on NGO staff status
+    let campaignEndpoint = '/campaigns';
+    if (isNgoStaff.value && ngoId.value) {
+      campaignEndpoint = `/campaigns/my`;
+    }
+    const campaignRes = await api.get(campaignEndpoint);
+    campaigns.value = Array.isArray(campaignRes.data) ? campaignRes.data : [];
+  } catch (error) {
+    console.error('Failed to fetch campaigns:', error);
+    errorMessage.value = 'Failed to load campaigns';
+  }
+};
+
+// Refresh method exposed to parent dashboards
+const refresh = async () => {
+  isLoading.value = true;
+  await loadCampaigns();
+  isLoading.value = false;
+};
+
+// Append newly created campaign (avoid duplicate, update existing)
+const append = (campaign: Campaign) => {
+  const idx = campaigns.value.findIndex(c => c.id === campaign.id);
+  if (idx === -1) {
+    campaigns.value.push(campaign);
+  } else {
+    campaigns.value[idx] = campaign;
+  }
+};
+
+// Fetch user role then campaigns on mount
 onMounted(async () => {
   try {
-    // Fetch NGO staff status to determine role and ngo_id
     const staffRes = await api.get('/ngo-staff');
     const staffData = staffRes.data;
     if (staffData.role === 'ngo_staff' && staffData.ngo_id) {
@@ -67,23 +102,14 @@ onMounted(async () => {
   } catch (error) {
     console.log('User is not NGO staff:', error);
     isNgoStaff.value = false;
-  }
-
-  try {
-    // Fetch campaigns based on NGO staff status
-    let campaignEndpoint = '/campaigns';
-    if (isNgoStaff.value && ngoId.value) {
-      campaignEndpoint = `/campaigns/my`;
-    }
-    const campaignRes = await api.get(campaignEndpoint);
-    campaigns.value = Array.isArray(campaignRes.data) ? campaignRes.data : [];
-  } catch (error) {
-    console.error('Failed to fetch campaigns:', error);
-    errorMessage.value = 'Failed to load campaigns';
   } finally {
-    isLoading.value = false;
+    // Regardless of staff fetch outcome, load campaigns
+    await refresh();
   }
 });
+
+// Expose methods for parent components
+defineExpose({ refresh, append });
 
 // Function to open campaign list modal
 const openCampaignList = () => {
@@ -145,9 +171,9 @@ const formatDate = (dateString: string) => {
     <div v-if="isLoading" class="text-center text-gray-500">Loading campaigns...</div>
     <div v-else-if="errorMessage" class="text-center text-red-500">{{ errorMessage }}</div>
     <div v-else-if="sortedCampaigns.length">
-      <!-- Scrollable campaign list -->
-      <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-        <div v-for="campaign in sortedCampaigns" :key="campaign.id" class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+  <!-- Campaign list (no inner scrollbar; page scrolls instead) -->
+      <div class="space-y-3">
+        <div v-for="campaign in topThreeCampaigns" :key="campaign.id" class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
           <div class="flex justify-between items-start">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
@@ -183,7 +209,7 @@ const formatDate = (dateString: string) => {
         @click="openCampaignList"
         class="text-blue-500 hover:text-blue-700 mt-4 inline-block font-medium"
       >
-        View More
+        See More
       </button>
     </div>
     <p v-else class="text-gray-500">No ongoing campaigns found.</p>
@@ -210,7 +236,7 @@ const formatDate = (dateString: string) => {
         </div>
 
         <!-- Campaign List -->
-        <div v-if="filteredCampaigns.length" class="space-y-4 max-h-96 overflow-y-auto">
+  <div v-if="filteredCampaigns.length" class="space-y-4">
           <div
             v-for="campaign in filteredCampaigns"
             :key="campaign.id"

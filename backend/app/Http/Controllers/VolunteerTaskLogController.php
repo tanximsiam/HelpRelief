@@ -47,11 +47,12 @@ class VolunteerTaskLogController extends Controller
             $assignedVolunteerId = $task->assigned_to ?? $user->id;
             $taskLog = VolunteerTaskLog::where('task_id', $validated['task_id'])->first();
             if (!$taskLog) {
+                // First time check-in for this task => create log directly in 'started' state
                 $taskLog = VolunteerTaskLog::create([
                     'task_id' => $validated['task_id'],
                     'volunteer_id' => $assignedVolunteerId,
                     'campaign_id' => $task->campaign_id,
-                    'status' => 'assigned',
+                    'status' => 'started',
                     'check_in' => now(),
                     'check_out' => null,
                     'start_verified_by' => $user->id,

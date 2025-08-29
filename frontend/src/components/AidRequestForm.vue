@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useAuth } from '@/stores/auth'
 import PrimaryButton from '@/components/PrimaryButton.vue'
 import RadioGroup from '@/components/RadioGroup.vue'
 import { api } from '@/lib/api'
@@ -26,8 +27,12 @@ const form = reactive<FormState>({ campaign_id: '', aid_type: null, urgency: nul
 const campaign = ref<Campaign | null>(null)
 const loadingCampaigns = ref(false)
 const volunteerOnlyError = ref<string | null>(null)
-// Start as not a volunteer; flip to true only if API confirms access
-const isVolunteer = ref<boolean>(false)
+// Auth-based optimistic volunteer flag to avoid initial flicker
+const auth = useAuth()
+// Start with known auth volunteer flag (if loaded) to prevent UI flash; will be confirmed by API
+const isVolunteer = ref<boolean>(!!auth.user?.volunteer)
+// Track when we've finished the verification request
+const volunteerCheckDone = ref(false)
 const submitting = ref(false)
 const errors = reactive<Record<string,string>>({})
 const successMessage = ref<string | null>(null)
@@ -56,6 +61,7 @@ async function loadVolunteerCampaigns() {
     }
   } finally {
     loadingCampaigns.value = false
+    volunteerCheckDone.value = true
   }
 }
 
@@ -106,18 +112,19 @@ async function submit() {
 </script>
 
 <template>
-  <div v-if="!isVolunteer" class="p-6">
+  <!-- Show volunteer registration prompt only after check completes and user isn't volunteer -->
+  <div v-if="volunteerCheckDone && !isVolunteer" class="p-6">
     <h3 class="text-xl font-semibold">Volunteer registration required</h3>
     <p class="mt-2 text-sm text-slate-600">You must register as a volunteer before submitting aid requests.</p>
     <div class="mt-6 flex justify-end">
       <button type="button" @click="emit('open-volunteer-registration')" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Register as Volunteer</button>
     </div>
   </div>
-  <form v-else class="space-y-8" @submit.prevent="submit">
+  <form v-else-if="isVolunteer" class="space-y-8" @submit.prevent="submit">
     <div v-if="errors.root" class="rounded-md bg-red-50 p-3 text-sm text-red-700">{{ errors.root }}</div>
     <div v-if="successMessage" class="rounded-md bg-green-50 p-3 text-sm text-green-700">{{ successMessage }}</div>
 
-    <div class="grid gap-8 md:grid-cols-2">
+  <div class="grid gap-8 md:grid-cols-2" v-if="!loadingCampaigns">
       <!-- Campaign info (read-only) -->
       <div class="md:col-span-2">
         <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Your Campaign</label>
@@ -153,11 +160,13 @@ async function submit() {
       </div>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex justify-end" v-if="!loadingCampaigns">
       <PrimaryButton type="submit" :disabled="submitting || !form.campaign_id" variant="primary" class="px-8 py-3 text-lg min-w-[8rem]">
         <span v-if="!submitting">Submit</span>
         <span v-else>Submitting...</span>
       </PrimaryButton>
     </div>
+    <div v-else class="text-center text-sm text-slate-500">Loading your campaign...</div>
   </form>
+  <!-- While verifying volunteer status show nothing (avoid flicker) -->
 </template>

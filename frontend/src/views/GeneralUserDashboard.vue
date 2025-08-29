@@ -37,13 +37,12 @@ const closeAidRequestModal = () => showAidRequestModal.value = false
 const handleAidRequestSubmit = () => { alert('Aid request submitted successfully!'); closeAidRequestModal() }
 const openVolunteerModal = () => showVolunteerModal.value = true
 const closeVolunteerModal = () => showVolunteerModal.value = false
-const handleVolunteerSubmit = async () => {
+
+const handleVolunteerSubmit = () => {
   alert('Volunteer registration submitted successfully!')
+  if (auth.user) auth.user.volunteer = true
   closeVolunteerModal()
-  // Refresh TaskActivityComponent data after registration
-  if (taskActivityRef.value) {
-    await taskActivityRef.value.refreshData()
-  }
+
 }
 const openAidSupport = () => showAidSupport.value = true
 const closeAidSupport = () => showAidSupport.value = false
@@ -61,8 +60,11 @@ async function handleResignVolunteer() {
       volunteerTaskStore.hasActiveTask = false
     }
   } catch (err: any) {
-    if (err.response && err.response.data && err.response.data.error) {
-      resignError.value = err.response.data.error
+
+    const resp = (err as any)?.response
+    if (resp?.data?.error) {
+      resignError.value = resp.data.error
+
     } else {
       resignError.value = 'Failed to resign. Please try again.'
     }
@@ -80,11 +82,27 @@ async function handleResignVolunteer() {
             <span class="text-2xl font-normal">people are depending on you.</span>
           </h1>
         </div>
-        <div class="flex gap-6 items-center">
-          <button v-if="auth.user && auth.user.volunteer && volunteerTaskStore.hasActiveTask" @click="openAidRequestModal" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Request for Aid</button>
-          <button v-if="auth.user && !auth.user.volunteer" @click="openVolunteerModal" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4">Volunteer registrations</button>
-          <button v-if="auth.user && auth.user.volunteer" @click="handleResignVolunteer" class="text-xl font-medium inline-flex items-center gap-1 transition-colors text-red-600 hover:text-red-700 underline underline-offset-4">Resign as Volunteer</button>
-          <PrimaryButton variant="primary" @click="openAidSupport" class="px-8 py-4 text-l">Offer Help</PrimaryButton>
+        <div class="flex gap-4 items-center">
+          <button
+            v-if="auth.user && auth.user.volunteer"
+            @click="openAidRequestModal"
+            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
+          >Request Aid</button>
+          <button
+            v-if="auth.user && !auth.user.volunteer"
+            @click="openVolunteerModal"
+            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
+          >Volunteer Registration</button>
+          <button
+            v-if="auth.user && auth.user.volunteer"
+            @click="handleResignVolunteer"
+            class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-red-600 hover:text-red-700 underline underline-offset-4"
+          >Resign as Volunteer</button>
+          <PrimaryButton
+            variant="primary"
+            @click="openAidSupport"
+            class="px-5 py-2 text-sm font-medium"
+          >Offer Help</PrimaryButton>
           <Modal :show="!!resignError || !!resignSuccess" title="Volunteer Resignation" @close="() => { resignError = ''; resignSuccess = '' }">
             <div v-if="resignError" class="text-red-600 text-lg">{{ resignError }}</div>
             <div v-if="resignSuccess" class="text-green-600 text-lg">{{ resignSuccess }}</div>
@@ -92,14 +110,15 @@ async function handleResignVolunteer() {
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-6" style="height:600px;">
-        <div class="lg:col-span-1" style="height:600px;">
-          <div class="space-y-6 h-full overflow-y-auto">
-            <!-- Show TaskActivityComponent for all users -->
-            <TaskActivityComponent ref="taskActivityRef" @openVolunteerRegistration="openVolunteerModal" />
-            <OngoingDisasters />
-            <OngoingCampaigns />
-          </div>
+
+      <div class="space-y-10">
+        <!-- Volunteer task panel (full width) -->
+        <TaskActivityComponent v-if="auth.user && auth.user.volunteer" />
+        <!-- Two-column section: disasters & campaigns -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <OngoingDisasters />
+          <OngoingCampaigns />
+
         </div>
       </div>
     </main>
