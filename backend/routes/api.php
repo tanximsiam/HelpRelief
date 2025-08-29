@@ -32,10 +32,24 @@ use App\Http\Controllers\DisasterAlertController;
 use App\Http\Controllers\AidNeedController;
 use App\Http\Controllers\ReportController;
 
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
+
 
 Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum');
 
 // TEST ROUTES
+Route::get('/run-migrations', function () {
+    Artisan::call('migrate:fresh', ['--force' => true]);
+    Artisan::call('db:seed', ['--force' => true]);
+
+    return 'Fresh migration and seeding complete.';
+});
+
+Route::get('/debug-log', function () {
+    $log = File::get(storage_path('logs/laravel.log'));
+    return response("<pre>$log</pre>");
+});
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/ngos', [NgoController::class, 'index']);
 Route::get('/ngo-staffs', [NgoStaffController::class, 'index']);
