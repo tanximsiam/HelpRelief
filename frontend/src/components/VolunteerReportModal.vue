@@ -19,9 +19,8 @@ interface VolunteerAggregate {
   report_type: string;
   total_volunteers: number;
   active_volunteers: number;
-  pending_volunteers: number;
-  rejected_volunteers: number;
-  completed_volunteers: number;
+  approved_volunteers: number;
+  flagged_volunteers: number;
   tasks_assigned: number;
   tasks_completed: number;
   completion_rate: number;
@@ -155,7 +154,7 @@ const flagVolunteer = async (volunteerId: number) => {
 
     // Refresh the reports to show updated status
     await fetchReports();
-    
+
     alert('Volunteer has been flagged successfully');
   } catch (error) {
     console.error('Failed to flag volunteer:', error);
@@ -182,8 +181,8 @@ const completionRateColor = computed(() => {
 </script>
 
 <template>
-  <Modal 
-    :show="show" 
+  <Modal
+    :show="show"
     :title="`Volunteer Reports - ${campaign.name}`"
     maxWidth="max-w-full"
     zIndex="z-50"

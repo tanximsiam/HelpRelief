@@ -51,19 +51,24 @@ class CampaignController extends Controller
                 ->where('status', 'active')
                 ->get()
                 ->map(function ($assignment) use ($ngoId) {
-                    // Get volunteer count for this campaign
-                    $activeVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
+                    // Count approved volunteers (active/inactive determined by user.volunteer)
+                    $approvedVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
                         ->where('ngo_id', $ngoId)
-                        ->whereIn('status', ['approved', 'active'])
+                        ->where('status', 'approved')
                         ->count();
 
-                    $totalVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
+                    // Count currently active volunteers (approved + user.volunteer = true)
+                    $activeVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
                         ->where('ngo_id', $ngoId)
+                        ->where('status', 'approved')
+                        ->whereHas('user', function($query) {
+                            $query->where('volunteer', true);
+                        })
                         ->count();
 
                     $campaignData = $this->formatCampaignData($assignment);
+                    $campaignData['approved_volunteers'] = $approvedVolunteersCount;
                     $campaignData['active_volunteers'] = $activeVolunteersCount;
-                    $campaignData['total_volunteers'] = $totalVolunteersCount;
 
                     return $campaignData;
                 });
@@ -181,25 +186,31 @@ class CampaignController extends Controller
                 ->where('status', 'active')
                 ->get()
                 ->map(function ($assignment) use ($ngoId) {
-                    // Count volunteers for this specific campaign
+                    // Count volunteers with correct status logic
                     $volunteerStats = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
                         ->where('ngo_id', $ngoId)
                         ->selectRaw('
-                            COUNT(*) as total_volunteers,
-                            SUM(CASE WHEN status IN ("approved", "active") THEN 1 ELSE 0 END) as active_volunteers,
-                            SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_volunteers,
-                            SUM(CASE WHEN status = "rejected" THEN 1 ELSE 0 END) as rejected_volunteers,
-                            SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed_volunteers
+                            COUNT(*) as total_registrations,
+                            SUM(CASE WHEN status = "approved" THEN 1 ELSE 0 END) as approved_volunteers,
+                            SUM(CASE WHEN status = "flagged" THEN 1 ELSE 0 END) as flagged_volunteers
                         ')
                         ->first();
 
+                    // Count currently active volunteers (approved + user.volunteer = true)
+                    $activeVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
+                        ->where('ngo_id', $ngoId)
+                        ->where('status', 'approved')
+                        ->whereHas('user', function($query) {
+                            $query->where('volunteer', true);
+                        })
+                        ->count();
+
                     $campaignData = $this->formatCampaignData($assignment);
                     $campaignData['volunteer_stats'] = [
-                        'total_volunteers' => $volunteerStats->total_volunteers ?? 0,
-                        'active_volunteers' => $volunteerStats->active_volunteers ?? 0,
-                        'pending_volunteers' => $volunteerStats->pending_volunteers ?? 0,
-                        'rejected_volunteers' => $volunteerStats->rejected_volunteers ?? 0,
-                        'completed_volunteers' => $volunteerStats->completed_volunteers ?? 0,
+                        'total_registrations' => $volunteerStats->total_registrations ?? 0,
+                        'approved_volunteers' => $volunteerStats->approved_volunteers ?? 0,
+                        'active_volunteers' => $activeVolunteersCount,
+                        'flagged_volunteers' => $volunteerStats->flagged_volunteers ?? 0,
                     ];
 
                     return $campaignData;
@@ -242,7 +253,7 @@ class CampaignController extends Controller
             }
 
             // Get volunteer registrations for this campaign
-            $volunteers = VolunteerRegistration::with(['user:id,name,email,phone'])
+            $volunteers = VolunteerRegistration::with(['user:id,name,email,phone,volunteer'])
                 ->where('disaster_id', $campaign->disaster_id)
                 ->where('ngo_id', $ngoId)
                 ->get()
@@ -253,7 +264,8 @@ class CampaignController extends Controller
                         'user_name' => $registration->user->name ?? 'Unknown',
                         'user_email' => $registration->user->email ?? '',
                         'user_phone' => $registration->user->phone ?? '',
-                        'status' => $registration->status,
+                        'registration_status' => $registration->status, // 'approved' or 'flagged'
+                        'is_currently_active' => $registration->user->volunteer ?? false, // true/false
                         'registered_at' => $registration->registered_at,
                         'availability' => $registration->availability,
                         'skills' => $registration->skills,
@@ -266,11 +278,10 @@ class CampaignController extends Controller
                 'campaign' => $this->formatCampaignData($campaign),
                 'volunteers' => $volunteers,
                 'summary' => [
-                    'total_volunteers' => $volunteers->count(),
-                    'active_volunteers' => $volunteers->where('status', 'approved')->count() + $volunteers->where('status', 'active')->count(),
-                    'pending_volunteers' => $volunteers->where('status', 'pending')->count(),
-                    'rejected_volunteers' => $volunteers->where('status', 'rejected')->count(),
-                    'completed_volunteers' => $volunteers->where('status', 'completed')->count(),
+                    'total_registrations' => $volunteers->count(),
+                    'approved_volunteers' => $volunteers->where('registration_status', 'approved')->count(),
+                    'active_volunteers' => $volunteers->where('registration_status', 'approved')->where('is_currently_active', true)->count(),
+                    'flagged_volunteers' => $volunteers->where('registration_status', 'flagged')->count(),
                 ]
             ]);
 
@@ -288,15 +299,15 @@ class CampaignController extends Controller
         try {
             $user = $request->user();
 
-            // Fetch NGO IDs where user is an approved/active volunteer
+            // Fetch NGO IDs where user is an approved volunteer (regardless of active/inactive)
             $ngoIds = VolunteerRegistration::where('user_id', $user->id)
-                ->whereIn('status', ['approved', 'active'])
+                ->where('status', 'approved') // Only approved volunteers
                 ->pluck('ngo_id')
                 ->unique()
                 ->values();
 
             if ($ngoIds->isEmpty()) {
-                return response()->json(['error' => 'Not authorized. User is not an active volunteer.'], 403);
+                return response()->json(['error' => 'Not authorized. User is not an approved volunteer.'], 403);
             }
 
             $campaigns = DisasterCampaignAssignment::with(['disaster', 'ngo'])
