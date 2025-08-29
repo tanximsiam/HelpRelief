@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
-    
+
     public function myNgoReport(Request $request)
     {
         $user = $request->user(); // or Auth::user()
@@ -24,27 +24,27 @@ class ReportController extends Controller
                 'message' => 'You are not associated with any NGO.',
             ], 403);
         }
-        
+
         // Fetch that NGO with required relationships
         $ngo = Ngo::withCount([
                 'volunteers',
                 'tasks',
             ])
-            ->with('disasterCampaignAssignments.disaster:id,title')
+            ->with('disasterCampaignAssignments.disaster:id,name as title')
             ->findOrFail($ngoId);
 
         // Count aid requests where requester is a volunteer registered under this NGO
         $aidRequested = AidRequest::whereHas('requester.volunteerRegistration', function ($q) use ($ngoId) {
             $q->where('ngo_id', $ngoId);
         })->count();
-        
+
         // Count all aid supplied to campaigns under this NGO (map by campaign_id)
         $campaignIds = $ngo->disasterCampaignAssignments->pluck('id')->all();
         $aidSupplied = 0;
         if (!empty($campaignIds)) {
             $aidSupplied = AidSupport::whereIn('campaign_id', $campaignIds)->count();
         }
-        
+
         // Return single NGO report
         return response()->json([
             'status' => 'success',
@@ -80,7 +80,7 @@ class ReportController extends Controller
                 'tasks',
             ])
             ->with([
-                'disasterCampaignAssignments.disaster:id,title',
+                'disasterCampaignAssignments.disaster:id,name as title',
             ])
             ->get();
 
