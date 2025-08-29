@@ -40,6 +40,7 @@ const showReportDisaster = ref(false)
 const showRegisterCampaign = ref(false)
 const disastersRef = ref<any>(null)
 const campaignsRef = ref<any>(null)
+const campaignMapRef = ref<any>(null)
 const banner = ref<{type:'success'|'error'; msg:string} | null>(null)
 function flash(type:'success'|'error', msg:string, ms=1800){
   banner.value = { type, msg }; setTimeout(()=> { banner.value = null }, ms)
@@ -90,7 +91,16 @@ const handleDisasterCreated = () => {
 }
 const handleCampaignCreated = (payload:any) => {
   closeRegisterCampaign()
-  if (campaignsRef.value?.append) { campaignsRef.value.append(payload) } else { campaignsRef.value?.refresh?.() }
+  // Refresh campaign list
+  if (campaignsRef.value?.append) {
+    campaignsRef.value.append(payload)
+    // Also trigger refresh to ensure ordering / derived data updates
+    campaignsRef.value.refresh?.()
+  } else {
+    campaignsRef.value?.refresh?.()
+  }
+  // Refresh campaign intensity map
+  campaignMapRef.value?.refresh?.()
   flash('success','Campaign registered')
 }
 // removed open/close modal helpers for NGO report; inline render used instead
@@ -133,16 +143,16 @@ const handleCampaignCreated = (payload:any) => {
 
       <DisasterAlerts v-if="alerts.length" :alerts="alerts" @refresh="loadAlerts" />
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="space-y-6">
           <OngoingDisasters ref="disastersRef" />
           <OngoingCampaigns ref="campaignsRef" />
         </div>
         <div>
-          <CampaignMap class="w-full" />
+      <CampaignMap ref="campaignMapRef" class="w-full" />
         </div>
       </div>
-      <div class="w-full pb-12">
+    <div class="w-full pb-12 mt-16">
         <h2 class="text-xl font-semibold mb-4">NGO Report</h2>
         <div class="w-full">
         <NgoReportModal inline />

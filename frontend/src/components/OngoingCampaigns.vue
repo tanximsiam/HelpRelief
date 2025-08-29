@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, defineExpose } from 'vue'
 import { api } from '../lib/api'
 import Modal from './Modal.vue'
 import VolunteerTaskLogOverlay from './VolunteerTaskLogOverlay.vue'
@@ -54,10 +54,42 @@ const filteredCampaigns = computed(() => {
   );
 });
 
-// Fetch user role and dashboard data on mount
+// Internal loader reused by refresh
+const loadCampaigns = async () => {
+  try {
+    // Fetch campaigns based on NGO staff status
+    let campaignEndpoint = '/campaigns';
+    if (isNgoStaff.value && ngoId.value) {
+      campaignEndpoint = `/campaigns/my`;
+    }
+    const campaignRes = await api.get(campaignEndpoint);
+    campaigns.value = Array.isArray(campaignRes.data) ? campaignRes.data : [];
+  } catch (error) {
+    console.error('Failed to fetch campaigns:', error);
+    errorMessage.value = 'Failed to load campaigns';
+  }
+};
+
+// Refresh method exposed to parent dashboards
+const refresh = async () => {
+  isLoading.value = true;
+  await loadCampaigns();
+  isLoading.value = false;
+};
+
+// Append newly created campaign (avoid duplicate, update existing)
+const append = (campaign: Campaign) => {
+  const idx = campaigns.value.findIndex(c => c.id === campaign.id);
+  if (idx === -1) {
+    campaigns.value.push(campaign);
+  } else {
+    campaigns.value[idx] = campaign;
+  }
+};
+
+// Fetch user role then campaigns on mount
 onMounted(async () => {
   try {
-    // Fetch NGO staff status to determine role and ngo_id
     const staffRes = await api.get('/ngo-staff');
     const staffData = staffRes.data;
     if (staffData.role === 'ngo_staff' && staffData.ngo_id) {
@@ -70,23 +102,14 @@ onMounted(async () => {
   } catch (error) {
     console.log('User is not NGO staff:', error);
     isNgoStaff.value = false;
-  }
-
-  try {
-    // Fetch campaigns based on NGO staff status
-    let campaignEndpoint = '/campaigns';
-    if (isNgoStaff.value && ngoId.value) {
-      campaignEndpoint = `/campaigns/my`;
-    }
-    const campaignRes = await api.get(campaignEndpoint);
-    campaigns.value = Array.isArray(campaignRes.data) ? campaignRes.data : [];
-  } catch (error) {
-    console.error('Failed to fetch campaigns:', error);
-    errorMessage.value = 'Failed to load campaigns';
   } finally {
-    isLoading.value = false;
+    // Regardless of staff fetch outcome, load campaigns
+    await refresh();
   }
 });
+
+// Expose methods for parent components
+defineExpose({ refresh, append });
 
 // Function to open campaign list modal
 const openCampaignList = () => {

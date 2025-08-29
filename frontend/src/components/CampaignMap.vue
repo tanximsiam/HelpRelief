@@ -676,6 +676,9 @@ const openAidDetails = () => {
 onMounted(async () => {
   await fetchMapData()
 })
+
+// Expose a refresh method so parent dashboards can trigger map data reload after new campaign registration
+defineExpose({ refresh: fetchMapData })
 </script>
 
 <style>
