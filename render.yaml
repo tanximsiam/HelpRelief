@@ -1,7 +1,7 @@
 services:
   - type: web
     name: helprelief-backend
-    env: php
+    runtime: php
     plan: free
     buildCommand: |
       cd backend
