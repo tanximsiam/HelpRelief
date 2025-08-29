@@ -33,11 +33,16 @@ use App\Http\Controllers\AidNeedController;
 use App\Http\Controllers\ReportController;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
 
 
 Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum');
 
 // TEST ROUTES
+Route::get('/run-migrations', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    return 'Migrations complete.';
+});
 
 Route::get('/debug-log', function () {
     $log = File::get(storage_path('logs/laravel.log'));
