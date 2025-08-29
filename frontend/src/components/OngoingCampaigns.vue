@@ -27,6 +27,9 @@ const selectedCampaignForLogs = ref<Campaign | null>(null);
 const searchQuery = ref('');
 const router = useRouter();
 
+// Number of campaigns to show in the preview (non-modal) list
+const PREVIEW_LIMIT = 3;
+
 // Computed property for sorted campaigns (by newest and severity)
 const sortedCampaigns = computed(() => {
   const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
@@ -59,6 +62,9 @@ const filteredCampaigns = computed(() => {
     campaign.ngo_name?.toLowerCase().includes(query)
   );
 });
+
+// Campaigns shown in the main card (preview only)
+const previewCampaigns = computed(() => sortedCampaigns.value.slice(0, PREVIEW_LIMIT));
 
 // Function to navigate to task creation
 const navigateToTaskCreation = (campaign: Campaign) => {
@@ -162,9 +168,9 @@ const formatDate = (dateString: string) => {
     <div v-if="isLoading" class="text-center text-gray-500">Loading campaigns...</div>
     <div v-else-if="errorMessage" class="text-center text-red-500">{{ errorMessage }}</div>
     <div v-else-if="sortedCampaigns.length">
-      <!-- Scrollable campaign list -->
-      <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-        <div v-for="campaign in sortedCampaigns" :key="campaign.id" class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+      <!-- Preview (no scroll) limited list -->
+      <div class="space-y-3">
+        <div v-for="campaign in previewCampaigns" :key="campaign.id" class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
           <div class="flex justify-between items-start">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
@@ -203,10 +209,11 @@ const formatDate = (dateString: string) => {
       </div>
 
       <button
+        v-if="sortedCampaigns.length > PREVIEW_LIMIT"
         @click="openCampaignList"
         class="text-blue-500 hover:text-blue-700 mt-4 inline-block font-medium"
       >
-        View More
+        See More
       </button>
     </div>
     <p v-else class="text-gray-500">No ongoing campaigns found.</p>
