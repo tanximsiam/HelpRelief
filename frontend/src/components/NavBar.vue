@@ -29,7 +29,7 @@
         <div class="flex items-center gap-8">
           <!-- Center: Links (desktop) -->
           <NavBarButtons
-            v-for="l in links"
+            v-for="l in (auth.isAuthenticated ? authedLinks : guestLinks)"
             :key="l.to"
             :label="l.label"
             :to="l.to"
@@ -94,12 +94,15 @@ const auth = useAuth()
 
 // const open = ref(false)
 
-const links = props.links ?? [
-  { label: 'For Users', to: '/for-users' },
-  { label: 'My NGO', to: '/dashboard' },
-  { label: 'About Us', to: '/about' },
-  { label: 'Our partners', to: '/partners' },
+const guestLinks = [
+  { label: 'Home', to: '/' },
+  { label: 'For NGOs', to: '/ngo-apply' }
 ]
+const authedLinks = [
+  { label: 'Home', to: '/' },
+  { label: 'Dashboard', to: '/dashboard' }
+]
+
 
 onMounted(() => { if (auth.token && !auth.user) auth.fetchUser() })
 

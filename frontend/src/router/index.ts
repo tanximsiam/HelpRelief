@@ -142,7 +142,11 @@ const router = createRouter({
       component: () => import('../views/ProfileView.vue'),
       meta: { requiresAuth: true }
     },
-
+    {
+      path: '/ngo-apply',
+      name: 'ForNGO',
+      component: () => import('@/views/ForNGOView.vue'),
+    },
 
   ],
 })
