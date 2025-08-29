@@ -89,34 +89,22 @@
                 </button>
                 <button
                   v-if="isNgoStaff && campaign.status.toLowerCase() === 'active'"
-                  @click="openReportModal(campaign)"
-                  class="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition"
+                  @click="toggleCampaignStatus(campaign)"
+                  class="text-orange-600 hover:text-orange-900 text-xs font-medium px-3 py-1 bg-orange-50 hover:bg-orange-100 rounded-md transition"
                 >
-                  End Campaign
+                  Inactive
                 </button>
-
               </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-
-    <Modal :show="showReportModal" title="Submit Donation Report" @close="closeReportModal">
-      <DonationReportForm
-        v-if="selectedCampaign"
-        :campaignId="selectedCampaign.id"
-        :onSubmit="handleDonationReportSubmit"
-      />
-    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue'
-import Modal from './Modal.vue'
-import DonationReportForm from './DonationReportForm.vue'
-import { api } from '../lib/api'
+import { defineProps, defineEmits } from 'vue'
 
 // Interfaces
 interface Campaign {
@@ -130,16 +118,6 @@ interface Campaign {
   created_at: string
 }
 
-interface DonationReportPayload {
-  amount_received_financial: number
-  amount_used_financial: number
-  amount_received_medical: number
-  amount_used_medical: number
-  amount_received_resource: number
-  amount_used_resource: number
-  usage_breakdown: string
-}
-
 // Props
 defineProps<{
   campaigns: Campaign[]
@@ -151,12 +129,7 @@ defineProps<{
 const emit = defineEmits<{
   viewVolunteerReports: [campaignId: number]
   toggleCampaignStatus: [campaign: Campaign]
-  submitDonationReport: [payload: DonationReportPayload, campaign: Campaign]
 }>()
-
-// Modal state
-const showReportModal = ref(false)
-const selectedCampaign = ref<Campaign | null>(null)
 
 // Utility functions
 const getSeverityColor = (severity: string) => {
@@ -224,35 +197,4 @@ const viewVolunteerReports = (campaignId: number) => {
 const toggleCampaignStatus = (campaign: Campaign) => {
   emit('toggleCampaignStatus', campaign)
 }
-
-const openReportModal = (campaign: Campaign) => {
-  selectedCampaign.value = campaign
-  showReportModal.value = true
-}
-
-const closeReportModal = () => {
-  showReportModal.value = false
-  selectedCampaign.value = null
-}
-
-const handleDonationReportSubmit = async (payload: DonationReportPayload) => {
-  if (selectedCampaign.value) {
-    try {
-      // Call backend to store donation report and end campaign
-      await api.post('/donation-reports/store', {
-        ...payload,
-        campaign_id: selectedCampaign.value.id,
-      })
-      selectedCampaign.value.status = 'inactive'
-      // Optionally, refresh campaigns list here
-    } catch (err) {
-      // Handle error (show notification, etc.)
-    }
-    closeReportModal()
-  }
-}
 </script>
-
-<style scoped>
-/* Add any component-specific styles here */
-</style>
