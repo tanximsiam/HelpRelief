@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, defineExpose } from 'vue'
+import { useRouter } from 'vue-router'
 import { api } from '../lib/api'
 import Modal from './Modal.vue'
 import VolunteerTaskLogOverlay from './VolunteerTaskLogOverlay.vue'
@@ -24,11 +25,19 @@ const showCampaignListModal = ref(false);
 const showTaskLogs = ref(false);
 const selectedCampaignForLogs = ref<Campaign | null>(null);
 const searchQuery = ref('');
+const router = useRouter();
 
 // Computed property for sorted campaigns (by newest and severity)
 const sortedCampaigns = computed(() => {
   const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
-  return [...campaigns.value]
+  let filteredCampaigns = [...campaigns.value];
+
+  // For general users, only show active campaigns
+  if (!isNgoStaff.value) {
+    filteredCampaigns = filteredCampaigns.filter(campaign => campaign.status === 'active');
+  }
+
+  return filteredCampaigns
     .sort((a, b) => {
       // First sort by priority (severity)
       const priorityDiff = priorityOrder[b.help_needed] - priorityOrder[a.help_needed];
@@ -54,40 +63,15 @@ const filteredCampaigns = computed(() => {
   );
 });
 
-// Internal loader reused by refresh
-const loadCampaigns = async () => {
-  try {
-    // Fetch campaigns based on NGO staff status
-    let campaignEndpoint = '/campaigns';
-    if (isNgoStaff.value && ngoId.value) {
-      campaignEndpoint = `/campaigns/my`;
-    }
-    const campaignRes = await api.get(campaignEndpoint);
-    campaigns.value = Array.isArray(campaignRes.data) ? campaignRes.data : [];
-  } catch (error) {
-    console.error('Failed to fetch campaigns:', error);
-    errorMessage.value = 'Failed to load campaigns';
-  }
+// Function to navigate to task creation
+const navigateToTaskCreation = (campaign: Campaign) => {
+  router.push({
+    name: 'TaskController',
+    query: { campaign_id: campaign.id.toString() }
+  });
 };
 
-// Refresh method exposed to parent dashboards
-const refresh = async () => {
-  isLoading.value = true;
-  await loadCampaigns();
-  isLoading.value = false;
-};
-
-// Append newly created campaign (avoid duplicate, update existing)
-const append = (campaign: Campaign) => {
-  const idx = campaigns.value.findIndex(c => c.id === campaign.id);
-  if (idx === -1) {
-    campaigns.value.push(campaign);
-  } else {
-    campaigns.value[idx] = campaign;
-  }
-};
-
-// Fetch user role then campaigns on mount
+// Fetch user role and dashboard data on mount
 onMounted(async () => {
   try {
     const staffRes = await api.get('/ngo-staff');
@@ -167,7 +151,7 @@ const formatDate = (dateString: string) => {
 
 <template>
   <div class="bg-white p-4 rounded shadow">
-    <h3 class="text-xl font-semibold mb-4">Ongoing Campaigns</h3>
+    <h3 class="text-xl font-semibold mb-4">{{ isNgoStaff ? 'My Campaigns' : 'Ongoing Campaigns' }}</h3>
     <div v-if="isLoading" class="text-center text-gray-500">Loading campaigns...</div>
     <div v-else-if="errorMessage" class="text-center text-red-500">{{ errorMessage }}</div>
     <div v-else-if="sortedCampaigns.length">
@@ -193,12 +177,18 @@ const formatDate = (dateString: string) => {
             </div>
 
             <!-- Action buttons for NGO staff -->
-            <div v-if="isNgoStaff" class="flex flex-col gap-1 ml-4">
+            <div v-if="isNgoStaff && campaign.status === 'active'" class="flex flex-col gap-2 ml-4">
               <button
                 @click="openTaskLogs(campaign)"
-                class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
+                class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors"
               >
                 Task Log
+              </button>
+              <button
+                @click="navigateToTaskCreation(campaign)"
+                class="bg-green-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 transition-colors"
+              >
+                Create Task
               </button>
             </div>
           </div>
@@ -217,7 +207,7 @@ const formatDate = (dateString: string) => {
     <!-- Campaign List Modal with Search -->
     <Modal
       :show="showCampaignListModal"
-      title="All Campaigns"
+      :title="isNgoStaff ? 'All My Campaigns' : 'All Campaigns'"
       maxWidth="max-w-5xl"
       @close="closeCampaignList"
     >
@@ -267,12 +257,18 @@ const formatDate = (dateString: string) => {
               </div>
 
               <!-- Action buttons for NGO staff -->
-              <div v-if="isNgoStaff" class="flex gap-2 ml-4">
+              <div v-if="isNgoStaff && campaign.status === 'active'" class="flex gap-3 ml-4">
                 <button
                   @click="openTaskLogs(campaign)"
-                  class="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600 transition-colors"
+                  class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors"
                 >
                   View Task Log
+                </button>
+                <button
+                  @click="navigateToTaskCreation(campaign)"
+                  class="bg-green-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 transition-colors"
+                >
+                  Create Task
                 </button>
               </div>
             </div>

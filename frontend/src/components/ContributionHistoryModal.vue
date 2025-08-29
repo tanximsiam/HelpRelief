@@ -1,6 +1,6 @@
 <template>
-  <Modal 
-    :show="isOpen" 
+  <Modal
+    :show="isOpen"
     title="Your Contribution History"
     max-width="max-w-4xl"
     z-index="z-50"
@@ -26,7 +26,7 @@
             ✓ COMPLETED
           </span>
         </div>
-        
+
         <div class="bg-white rounded-lg p-4 border border-green-100">
           <h6 class="text-sm font-semibold text-gray-700 mb-3">Service Duration</h6>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

@@ -32,7 +32,7 @@
         </svg>
       </div>
       <h4 class="text-lg font-medium text-gray-900 mb-2">Become a Volunteer</h4>
-      <p class="text-gray-600 mb-4">Register as a volunteer to get tasks assigned and help communities in need.</p>
+      <p class="text-gray-600 mb-4">Register as a volunteer under a campaign to help communities in need.</p>
       <button
         @click="$emit('openVolunteerRegistration')"
         class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -51,42 +51,45 @@
         <p class="text-gray-600">You'll receive notification once a task is assigned</p>
       </div>
 
-      <!-- Show registered campaigns -->
-      <div v-if="registeredCampaigns.length > 0" class="space-y-4">
-        <h5 class="text-lg font-semibold text-gray-900 text-center mb-4">Your Active Registrations</h5>
-        <div v-for="campaign in registeredCampaigns" :key="campaign.id" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+      <!-- Show the campaign user registered under -->
+      <div v-if="getPrimaryCampaign()" class="space-y-4">
+        <h5 class="text-lg font-semibold text-gray-900 text-center mb-4">
+          Your Volunteer Registration
+        </h5>
+        
+        <!-- Show the single campaign they registered under -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
           <div class="mb-4">
-            <h6 class="text-xl font-bold text-gray-900 mb-1">{{ campaign.disaster_name }} Campaign</h6>
-            <p class="text-lg text-gray-700 font-medium">📍 {{ campaign.disaster_location }}</p>
+            <h6 class="text-xl font-bold text-gray-900 mb-1">{{ getPrimaryCampaign().disaster_name }} Campaign</h6>
+            <p class="text-lg text-gray-700 font-medium">📍 {{ getPrimaryCampaign().disaster_location }}</p>
           </div>
           
           <div class="bg-white rounded-lg p-4 border border-blue-100">
             <h6 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">NGO Contact Information</h6>
             <div class="space-y-2">
-              <div class="flex items-center">
-                <span class="text-lg font-medium text-gray-900">{{ campaign.ngo_name }}</span>
+              <p class="text-lg font-bold text-gray-900">{{ getPrimaryCampaign().ngo_name }}</p>
+              <div v-if="getPrimaryCampaign().ngo_phone" class="flex items-center">
+                <svg class="w-4 h-4 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                </svg>
+                <span class="text-sm text-gray-700">{{ getPrimaryCampaign().ngo_phone }}</span>
               </div>
-              <div class="flex items-center space-x-4 text-sm">
-                <div class="flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-                  </svg>
-                  <span class="font-medium">{{ campaign.ngo_phone || 'Phone not available' }}</span>
-                </div>
-                <div class="flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-                  </svg>
-                  <span class="font-medium">{{ campaign.ngo_email || 'Email not available' }}</span>
-                </div>
+              <div v-if="getPrimaryCampaign().ngo_email" class="flex items-center">
+                <svg class="w-4 h-4 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                </svg>
+                <span class="text-sm text-gray-700">{{ getPrimaryCampaign().ngo_email }}</span>
+              </div>
+              <div v-if="!getPrimaryCampaign().ngo_phone && !getPrimaryCampaign().ngo_email" class="text-center text-gray-500 text-sm">
+                Contact information not available
               </div>
             </div>
           </div>
           
           <div class="mt-4 text-center">
             <p class="text-sm text-gray-600 bg-yellow-50 px-4 py-2 rounded-lg border border-yellow-200">
-              <strong>Please wait for task assignment.</strong> For urgent matters, contact the NGO directly using the information above.
+              <strong>Waiting for task assignment</strong> from this campaign
             </p>
           </div>
         </div>
@@ -98,6 +101,17 @@
             class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
           >
             View Contribution History
+          </button>
+        </div>
+        
+        <!-- Resign button at bottom as non-focused option -->
+        <div class="text-center mt-8 pt-4 border-t border-gray-200">
+          <button
+            @click="resignAsVolunteer"
+            :disabled="resigning"
+            class="text-sm text-gray-500 hover:text-red-600 disabled:text-gray-400 underline transition-colors"
+          >
+            {{ resigning ? 'Resigning...' : 'Resign as Volunteer' }}
           </button>
         </div>
       </div>
@@ -245,14 +259,16 @@
             {{ resigning ? 'Resigning...' : 'Resign as Volunteer' }}
           </button>
         </div>
-        <p class="text-sm text-gray-600">You are still registered for active campaigns and may receive new task assignments.</p>
+        <p class="text-sm text-gray-600">
+          You are still registered as a volunteer and may receive new task assignments.
+        </p>
       </div>
     </div>
 
     <!-- Contribution History Modal -->
     <ContributionHistoryModal
       :isOpen="showContributionHistory"
-      :contributionHistory="contributionHistory"
+      :contributions="contributionHistory"
       :loading="loadingHistory"
       @close="showContributionHistory = false"
     />
@@ -282,6 +298,7 @@ interface Campaign {
   id: number
   disaster_name: string
   disaster_location: string
+  ngo_id: number
   ngo_name: string
   ngo_phone?: string
   ngo_email?: string
@@ -334,23 +351,52 @@ const fetchVolunteerStatus = async () => {
     // Check if user has volunteer registrations
     const volunteerResponse = await api.get('/campaigns/volunteer')
     hasVolunteerRegistrations.value = true
-    registeredCampaigns.value = volunteerResponse.data
+    
+    // Process campaigns and fetch NGO details
+    const campaignPromises = volunteerResponse.data
       .filter((campaign: any) => campaign.status === 'active') // Only show active campaigns
-      .map((campaign: any) => ({
-        id: campaign.id,
-        disaster_name: campaign.disaster_name,
-        disaster_location: campaign.disaster_location,
-        ngo_name: campaign.ngo_name,
-        ngo_phone: campaign.ngo?.phone,
-        ngo_email: campaign.ngo?.email,
-        status: campaign.status
-      }))
+      .map(async (campaign: any) => {
+        let ngoPhone = campaign.ngo?.phone || null
+        let ngoEmail = campaign.ngo?.email || null
+        
+        // Always try to fetch NGO details from the dedicated endpoint
+        if (campaign.ngo_id) {
+          try {
+            console.log(`Fetching NGO details for ID: ${campaign.ngo_id}`)
+            const ngoResponse = await api.get(`/ngo/${campaign.ngo_id}`)
+            const ngoData = ngoResponse.data
+            console.log('NGO Response:', ngoData)
+            
+            // Update with fetched data, prioritizing API response
+            ngoPhone = ngoData.phone || ngoPhone
+            ngoEmail = ngoData.email || ngoEmail
+          } catch (error) {
+            console.error('Failed to fetch NGO details for ID:', campaign.ngo_id, error)
+          }
+        }
+        
+        return {
+          id: campaign.id,
+          disaster_name: campaign.disaster_name,
+          disaster_location: campaign.disaster_location,
+          ngo_id: campaign.ngo_id,
+          ngo_name: campaign.ngo_name || campaign.ngo?.name,
+          ngo_phone: ngoPhone,
+          ngo_email: ngoEmail,
+          status: campaign.status
+        }
+      })
+    
+    registeredCampaigns.value = await Promise.all(campaignPromises)
 
-    // Check both user.volunteer status AND if there are active registrations
-    if (registeredCampaigns.value.length === 0 || !auth.user?.volunteer) {
+    // Check if there are active registrations
+    if (registeredCampaigns.value.length === 0) {
       hasVolunteerRegistrations.value = false
       return
     }
+
+    // User has registration(s) - show volunteer interface
+    hasVolunteerRegistrations.value = true
 
     // Check for active tasks
     const tasksResponse = await api.get('/my-tasks')
@@ -390,11 +436,12 @@ const fetchVolunteerStatus = async () => {
           currentTask.value = null
           currentTaskLog.value = null
           // Check if this was completed very recently (last 24 hours) for thank you message
+          // Only show if user is still a volunteer (hasn't resigned) and no new task assigned
           const completedTime = new Date(taskLog.check_out)
           const now = new Date()
           const hoursDiff = (now.getTime() - completedTime.getTime()) / (1000 * 60 * 60)
 
-          if (hoursDiff <= 24) {
+          if (hoursDiff <= 24 && auth.user?.volunteer && hasVolunteerRegistrations.value) {
             completedTask.value = activeTask
           }
         } else {
@@ -416,11 +463,12 @@ const fetchVolunteerStatus = async () => {
 
       if (recentCompletedTask) {
         // Check if this was completed very recently (last 24 hours)
+        // Only show if user is still a volunteer (hasn't resigned) and no new task assigned
         const completedTime = new Date(recentCompletedTask.end_time || recentCompletedTask.start_time)
         const now = new Date()
         const hoursDiff = (now.getTime() - completedTime.getTime()) / (1000 * 60 * 60)
 
-        if (hoursDiff <= 24) {
+        if (hoursDiff <= 24 && auth.user?.volunteer && hasVolunteerRegistrations.value) {
           completedTask.value = recentCompletedTask
         }
       }
@@ -572,6 +620,14 @@ const getCurrentCampaign = () => {
     ) || registeredCampaigns.value[0] // fallback to first campaign
   }
   return null
+}
+
+// Get the campaign user is registered under (should be only one)
+const getPrimaryCampaign = () => {
+  if (registeredCampaigns.value.length === 0) return null
+  
+  // Return the campaign user is registered under
+  return registeredCampaigns.value[0]
 }
 
 const formatDateTime = (dateString: string | undefined) => {
