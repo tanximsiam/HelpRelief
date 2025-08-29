@@ -19,6 +19,7 @@ const showAidSupport = ref(false)
 const showVolunteerModal = ref(false)
 const resignError = ref('')
 const resignSuccess = ref('')
+const taskActivityRef = ref<{ refreshData: () => Promise<void> } | null>(null)
 
 onMounted(async () => {
   if (auth.token && !auth.user) {
@@ -37,11 +38,11 @@ const handleAidRequestSubmit = () => { alert('Aid request submitted successfully
 const openVolunteerModal = () => showVolunteerModal.value = true
 const closeVolunteerModal = () => showVolunteerModal.value = false
 const handleVolunteerSubmit = async () => {
-  alert('Volunteer registration submitted successfully!');
-  closeVolunteerModal();
-  await auth.fetchUser();
-  if (auth.user && auth.user.volunteer) {
-    await volunteerTaskStore.fetchActiveTask(auth.user.id);
+  alert('Volunteer registration submitted successfully!')
+  closeVolunteerModal()
+  // Refresh TaskActivityComponent data after registration
+  if (taskActivityRef.value) {
+    await taskActivityRef.value.refreshData()
   }
 }
 const openAidSupport = () => showAidSupport.value = true
@@ -59,7 +60,7 @@ async function handleResignVolunteer() {
       }
       volunteerTaskStore.hasActiveTask = false
     }
-  } catch (err) {
+  } catch (err: any) {
     if (err.response && err.response.data && err.response.data.error) {
       resignError.value = err.response.data.error
     } else {
@@ -94,8 +95,8 @@ async function handleResignVolunteer() {
       <div class="grid grid-cols-1 gap-6" style="height:600px;">
         <div class="lg:col-span-1" style="height:600px;">
           <div class="space-y-6 h-full overflow-y-auto">
-            <!-- Show TaskActivityComponent for volunteers with assigned tasks -->
-            <TaskActivityComponent v-if="auth.user && auth.user.volunteer" />
+            <!-- Show TaskActivityComponent for all users -->
+            <TaskActivityComponent ref="taskActivityRef" @openVolunteerRegistration="openVolunteerModal" />
             <OngoingDisasters />
             <OngoingCampaigns />
           </div>

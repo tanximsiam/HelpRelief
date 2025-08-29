@@ -115,6 +115,9 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/my-tasks', [VolunteerTaskController::class, 'index']);
     Route::patch('/my-tasks/{id}/status', [VolunteerTaskController::class, 'updateStatus']);
 
+    // Volunteer dashboard task info
+    Route::get('/volunteer/tasks', [VolunteerTaskController::class, 'getVolunteerTaskInfo']);
+
     // Assign an aid request (handles both financial + non-financial cases)
     Route::post('/aid-requests/{id}/assign', [VolunteerTaskController::class, 'assignAidRequest']);
 
@@ -125,10 +128,8 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::post('/tasks/standalone', [VolunteerTaskController::class, 'createStandaloneTask']);
 
     // Donation Reports
-    Route::post('/donation-reports/store', [DonationReportController::class, 'store']);
     Route::get('/disasters/{disasterId}/user-report', [DonationReportController::class, 'userReportForDisaster']);
     Route::get('/donation-reports/disasters', [DonationReportController::class, 'allDonationReports']);
-    Route::get('/donation-reports/campaigns', [DonationReportController::class, 'reportsByCampaign']);
 
 
 
@@ -160,11 +161,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/campaigns/{campaignId}/volunteers', [CampaignController::class, 'campaignVolunteers']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
     Route::post('/campaigns', [CampaignController::class, 'store']);
-<<<<<<< HEAD
-    // Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
-=======
     Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']); //@tasfiq
->>>>>>> da4c28c (minor bug fix)
     // Tasks for a campaign
     Route::get('/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
 
@@ -186,11 +183,14 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/report/my-ngo', [ReportController::class, 'myNgoReport']);
 
     Route::get('/map/aid-need', [MapController::class, 'getAidNeedByState']);
-    Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
+        Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
 
+<<<<<<< HEAD
     // Invite Links
     Route::post('/ngo-invite-links', [NgoInviteLinkController::class, 'store']);
     Route::get('/ngo-invite-links', [NgoInviteLinkController::class, 'activeLinks']);
+=======
+>>>>>>> 8b37020 (bug fixed on general user task activity panel)
 });
 
 

@@ -200,7 +200,7 @@ class VolunteerTaskController extends Controller
             'aid_type' => $request->aid_type,
             'urgency' => $request->urgency,
             'description' => $request->description,
-            'status' => 'pending',
+            'status' => 'assigned',
         ]);
 
         // Mark volunteer unavailable after assignment
