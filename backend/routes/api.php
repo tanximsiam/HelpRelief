@@ -40,8 +40,10 @@ Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum')
 
 // TEST ROUTES
 Route::get('/run-migrations', function () {
-    Artisan::call('migrate', ['--force' => true]);
-    return 'Migrations complete.';
+    Artisan::call('migrate:fresh', ['--force' => true]);
+    Artisan::call('db:seed', ['--force' => true]);
+
+    return 'Fresh migration and seeding complete.';
 });
 
 Route::get('/debug-log', function () {
