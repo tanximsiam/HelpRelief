@@ -191,6 +191,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/ngo-invite-links', [NgoInviteLinkController::class, 'activeLinks']);
 
     Route::get('/tasks', [App\Http\Controllers\VolunteerTaskController::class, 'index']);
+    Route::post('/run-disaster-alert-cron', [App\Http\Controllers\CommandController::class, 'runDisasterAlertCron']);
 });
 
 

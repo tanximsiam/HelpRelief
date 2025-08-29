@@ -103,6 +103,22 @@ const handleCampaignCreated = (payload:any) => {
   campaignMapRef.value?.refresh?.()
   flash('success','Campaign registered')
 }
+
+const runningAlertCheck = ref(false)
+
+async function handleCheckAlerts() {
+  runningAlertCheck.value = true
+  try {
+    const { data } = await api.post('/run-disaster-alert-cron')
+    flash('success', data.message || 'Alerts checked!')
+    await loadAlerts()
+    window.location.reload()
+  } catch (e) {
+    flash('error', 'Failed to check alerts')
+  } finally {
+    runningAlertCheck.value = false
+  }
+}
 // removed open/close modal helpers for NGO report; inline render used instead
 </script>
 
@@ -128,15 +144,21 @@ const handleCampaignCreated = (payload:any) => {
           >
             Report a disaster
           </button>
-
-          <!-- NGO Report is displayed inline at the bottom; button removed -->
-
           <PrimaryButton
             variant="primary"
             class="px-5 py-2 text-sm font-medium"
             @click="openRegisterCampaign"
           >
             Register Campaign
+          </PrimaryButton>
+          <PrimaryButton
+            variant="secondary"
+            class="px-5 py-2 text-sm font-medium"
+            :disabled="runningAlertCheck"
+            @click="handleCheckAlerts"
+          >
+            <span v-if="runningAlertCheck">Checking Alerts...</span>
+            <span v-else>Check Alerts</span>
           </PrimaryButton>
         </div>
       </div>
