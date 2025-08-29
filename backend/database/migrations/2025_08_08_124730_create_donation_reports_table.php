@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('donation_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('disaster_id')->constrained()->onDelete('cascade');
-            $table->foreignId('ngo_id')->constrained('users')->onDelete('cascade'); // NGO role
-            $table->enum('aid_type', ['financial', 'medical', 'resource']);
-            $table->decimal('amount_received', 15, 2);
-            $table->decimal('amount_used', 15, 2);
+            $table->foreignId('campaign_id')->constrained('disaster_campaign_assignments')->onDelete('cascade');
+            // Mapped amounts for each aid type
+            $table->decimal('amount_received_financial', 15, 2)->default(0);
+            $table->decimal('amount_used_financial', 15, 2)->default(0);
+            $table->decimal('amount_received_medical', 15, 2)->default(0);
+            $table->decimal('amount_used_medical', 15, 2)->default(0);
+            $table->decimal('amount_received_resource', 15, 2)->default(0);
+            $table->decimal('amount_used_resource', 15, 2)->default(0);
             $table->text('usage_breakdown')->nullable(); // JSON/notes
-            $table->string('reporting_period');
-            $table->boolean('confirmed')->default(false);
             $table->timestamps();
         });
     }

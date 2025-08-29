@@ -14,6 +14,16 @@ class VolunteerRegistrationController extends Controller
     {
         $user = $request->user();
 
+        // Moderation: block registration if user has any flagged volunteer_registrations
+        $flagged = VolunteerRegistration::where('user_id', $user->id)
+            ->where('status', 'flagged')
+            ->exists();
+        if ($flagged) {
+            return response()->json([
+                'error' => 'Registration denied. A previous affiliated NGO flagged you as a volunteer. Please contact support.'
+            ], 403);
+        }
+
         $data = $request->validate([
             'ngo_id'      => ['required', 'exists:ngos,id'],
             'campaign_id' => [

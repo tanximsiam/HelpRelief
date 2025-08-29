@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Disaster;
 use App\Models\Ngo;
 use App\Models\User;
+use App\Models\DonationReport;
 
 class DisasterCampaignAssignment extends Model
 {
@@ -40,5 +41,9 @@ class DisasterCampaignAssignment extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+    public function donations()
+    {
+        return $this->hasMany(DonationReport::class, 'campaign_id');
     }
 }
