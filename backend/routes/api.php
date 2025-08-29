@@ -179,8 +179,10 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/report/my-ngo', [ReportController::class, 'myNgoReport']);
 
     Route::get('/map/aid-need', [MapController::class, 'getAidNeedByState']);
-        Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
+    Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
 
+    // Donation Reports by Campaign
+    Route::get('/donation-reports/campaigns', [DonationReportController::class, 'reportsByCampaign']);
 });
 
 

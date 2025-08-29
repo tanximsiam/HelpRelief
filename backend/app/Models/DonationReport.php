@@ -4,30 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\DisasterCampaignAssignment;
 
 class DonationReport extends Model
+    // Already has campaign() relation
 {
     //
     use HasFactory;
     protected $fillable = [
-        'disaster_id',
-        'ngo_id',
-        'aid_type',
-        'amount_received',
-        'amount_used',
+        'campaign_id',
+        'amount_received_financial',
+        'amount_used_financial',
+        'amount_received_medical',
+        'amount_used_medical',
+        'amount_received_resource',
+        'amount_used_resource',
         'usage_breakdown',
-        'reporting_period',
-        'confirmed',
     ];
 
-    // Relationships
-    public function disaster()
-    {
-        return $this->belongsTo(Disaster::class);
-    }
 
-    public function ngo()
+    public function campaign()
     {
-        return $this->belongsTo(Ngo::class, 'ngo_id');
+        return $this->belongsTo(DisasterCampaignAssignment::class, 'campaign_id');
     }
 }
