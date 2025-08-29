@@ -124,8 +124,10 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::post('/tasks/standalone', [VolunteerTaskController::class, 'createStandaloneTask']);
 
     // Donation Reports
+    Route::post('/donation-reports/store', [DonationReportController::class, 'store']);
     Route::get('/disasters/{disasterId}/user-report', [DonationReportController::class, 'userReportForDisaster']);
     Route::get('/donation-reports/disasters', [DonationReportController::class, 'allDonationReports']);
+    Route::get('/donation-reports/campaigns', [DonationReportController::class, 'reportsByCampaign']);
 
 
 
@@ -157,7 +159,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/campaigns/{campaignId}/volunteers', [CampaignController::class, 'campaignVolunteers']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
     Route::post('/campaigns', [CampaignController::class, 'store']);
-    Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
+    // Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
     // Tasks for a campaign
     Route::get('/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
 
@@ -182,7 +184,6 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
 
     // Donation Reports by Campaign
-    Route::get('/donation-reports/campaigns', [DonationReportController::class, 'reportsByCampaign']);
 });
 
 

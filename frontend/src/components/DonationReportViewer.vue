@@ -2,11 +2,13 @@
 defineProps<{
   reports: {
     id: number
-    aid_type: string
-    amount_received: number
-    amount_used: number
+    amount_received_financial: number
+    amount_used_financial: number
+    amount_received_medical: number
+    amount_used_medical: number
+    amount_received_resource: number
+    amount_used_resource: number
     usage_breakdown: string
-    reporting_period: string
   }[]
 }>()
 
@@ -28,15 +30,24 @@ function parseBreakdown(json: string): Record<string, number> {
       :key="r.id"
       class="mb-6 p-4 border rounded-md bg-white shadow-sm"
     >
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-base">
-          {{ r.aid_type.toUpperCase() }} Report ({{ r.reporting_period }})
-        </h3>
-        <p class="text-sm text-gray-500">
-          Used {{ r.amount_used }} / {{ r.amount_received }}
-        </p>
+      <h3 class="font-bold text-base mb-2">Donation Report</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+        <div>
+          <span class="font-semibold">Financial Aid:</span><br>
+          Received: {{ r.amount_received_financial }}<br>
+          Used: {{ r.amount_used_financial }}
+        </div>
+        <div>
+          <span class="font-semibold">Medical Aid:</span><br>
+          Received: {{ r.amount_received_medical }}<br>
+          Used: {{ r.amount_used_medical }}
+        </div>
+        <div>
+          <span class="font-semibold">Resource Aid:</span><br>
+          Received: {{ r.amount_received_resource }}<br>
+          Used: {{ r.amount_used_resource }}
+        </div>
       </div>
-
       <div class="mt-2">
         <p class="font-medium mb-1">Usage Breakdown:</p>
         <ul class="list-disc list-inside text-sm text-gray-700">

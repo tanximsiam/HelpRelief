@@ -16,11 +16,11 @@ class DonationReportController extends Controller
             abort(403, 'Unauthorized');
         }
         $staff = $user->ngoStaff; // hasOne NgoStaff
-        if (!$staff || !$staff->campaign_id) {
-            abort(403, 'No parent campaign mapped for this staff.');
+        if (!$staff) {
+            abort(403, 'No NGO staff record found.');
         }
         $data = $request->validate([
-            'campaign_id' => 'required|exists:campaigns,id',
+            'campaign_id' => 'required|exists:disaster_campaign_assignments,id',
             'amount_received_financial' => 'required|numeric|min:0',
             'amount_used_financial' => 'required|numeric|min:0',
             'amount_received_medical' => 'required|numeric|min:0',
@@ -29,11 +29,31 @@ class DonationReportController extends Controller
             'amount_used_resource' => 'required|numeric|min:0',
             'usage_breakdown' => 'nullable|string',
         ]);
-        $data['campaign_id'] = $staff->campaign_id;
         $report = DonationReport::create($data);
+
+        // Set campaign status to inactive
+        $campaign = \App\Models\DisasterCampaignAssignment::find($data['campaign_id']);
+        if ($campaign) {
+            $campaign->status = 'inactive';
+            $campaign->save();
+
+            // Check if any active campaigns remain for this disaster
+            $activeCampaigns = \App\Models\DisasterCampaignAssignment::where('disaster_id', $campaign->disaster_id)
+                ->where('status', 'active')
+                ->count();
+            if ($activeCampaigns === 0) {
+                $disaster = \App\Models\Disaster::find($campaign->disaster_id);
+                if ($disaster) {
+                    $disaster->status = 'closed';
+                    $disaster->save();
+                }
+            }
+        }
+
         return response()->json([
-            'message' => 'Donation report submitted successfully.',
-            'report' => $report
+            'message' => 'Donation report submitted and campaign ended successfully.',
+            'report' => $report,
+            'campaign' => $campaign
         ], 201);
     }
 
