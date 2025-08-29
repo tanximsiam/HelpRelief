@@ -138,35 +138,39 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::post('/disasters/store', [DisasterController::class, 'store']);
 
     // Volunteer Reports
-    Route::get('/reports/volunteers/aggregate', [VolunteerReportController::class, 'aggregate']);
-    Route::get('/reports/volunteers/individual', [VolunteerReportController::class, 'individual']);
-    Route::post('/reports/volunteers/flag', [VolunteerReportController::class, 'flagVolunteer']);
+    Route::get('/reports/volunteers/aggregate', [VolunteerReportController::class, 'aggregate']); //@tasfiq
+    Route::get('/reports/volunteers/individual', [VolunteerReportController::class, 'individual']); //@tasfiq
+    Route::post('/reports/volunteers/flag', [VolunteerReportController::class, 'flagVolunteer']); //@tasfiq
 
 
     // NGO Profile Update
-    Route::get('/ngo', [NgoController::class, 'index']);
-    Route::get('/ngo/{ngoId}', [NgoController::class, 'show']);
-    Route::patch('/ngo/{ngoId}', [NgoController::class, 'updateNgo']);
+    Route::get('/ngo', [NgoController::class, 'index']); //@tasfiq
+    Route::get('/ngo/{ngoId}', [NgoController::class, 'show']); //@tasfiq
+    Route::patch('/ngo/{ngoId}', [NgoController::class, 'updateNgo']); //@tasfiq
 
     // User Profile Update
-    Route::get('/user', [UserController::class, 'show']);
-    Route::patch('/user', [UserController::class, 'update']);
+    Route::get('/user', [UserController::class, 'show']); //@tasfiq
+    Route::patch('/user', [UserController::class, 'update']); //@tasfiq
 
     // Campaign routes
     Route::get('/campaigns', [CampaignController::class, 'index']);
-    Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']);
+    Route::get('/campaigns/my', [CampaignController::class, 'myCampaigns']); //@tasfiq
     Route::get('/campaigns/volunteer', [CampaignController::class, 'volunteerCampaigns']);
     Route::get('/campaigns/stats', [CampaignController::class, 'campaignStats']);
     Route::get('/campaigns/{campaignId}/volunteers', [CampaignController::class, 'campaignVolunteers']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
     Route::post('/campaigns', [CampaignController::class, 'store']);
+<<<<<<< HEAD
     // Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
+=======
+    Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']); //@tasfiq
+>>>>>>> da4c28c (minor bug fix)
     // Tasks for a campaign
     Route::get('/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
 
     // Map routes for NGO dashboard
-    Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']);
-    Route::get('/map/state/{stateName}', [MapController::class, 'getStateDetails']);
+    Route::get('/map/campaign-intensity', [MapController::class, 'getCampaignIntensityByState']); //@tasfiq
+    Route::get('/map/state/{stateName}', [MapController::class, 'getStateDetails']); //@tasfiq
     Route::get('/map/aid-request-density', [MapController::class, 'getAidRequestDensityByState']);
     Route::get('/map/aid-requests/state/{stateName}', [MapController::class, 'getAidRequestsForState']);
 

@@ -62,7 +62,7 @@ const toggleCampaignStatus = async (campaign: Campaign) => {
   try {
     const newStatus = campaign.status === 'active' ? 'inactive' : 'active';
     await api.patch(`/campaigns/${campaign.id}/status`, { status: newStatus });
-    
+
     // Update the campaign status in the local state
     campaign.status = newStatus;
   } catch (error) {

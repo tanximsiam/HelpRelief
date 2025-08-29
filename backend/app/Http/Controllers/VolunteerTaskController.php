@@ -27,8 +27,6 @@ class VolunteerTaskController extends Controller
                     'urgency' => $task->urgency,
                     'start_time' => $task->start_time,
                     'status' => $task->status,
-                    // 'status' => $task->logs->first()->status ?? 'unassigned', // Default to 'unassigned' if no logs exist
-
                 ];
             });
 
