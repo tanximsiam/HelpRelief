@@ -35,6 +35,13 @@
             :to="l.to"
           />
           <NavBarButtons
+            v-if="auth.isAuthenticated && auth.isGeneral"
+            v-for="l in generalLinks"
+            :key="l.to"
+            :label="l.label"
+            :to="l.to"
+          />
+          <NavBarButtons
             v-if="auth.isAuthenticated && auth.ngoPrivilegeRole === 'ngo_admin'"
             v-for="l in adminLinks"
             :key="l.to"
@@ -107,6 +114,10 @@ const guestLinks = [
 const authedLinks = [
   { label: 'Home', to: '/' },
   { label: 'Dashboard', to: '/dashboard' }
+]
+
+const generalLinks = [
+  { label: 'Donation Reports', to: '/donation-reports' }
 ]
 
 const adminLinks = [

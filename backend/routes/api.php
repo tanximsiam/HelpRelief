@@ -130,7 +130,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     // Donation Reports
     Route::get('/disasters/{disasterId}/user-report', [DonationReportController::class, 'userReportForDisaster']);
     Route::get('/donation-reports/disasters', [DonationReportController::class, 'allDonationReports']);
-
+    Route::get('/donation-reports/campaigns', [DonationReportController::class, 'reportsByCampaign']);
 
 
     Route::get('/active-disasters', [DisasterController::class, 'index']);
@@ -183,7 +183,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/report/my-ngo', [ReportController::class, 'myNgoReport']);
 
     Route::get('/map/aid-need', [MapController::class, 'getAidNeedByState']);
-        Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
+    Route::get('/map/aid-need-test', [MapController::class, 'testAidNeed']); // Test route - remove in production
 
     // Invite Links
     Route::post('/ngo-invite-links', [NgoInviteLinkController::class, 'store']);
