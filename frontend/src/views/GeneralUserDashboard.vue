@@ -36,7 +36,11 @@ const closeAidRequestModal = () => showAidRequestModal.value = false
 const handleAidRequestSubmit = () => { alert('Aid request submitted successfully!'); closeAidRequestModal() }
 const openVolunteerModal = () => showVolunteerModal.value = true
 const closeVolunteerModal = () => showVolunteerModal.value = false
-const handleVolunteerSubmit = () => { alert('Volunteer registration submitted successfully!'); closeVolunteerModal() }
+const handleVolunteerSubmit = () => {
+  alert('Volunteer registration submitted successfully!')
+  if (auth.user) auth.user.volunteer = true
+  closeVolunteerModal()
+}
 const openAidSupport = () => showAidSupport.value = true
 const closeAidSupport = () => showAidSupport.value = false
 
@@ -52,9 +56,10 @@ async function handleResignVolunteer() {
       }
       volunteerTaskStore.hasActiveTask = false
     }
-  } catch (err) {
-    if (err.response && err.response.data && err.response.data.error) {
-      resignError.value = err.response.data.error
+  } catch (err: any) {
+    const resp = (err as any)?.response
+    if (resp?.data?.error) {
+      resignError.value = resp.data.error
     } else {
       resignError.value = 'Failed to resign. Please try again.'
     }
@@ -74,7 +79,7 @@ async function handleResignVolunteer() {
         </div>
         <div class="flex gap-4 items-center">
           <button
-            v-if="auth.user && auth.user.volunteer && volunteerTaskStore.hasActiveTask"
+            v-if="auth.user && auth.user.volunteer"
             @click="openAidRequestModal"
             class="text-sm font-medium inline-flex items-center gap-1 transition-colors text-blue-600 hover:text-blue-700 underline underline-offset-4"
           >Request Aid</button>
