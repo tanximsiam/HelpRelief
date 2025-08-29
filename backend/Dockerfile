@@ -7,9 +7,13 @@ RUN a2enmod rewrite
 # Set working directory
 WORKDIR /var/www/html
 
+# Set Apache DocumentRoot to Laravel's public folder
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+
+
 # Install required PHP extensions
 RUN apt-get update && apt-get install -y \
-    libzip-dev zip unzip git curl libpng-dev libonig-dev libxml2-dev \
+    zip unzip curl git libzip-dev libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql zip
 
 # Install Composer
@@ -27,3 +31,6 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Expose port
 EXPOSE 80
+
+# Update Apache config to use public/ as root
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
