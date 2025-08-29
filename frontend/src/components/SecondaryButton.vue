@@ -5,7 +5,7 @@
     :class="[
       'rounded-lg px-3 py-2 text-lg font-medium transition-colors',
       disabled && 'opacity-60 cursor-not-allowed',
-      'bg-slate-600 text-white hover:bg-slate-700'
+      'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg'
     ]"
   >
     <slot>Button</slot>

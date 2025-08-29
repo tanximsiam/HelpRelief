@@ -22,16 +22,16 @@
               Campaign
             </th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Disaster Type
+              Status
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Help Needed
             </th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Severity
             </th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Help Needed
+              Disaster Type
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Created Date
@@ -47,53 +47,53 @@
               <div class="text-sm font-medium text-gray-900">{{ campaign.campaign_name }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ campaign.disaster_type }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
               <span
-                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                :class="getSeverityColor(campaign.severity)"
-              >
-                {{ campaign.severity }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full"
                 :class="getStatusColor(campaign.status)"
               >
-                {{ campaign.status }}
+                <span class="w-2 h-2 rounded-full mr-1" :class="getStatusDotColor(campaign.status)"></span>
+                {{ campaign.status.toUpperCase() }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <span
-                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full mr-2"
-                  :class="getHelpNeededColor(campaign.help_needed)"
-                >
-                  <span class="w-2 h-2 rounded-full mr-1" :class="getHelpNeededDotColor(campaign.help_needed)"></span>
-                  {{ (campaign.help_needed || 'General aid').toUpperCase() }}
-                </span>
-              </div>
+              <span
+                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full"
+                :class="getHelpNeededColor(campaign.help_needed)"
+              >
+                <span class="w-2 h-2 rounded-full mr-1" :class="getHelpNeededDotColor(campaign.help_needed)"></span>
+                {{ (campaign.help_needed || 'General aid').toUpperCase() }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full"
+                :class="getSeverityColor(campaign.severity)"
+              >
+                <span class="w-2 h-2 rounded-full mr-1" :class="getSeverityDotColor(campaign.severity)"></span>
+                {{ campaign.severity.toUpperCase() }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ campaign.disaster_type || 'N/A' }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {{ formatDate(campaign.created_at) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <div class="flex space-x-2">
-                <button
+                <PrimaryButton
                   @click="viewVolunteerReports(campaign.id)"
-                  class="text-blue-600 hover:text-blue-900 text-xs font-medium px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-md transition"
+                  class="text-xs font-medium px-3 py-1"
                 >
                   View Reports
-                </button>
-                <button
+                </PrimaryButton>
+                <SecondaryButton
                   v-if="isNgoStaff && campaign.status.toLowerCase() === 'active'"
                   @click="toggleCampaignStatus(campaign)"
-                  class="text-orange-600 hover:text-orange-900 text-xs font-medium px-3 py-1 bg-orange-50 hover:bg-orange-100 rounded-md transition"
+                  class="text-xs font-medium px-3 py-1"
                 >
-                  Inactive
-                </button>
+                  Complete
+                </SecondaryButton>
               </div>
             </td>
           </tr>
@@ -104,7 +104,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+import PrimaryButton from './PrimaryButton.vue'
+import SecondaryButton from './SecondaryButton.vue'
 
 // Interfaces
 interface Campaign {
@@ -112,6 +113,9 @@ interface Campaign {
   campaign_name: string
   disaster_name: string
   disaster_type: string
+  disaster?: {
+    disaster_type: string
+  }
   severity: string
   status: string
   help_needed: string | null
@@ -135,37 +139,61 @@ const emit = defineEmits<{
 const getSeverityColor = (severity: string) => {
   switch (severity?.toLowerCase()) {
     case 'high':
-      return 'bg-red-100 text-red-800'
+      return 'bg-red-50 text-red-700'
     case 'medium':
-      return 'bg-yellow-100 text-yellow-800'
+      return 'bg-yellow-50 text-yellow-700'
     case 'low':
-      return 'bg-green-100 text-green-800'
+      return 'bg-green-50 text-green-700'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-50 text-gray-700'
+  }
+}
+
+const getSeverityDotColor = (severity: string) => {
+  switch (severity?.toLowerCase()) {
+    case 'high':
+      return 'bg-red-400'
+    case 'medium':
+      return 'bg-yellow-400'
+    case 'low':
+      return 'bg-green-400'
+    default:
+      return 'bg-gray-400'
   }
 }
 
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'active':
-      return 'bg-green-100 text-green-800'
+      return 'bg-green-50 text-green-700'
     case 'inactive':
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-50 text-gray-700'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-50 text-gray-700'
+  }
+}
+
+const getStatusDotColor = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'active':
+      return 'bg-green-400'
+    case 'inactive':
+      return 'bg-gray-400'
+    default:
+      return 'bg-gray-400'
   }
 }
 
 const getHelpNeededColor = (helpNeeded: string | null) => {
   switch (helpNeeded?.toLowerCase()) {
     case 'high':
-      return 'bg-red-50 text-red-700 border border-red-200'
+      return 'bg-red-50 text-red-700'
     case 'medium':
-      return 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+      return 'bg-yellow-50 text-yellow-700'
     case 'low':
-      return 'bg-green-50 text-green-700 border border-green-200'
+      return 'bg-green-50 text-green-700'
     default:
-      return 'bg-gray-50 text-gray-700 border border-gray-200'
+      return 'bg-blue-50 text-blue-700'
   }
 }
 
@@ -178,7 +206,7 @@ const getHelpNeededDotColor = (helpNeeded: string | null) => {
     case 'low':
       return 'bg-green-400'
     default:
-      return 'bg-gray-400'
+      return 'bg-blue-400'
   }
 }
 

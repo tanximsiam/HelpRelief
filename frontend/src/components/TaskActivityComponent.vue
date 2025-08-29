@@ -496,7 +496,7 @@ const fetchContributionHistory = async () => {
     // Get completed task logs for this volunteer where status is 'ended'
     // Use the /task-logs endpoint with volunteer_id parameter
     const response = await api.get('/task-logs', {
-      params: { 
+      params: {
         volunteer_id: auth.user.id
       }
     })
@@ -686,14 +686,14 @@ const refreshData = async () => {
   currentTaskLog.value = null
   completedTask.value = null
   error.value = ''
-  
+
   // If user is not a volunteer, they should see registration card
   if (!auth.user?.volunteer) {
     hasVolunteerRegistrations.value = false
     registeredCampaigns.value = []
     return
   }
-  
+
   // Otherwise fetch the current status
   await fetchVolunteerStatus()
   await fetchContributionHistory()

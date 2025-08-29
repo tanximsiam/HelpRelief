@@ -6,6 +6,7 @@ import Modal from './Modal.vue'
 interface Campaign {
   id: number;
   name: string;
+  campaign_name?: string;
   disaster_id: number;
   disaster_name: string;
   ngo_name: string;
@@ -15,17 +16,18 @@ interface Campaign {
 
 interface VolunteerAggregate {
   disaster_id: number;
+  campaign_id: number;
   ngo_id: number;
   report_type: string;
   total_volunteers: number;
   active_volunteers: number;
-  approved_volunteers: number;
   flagged_volunteers: number;
+  volunteers_with_tasks: number;
   tasks_assigned: number;
   tasks_completed: number;
+  tasks_started: number;
   completion_rate: number;
   total_hours: number;
-  volunteers_with_tasks?: number;
 }
 
 interface VolunteerIndividual {
@@ -58,7 +60,7 @@ interface VolunteerIndividual {
 
 // Props
 const props = defineProps<{
-  campaign: Campaign;
+  campaign: Campaign | null;
   show: boolean;
 }>();
 
@@ -76,43 +78,48 @@ const individualReports = ref<VolunteerIndividual[]>([]);
 
 // Fetch reports when component mounts
 onMounted(async () => {
-  if (props.show) {
+  if (props.show && props.campaign) {
     await fetchReports();
   }
 });
 
 // Watch for show prop changes to fetch reports when modal opens
 watch(() => props.show, async (newShow) => {
-  if (newShow) {
+  if (newShow && props.campaign) {
     await fetchReports();
   }
 });
 
 // Function to fetch both aggregate and individual reports
 const fetchReports = async () => {
+  if (!props.campaign) return;
+
   isLoading.value = true;
   errorMessage.value = '';
 
   try {
-    // Fetch aggregate report using campaign_id (comprehensive type to get all volunteer registration data)
-    const aggRes = await api.get(`/reports/volunteers/aggregate?campaign_id=${props.campaign.id}&type=all`);
+    // Fetch aggregate report using campaign_id
+    const aggRes = await api.get(`/reports/volunteers/aggregate?campaign_id=${props.campaign.id}`);
+    console.log('Aggregate response:', aggRes.data);
     aggregateReport.value = aggRes.data;
 
-    // Fetch individual reports using campaign_id (comprehensive type to get all volunteer data)
-    const indRes = await api.get(`/reports/volunteers/individual?campaign_id=${props.campaign.id}&type=all`);
+    // Fetch individual reports using campaign_id
+    const indRes = await api.get(`/reports/volunteers/individual?campaign_id=${props.campaign.id}`);
+    console.log('Individual response:', indRes.data);
+    console.log('Individual volunteers array:', indRes.data.volunteers);
 
-    // Handle the response structure - it might be an array or an object with volunteers property
-    if (indRes.data && indRes.data.volunteers) {
-      individualReports.value = Array.isArray(indRes.data.volunteers) ? indRes.data.volunteers : [];
+    // Handle the response structure
+    if (indRes.data && Array.isArray(indRes.data.volunteers)) {
+      individualReports.value = indRes.data.volunteers;
     } else if (Array.isArray(indRes.data)) {
       individualReports.value = indRes.data;
     } else {
       individualReports.value = [];
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch volunteer reports:', error);
-    errorMessage.value = 'Failed to load volunteer reports. Please try again later.';
+    errorMessage.value = error.response?.data?.error || 'Failed to load volunteer reports. Please try again later.';
   } finally {
     isLoading.value = false;
   }
@@ -123,14 +130,51 @@ const closeModal = () => {
   emit('close');
 };
 
-// Function to format hours
+// Function to format hours with better precision
 const formatHours = (hours: number) => {
-  return `${hours.toFixed(1)}h`;
+  if (hours === 0) return '0h';
+
+  // For very small values (less than 0.1 hours = 6 minutes)
+  if (hours < 0.1) {
+    const minutes = Math.round(hours * 60);
+    const seconds = Math.round((hours * 3600) % 60);
+    if (minutes === 0) {
+      return `${seconds}s`;
+    }
+    return `${minutes}m ${seconds}s`;
+  }
+
+  // For values less than 1 hour
+  if (hours < 1) {
+    const minutes = Math.round(hours * 60);
+    return `${minutes}m`;
+  }
+
+  // For 1 hour or more
+  const wholeHours = Math.floor(hours);
+  const minutes = Math.round((hours - wholeHours) * 60);
+
+  if (minutes === 0) {
+    return `${wholeHours}h`;
+  }
+
+  return `${wholeHours}h ${minutes}m`;
+};
+
+// Function to get exact hours tooltip
+const getExactHoursTooltip = (hours: number) => {
+  if (hours < 0.001) {
+    return `Exact: ${(hours * 3600).toFixed(1)} seconds`;
+  } else if (hours < 0.1) {
+    return `Exact: ${(hours * 60).toFixed(2)} minutes`;
+  } else {
+    return `Exact: ${hours.toFixed(4)} hours`;
+  }
 };
 
 // Function to get registration status color
 const getRegistrationStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status?.toLowerCase()) {
     case 'approved':
       return 'bg-green-100 text-green-800';
     case 'flagged':
@@ -142,7 +186,7 @@ const getRegistrationStatusColor = (status: string) => {
 
 // Function to flag a volunteer
 const flagVolunteer = async (volunteerId: number) => {
-  if (!confirm('Are you sure you want to flag this volunteer? This action cannot be undone and the volunteer will be permanently banned.')) {
+  if (!props.campaign || !confirm('Are you sure you want to flag this volunteer? This action cannot be undone and the volunteer will be permanently banned.')) {
     return;
   }
 
@@ -173,17 +217,33 @@ const getTaskCompletionColor = (completed: number, assigned: number) => {
 // Computed property for completion rate color
 const completionRateColor = computed(() => {
   if (!aggregateReport.value) return 'text-gray-500';
-  const rate = aggregateReport.value.completion_rate;
+  const rate = aggregateReport.value.completion_rate || 0;
   if (rate >= 80) return 'text-green-600';
   if (rate >= 60) return 'text-yellow-600';
   return 'text-red-600';
+});
+
+// Computed property for safe campaign access
+const safeCampaign = computed(() => {
+  if (!props.campaign) {
+    return {
+      campaign_name: 'Unknown Campaign',
+      name: 'Unknown Campaign',
+      disaster_name: 'Unknown Disaster'
+    };
+  }
+  return {
+    ...props.campaign,
+    campaign_name: props.campaign.campaign_name || props.campaign.name || 'Unknown Campaign',
+    name: props.campaign.name || props.campaign.campaign_name || 'Unknown Campaign'
+  };
 });
 </script>
 
 <template>
   <Modal
     :show="show"
-    :title="`Volunteer Reports - ${campaign.name}`"
+    :title="`Volunteer Reports - ${safeCampaign.campaign_name || safeCampaign.name}`"
     maxWidth="max-w-full"
     zIndex="z-50"
     @close="closeModal"
@@ -214,13 +274,6 @@ const completionRateColor = computed(() => {
       </button>
     </div>
 
-    <!-- Campaign Info -->
-    <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-      <p class="text-blue-800 text-sm">
-        <span class="font-semibold">Campaign:</span> {{ campaign.name }} - {{ campaign.disaster_name }}
-      </p>
-    </div>
-
     <!-- Loading State -->
     <div v-if="isLoading" class="text-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -230,6 +283,12 @@ const completionRateColor = computed(() => {
     <!-- Error State -->
     <div v-else-if="errorMessage" class="text-center py-8">
       <p class="text-red-600">{{ errorMessage }}</p>
+      <button
+        @click="fetchReports"
+        class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+      >
+        Retry
+      </button>
     </div>
 
     <!-- Aggregate Report -->
@@ -261,10 +320,10 @@ const completionRateColor = computed(() => {
       <!-- Task Performance Statistics -->
       <div class="bg-gray-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Task Performance Statistics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Volunteers with Tasks -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <!-- Working Volunteers -->
           <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-            <h4 class="text-sm font-semibold text-indigo-800">Volunteers with Tasks</h4>
+            <h4 class="text-sm font-semibold text-indigo-800">Working Volunteers</h4>
             <p class="text-2xl font-bold text-indigo-900">{{ aggregateReport.volunteers_with_tasks || 0 }}</p>
           </div>
 
@@ -290,15 +349,9 @@ const completionRateColor = computed(() => {
 
           <!-- Total Hours -->
           <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <h4 class="text-sm font-semibold text-orange-800">Total Hours</h4>
-            <p class="text-2xl font-bold text-orange-900">{{ formatHours(aggregateReport.total_hours || 0) }}</p>
-          </div>
-
-          <!-- Average Hours per Active Volunteer -->
-          <div class="bg-pink-50 p-4 rounded-lg border border-pink-200">
-            <h4 class="text-sm font-semibold text-pink-800">Avg Hours/Approved Volunteer</h4>
-            <p class="text-2xl font-bold text-pink-900">
-              {{ aggregateReport.active_volunteers > 0 ? formatHours((aggregateReport.total_hours || 0) / aggregateReport.active_volunteers) : '0h' }}
+            <h4 class="text-sm font-semibold text-orange-800">Total Hours Worked</h4>
+            <p class="text-2xl font-bold text-orange-900" :title="getExactHoursTooltip(aggregateReport.total_hours || 0)">
+              {{ formatHours(aggregateReport.total_hours || 0) }}
             </p>
           </div>
         </div>
@@ -315,25 +368,16 @@ const completionRateColor = computed(() => {
                 Volunteer
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Registration Status
+                Status
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Skills
+                Assigned
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tasks Assigned
+                Completed
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tasks Completed
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Attendance Days
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total Hours
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Contact Info
+                Hours
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -353,11 +397,6 @@ const completionRateColor = computed(() => {
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div class="max-w-32 truncate" :title="volunteer.skills || 'No skills listed'">
-                  {{ volunteer.skills || 'No skills listed' }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ volunteer.task_statistics?.tasks_assigned || volunteer.tasks_assigned || 0 }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -366,15 +405,9 @@ const completionRateColor = computed(() => {
                   {{ volunteer.task_statistics?.tasks_completed || volunteer.tasks_completed || 0 }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ volunteer.task_statistics?.attendance_days || volunteer.attendance_days || 0 }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                  :title="getExactHoursTooltip(volunteer.task_statistics?.total_hours || volunteer.total_hours || 0)">
                 {{ formatHours(volunteer.task_statistics?.total_hours || volunteer.total_hours || 0) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div>{{ volunteer.email || 'N/A' }}</div>
-                <div>{{ volunteer.phone || 'N/A' }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <button
