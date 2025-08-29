@@ -36,7 +36,14 @@ const closeAidRequestModal = () => showAidRequestModal.value = false
 const handleAidRequestSubmit = () => { alert('Aid request submitted successfully!'); closeAidRequestModal() }
 const openVolunteerModal = () => showVolunteerModal.value = true
 const closeVolunteerModal = () => showVolunteerModal.value = false
-const handleVolunteerSubmit = () => { alert('Volunteer registration submitted successfully!'); closeVolunteerModal() }
+const handleVolunteerSubmit = async () => {
+  alert('Volunteer registration submitted successfully!');
+  closeVolunteerModal();
+  await auth.fetchUser();
+  if (auth.user && auth.user.volunteer) {
+    await volunteerTaskStore.fetchActiveTask(auth.user.id);
+  }
+}
 const openAidSupport = () => showAidSupport.value = true
 const closeAidSupport = () => showAidSupport.value = false
 

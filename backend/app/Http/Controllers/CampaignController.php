@@ -346,6 +346,22 @@ class CampaignController extends Controller
                 'status' => 'required|in:active,inactive'
             ]);
 
+            // If campaign is ending, update volunteer registrations and users
+            if ($request->status === 'inactive') {
+                $volRegs = \App\Models\VolunteerRegistration::where('disaster_id', $campaign->disaster_id)
+                    ->where('ngo_id', $ngoId)
+                    ->get();
+                foreach ($volRegs as $reg) {
+                    $reg->availability = false;
+                    $reg->save();
+                    $volUser = \App\Models\User::find($reg->user_id);
+                    if ($volUser) {
+                        $volUser->volunteer = false;
+                        $volUser->save();
+                    }
+                }
+            }
+
             // Update the status
             $campaign->status = $request->status;
             $campaign->save();

@@ -101,6 +101,7 @@ class VolunteerRegistrationController extends Controller
 
         $volunteer = VolunteerRegistration::where('user_id', $user->id)
             ->where('status', 'approved')
+            ->orderByDesc('created_at')
             ->first();
 
         if (!$volunteer) {
@@ -119,9 +120,13 @@ class VolunteerRegistrationController extends Controller
             return response()->json(['error' => 'Cannot resign while you have active tasks. Please contact with your NGO task validator.'], 403);
         }
 
-        // Only set user.volunteer to false, do not change registration status
+        // Set user.volunteer to false
         $user->volunteer = false;
         $user->save();
+
+        // Set latest registration's availability to false
+        $volunteer->availability = false;
+        $volunteer->save();
 
         return response()->json(['message' => 'You have successfully resigned from volunteering.']);
     }
