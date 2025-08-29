@@ -46,19 +46,19 @@ class CampaignController extends Controller
 
             $ngoId = $staff->ngo_id;
 
-            $campaigns = DisasterCampaignAssignment::with(['disaster', 'ngo'])
+            $campaigns = DisasterCampaignAssignment::with(['ngo', 'disaster'])
                 ->where('ngo_id', $ngoId)
                 ->where('status', 'active')
                 ->get()
                 ->map(function ($assignment) use ($ngoId) {
                     // Count approved volunteers (active/inactive determined by user.volunteer)
-                    $approvedVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
+                    $approvedVolunteersCount = VolunteerRegistration::where('campaign_id', $assignment->id)
                         ->where('ngo_id', $ngoId)
                         ->where('status', 'approved')
                         ->count();
 
                     // Count currently active volunteers (approved + user.volunteer = true)
-                    $activeVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
+                    $activeVolunteersCount = VolunteerRegistration::where('campaign_id', $assignment->id)
                         ->where('ngo_id', $ngoId)
                         ->where('status', 'approved')
                         ->whereHas('user', function($query) {
@@ -75,7 +75,11 @@ class CampaignController extends Controller
 
             return response()->json($campaigns);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch NGO campaigns'], 500);
+            return response()->json([
+                'error' => 'Failed to fetch NGO campaigns',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTrace()[0] ?? 'no trace'
+            ], 500);
         }
     }
 
@@ -187,17 +191,17 @@ class CampaignController extends Controller
                 ->get()
                 ->map(function ($assignment) use ($ngoId) {
                     // Count volunteers with correct status logic
-                    $volunteerStats = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
+                    $volunteerStats = VolunteerRegistration::where('campaign_id', $assignment->id)
                         ->where('ngo_id', $ngoId)
-                        ->selectRaw('
-                            COUNT(*) as total_registrations,
-                            SUM(CASE WHEN status = "approved" THEN 1 ELSE 0 END) as approved_volunteers,
-                            SUM(CASE WHEN status = "flagged" THEN 1 ELSE 0 END) as flagged_volunteers
-                        ')
+                        ->selectRaw(
+                            "COUNT(*) as total_registrations,
+                            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_volunteers,
+                            SUM(CASE WHEN status = 'flagged' THEN 1 ELSE 0 END) as flagged_volunteers
+                        ")
                         ->first();
 
                     // Count currently active volunteers (approved + user.volunteer = true)
-                    $activeVolunteersCount = VolunteerRegistration::where('disaster_id', $assignment->disaster_id)
+                    $activeVolunteersCount = VolunteerRegistration::where('campaign_id', $assignment->id)
                         ->where('ngo_id', $ngoId)
                         ->where('status', 'approved')
                         ->whereHas('user', function($query) {
@@ -359,7 +363,7 @@ class CampaignController extends Controller
 
             // If campaign is ending, update volunteer registrations and users
             if ($request->status === 'inactive') {
-                $volRegs = \App\Models\VolunteerRegistration::where('disaster_id', $campaign->disaster_id)
+                $volRegs = VolunteerRegistration::where('campaign_id', $campaign->id)
                     ->where('ngo_id', $ngoId)
                     ->get();
                 foreach ($volRegs as $reg) {
@@ -382,7 +386,10 @@ class CampaignController extends Controller
                 'campaign' => $this->formatCampaignData($campaign->load(['disaster', 'ngo']))
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update campaign status'], 500);
+            return response()->json([
+                'error' => 'Failed to update campaign status',
+                'details' => $e->getMessage() // 👈 add this for now
+            ], 500);
         }
     }
 }

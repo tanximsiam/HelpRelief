@@ -34,6 +34,7 @@ use App\Http\Controllers\ReportController;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 
 Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum');
@@ -42,6 +43,31 @@ Route::get('/user', [UserController::class, 'show'])->middleware('auth:sanctum')
 Route::get('/run-migrations', function () {
     Artisan::call('migrate:fresh', ['--force' => true]);
     Artisan::call('db:seed', ['--force' => true]);
+     $tables = [
+        'users',
+        'ngo_applications',
+        'ngo_staff',
+        'ngo_email_domains',
+        'cause_focuses',
+        'ngo_cause_focus',
+        'disasters',
+        'disaster_campaign_assignments',
+        'ngo_invite_links',
+        'aid_requests',
+        'aid_supports',
+        'volunteer_registrations',
+        'tasks',
+        'volunteer_task_logs',
+        'donation_reports',
+        'disaster_alerts'
+    ];
+
+    foreach ($tables as $table) {
+        DB::statement("
+            SELECT setval(pg_get_serial_sequence('{$table}', 'id'),
+            COALESCE((SELECT MAX(id) FROM {$table}), 1));
+        ");
+    }
 
     return 'Fresh migration and seeding complete.';
 });
@@ -176,7 +202,7 @@ Route::middleware([HandleCors::class, 'auth:sanctum'])->group(function () {
     Route::get('/campaigns/{campaignId}/volunteers', [CampaignController::class, 'campaignVolunteers']);
     Route::get('/campaigns/{id}', [CampaignController::class, 'show']);
     Route::post('/campaigns', [CampaignController::class, 'store']);
-    // Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
+    Route::patch('/campaigns/{id}/status', [CampaignController::class, 'updateStatus']);
     // Tasks for a campaign
     Route::get('/campaigns/{campaignId}/tasks', [TaskController::class, 'campaignTasks']);
 

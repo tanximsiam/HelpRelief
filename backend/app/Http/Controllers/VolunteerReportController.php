@@ -42,11 +42,11 @@ class VolunteerReportController extends Controller
         // Get volunteer registration statistics for this campaign
         $volunteerStats = VolunteerRegistration::where('ngo_id', $ngoId)
             ->where('campaign_id', $campaignId)
-            ->selectRaw('
+            ->selectRaw("
                 COUNT(*) as total_volunteers,
-                SUM(CASE WHEN status = "approved" THEN 1 ELSE 0 END) as active_volunteers,
-                SUM(CASE WHEN status = "flagged" THEN 1 ELSE 0 END) as flagged_volunteers
-            ')
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as active_volunteers,
+                SUM(CASE WHEN status = 'flagged' THEN 1 ELSE 0 END) as flagged_volunteers
+            ")
             ->first();
 
         // Get task-related statistics for approved volunteers in this campaign

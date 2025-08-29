@@ -82,7 +82,7 @@
           :state-name="stateName"
           :is-ngo-staff="isNgoStaff"
           @view-volunteer-reports="viewVolunteerReports"
-          @toggle-campaign-status="toggleCampaignStatus"
+
         />
       </div>
     </div>
@@ -183,19 +183,6 @@ const closeVolunteerReportModal = () => {
   selectedCampaign.value = null
 }
 
-// Function to toggle campaign status
-const toggleCampaignStatus = async (campaign: Campaign) => {
-  try {
-    const newStatus = campaign.status === 'active' ? 'inactive' : 'active'
-    await api.patch(`/campaigns/${campaign.id}/status`, { status: newStatus })
-
-    // Update the campaign status in local state
-    campaign.status = newStatus
-  } catch (error) {
-    console.error('Failed to update campaign status:', error)
-    // You could add a toast notification here
-  }
-}
 
 // Function to check NGO staff status
 const checkNgoStaffStatus = async () => {
