@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ngo;
-use App\Models\AidSupport;
-use App\Models\AidRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
+use App\Models\AidRequest;
+use App\Models\AidSupport;
+use App\Models\Ngo;
 
 class ReportController extends Controller
 {
-
-    public function myNgoReport(Request $request)
+    public function myNgoReport(Request $request): JsonResponse
     {
         $user = $request->user(); // or Auth::user()
 
@@ -33,13 +34,13 @@ class ReportController extends Controller
             ->with('disasterCampaignAssignments.disaster:id,name as title')
             ->findOrFail($ngoId);
 
-        // Count aid requests where requester is a volunteer registered under this NGO
-        $aidRequested = AidRequest::whereHas('requester.volunteerRegistration', function ($q) use ($ngoId) {
-            $q->where('ngo_id', $ngoId);
-        })->count();
-
-        // Count all aid supplied to campaigns under this NGO (map by campaign_id)
+        // Get campaigns IDs for this NGO
         $campaignIds = $ngo->disasterCampaignAssignments->pluck('id')->all();
+        
+        // Count aid requests for campaigns assigned to this NGO
+        $aidRequested = AidRequest::whereIn('campaign_id', $campaignIds)->count();
+
+        // Count all aid supplied to campaigns under this NGO
         $aidSupplied = 0;
         if (!empty($campaignIds)) {
             $aidSupplied = AidSupport::whereIn('campaign_id', $campaignIds)->count();
@@ -86,13 +87,13 @@ class ReportController extends Controller
 
         // Manually calculate aid_requested count via related users
         $report = $ngos->map(function ($ngo) {
-            // Count aid requests where requester is a volunteer registered under this NGO
-            $aidRequested = AidRequest::whereHas('requester.volunteerRegistration', function ($q) use ($ngo) {
-                $q->where('ngo_id', $ngo->id);
-            })->count();
+            // Get campaign IDs for this NGO
+            $campaignIds = $ngo->disasterCampaignAssignments->pluck('id')->all();
+            
+            // Count aid requests for campaigns assigned to this NGO
+            $aidRequested = AidRequest::whereIn('campaign_id', $campaignIds)->count();
 
             // Count all aid supplied to campaigns under this NGO
-            $campaignIds = $ngo->disasterCampaignAssignments->pluck('id')->all();
             $aidSupplied = 0;
             if (!empty($campaignIds)) {
                 $aidSupplied = AidSupport::whereIn('campaign_id', $campaignIds)->count();
