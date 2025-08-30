@@ -84,9 +84,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
+import { useAuth } from '@/stores/auth'
 
 const props = defineProps<{ campaignId: number }>()
 const router = useRouter()
+const auth = useAuth()
 
 const pendingRequests = ref<any[]>([])
 const acceptedRequests = ref<any[]>([])
@@ -97,7 +99,17 @@ const rejectionRemarks = ref('')
 
 const fetchAidRequests = async () => {
   try {
-    const res = await api.get('/aid-requests')
+    const ngoId = auth.user?.ngo_id
+    if (!ngoId) {
+      console.error('No NGO ID found')
+      return
+    }
+    const res = await api.get('/aid-requests', {
+      params: {
+        campaign_id: props.campaignId,
+        ngo_id: ngoId
+      }
+    })
     pendingRequests.value = res.data.filter((r: any) => r.status === 'pending')
     acceptedRequests.value = res.data.filter((r: any) => r.status === 'assigned')
   } catch (err) {
