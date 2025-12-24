@@ -31,6 +31,11 @@ onMounted(async () => {
 })
 
 const userName = computed(() => auth.user?.name || 'User')
+// Capitalized display name for greeting (each word title-cased)
+const displayName = computed(() => userName.value
+  .split(/\s+/)
+  .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+  .join(' '))
 
 const openAidRequestModal = () => showAidRequestModal.value = true
 const closeAidRequestModal = () => showAidRequestModal.value = false
@@ -75,14 +80,14 @@ async function handleResignVolunteer() {
 <template>
   <div class="min-h-screen">
     <main class="flex flex-col px-8 py-16">
-      <div class="flex items-center justify-between mb-10">
-        <div>
-          <h1 class="text-4xl font-bold text-black-800">
-            Welcome {{ userName }},
-            <span class="text-2xl font-normal">people are depending on you.</span>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
+        <div class="max-w-xl">
+          <h1 class="text-4xl font-bold text-black-800 leading-tight">
+            Welcome <span class="capitalize">{{ displayName }}</span>,
           </h1>
+          <p class="mt-2 text-xl font-normal text-black-700">People are depending on you.</p>
         </div>
-        <div class="flex gap-4 items-center">
+        <div class="flex flex-wrap gap-4 items-center">
           <button
             v-if="auth.user && auth.user.volunteer"
             @click="openAidRequestModal"
